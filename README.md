@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/app.gif" alt="hustleX: a prompt sent to an agent, its work shown live in the terminal" width="720">
+  <img src="docs/assets/app.png" alt="hustleX: a prompt sent to an agent, its work shown live in the terminal" width="860">
 </p>
 
 <sub align="center">The images on this page use sample data.</sub>
@@ -37,8 +37,8 @@
 - **Light on memory.** The app is written in Go with [MyGo](https://mygo.egoist.dev/), not a bundled browser, and idle agents hibernate.
 
 <p align="center">
-  <img src="docs/assets/accounts.gif" alt="Switching an agent session to another account when one runs low" width="420">
-  <img src="docs/assets/hosts.gif" alt="A laptop connected to a server over SSH" width="420">
+  <img src="docs/assets/accounts.png" alt="Switching an agent session to another account when one runs low" width="420">
+  <img src="docs/assets/hosts.png" alt="A laptop connected to a server over SSH" width="420">
 </p>
 
 Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and many more, plus any program you can run in a terminal. The list and how each one is started is in [docs/agents.md](docs/agents.md).
