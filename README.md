@@ -48,10 +48,17 @@ Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and ma
 
 Download the installer for [macOS (Apple silicon), Windows or Linux](https://github.com/hustle-x/hustlex/releases/latest). The builds are not signed yet, so your system will warn you the first time; [docs/install.md](docs/install.md) shows how to open them.
 
-On Linux you can also install it with one line (for the current user, no root):
+Or install from a terminal:
 
 ```sh
+# macOS (Apple silicon)
+curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/get-mac.sh | sh
+
+# Linux (x64, arm64)
 curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/get.sh | sh
+
+# Windows (PowerShell)
+irm https://github.com/hustle-x/hustlex/releases/latest/download/get.ps1 | iex
 ```
 
 To build it yourself you need Go 1.27+ and git:
