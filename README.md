@@ -36,20 +36,11 @@
 - **Command line.** `hustlex-app` lets scripts, and agents, start and manage sessions.
 - **Light on memory.** The app is written in Go with [MyGo](https://mygo.egoist.dev/), not a bundled browser, and idle agents hibernate.
 
-<table>
-<tr>
-<td width="50%"><img src="docs/assets/compare.png" alt="Compare: one prompt given to three agents, each on its own branch"><br><sub>Compare agents on the same prompt</sub></td>
-<td width="50%"><img src="docs/assets/review.png" alt="A session's diff with a warning that another session changed the same lines"><br><sub>Review a session's diff, then commit or merge</sub></td>
-</tr>
-<tr>
-<td><img src="docs/assets/chat.png" alt="The chat view of a Claude Code session with tool calls and a diff"><br><sub>Chat view for Claude Code and Codex</sub></td>
-<td><img src="docs/assets/traffic.png" alt="The Traffic tool: a list of requests and the selected request's headers and body"><br><sub>Traffic: see, mock and pause an app's HTTP</sub></td>
-</tr>
-<tr>
-<td><img src="docs/assets/notes.png" alt="A note with a checklist, a callout and an agent's proposed change"><br><sub>Notes an agent can help with</sub></td>
-<td><img src="docs/assets/accounts.png" alt="Moving a session to another account when one runs low"><br><sub>Several accounts, one session moved between them</sub></td>
-</tr>
-</table>
+<p align="center">
+  <img src="docs/assets/views-1.png" alt="Compare three agents on one prompt, and review a session's diff before merging">
+  <img src="docs/assets/views-2.png" alt="The chat view of a Claude Code session, and the Traffic tool">
+  <img src="docs/assets/views-3.png" alt="A note with a checklist and an agent's proposed change, and moving a session between accounts">
+</p>
 
 Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and many more, plus any program you can run in a terminal. The list and how each one is started is in [docs/agents.md](docs/agents.md).
 
