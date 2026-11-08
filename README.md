@@ -10,11 +10,26 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/hustle-x/hustlex/releases/latest"><img src="https://img.shields.io/github/v/release/hustle-x/hustlex?style=for-the-badge&color=555&label=release" alt="Latest release"></a>
+  <img src="https://img.shields.io/badge/macOS_·_Windows_·_Linux-555?style=for-the-badge" alt="macOS, Windows, Linux">
+  <img src="https://img.shields.io/badge/written_in-Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Written in Go">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-use--only-c0392b?style=for-the-badge" alt="License: use only, all rights reserved"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/no_cloud-111?style=flat-square" alt="No cloud">
+  <img src="https://img.shields.io/badge/no_account-111?style=flat-square" alt="No account">
+  <img src="https://img.shields.io/badge/no_telemetry-111?style=flat-square" alt="No telemetry">
+  <a href="https://github.com/hustle-x/hustlex/stargazers"><img src="https://img.shields.io/github/stars/hustle-x/hustlex?style=flat-square&logo=github" alt="GitHub stars"></a>
+</p>
+
+<p align="center">
   <a href="https://hustle-x.github.io/hustlex/">Website</a> ·
   <a href="https://github.com/hustle-x/hustlex/releases/latest">Download</a> ·
   <a href="docs/install.md">Install</a> ·
   <a href="docs/agents.md">Agents</a> ·
-  <a href="docs/cli.md">Command line</a>
+  <a href="docs/cli.md">Command line</a> ·
+  <a href="#license">License</a>
 </p>
 
 <p align="center">
@@ -68,13 +83,17 @@ curl -fsSL https://hustle-x.github.io/hustlex/get.sh | sh
 irm https://hustle-x.github.io/hustlex/get.ps1 | iex
 ```
 
-To build it yourself you need Go 1.27+ and git:
+<details>
+<summary><b>Build from source</b></summary>
+
+You need Go 1.27+ and git:
 
 ```sh
 make build
 ./bin/hustlex                          # this machine
 ./bin/hustlex --remote user@host       # a server; hustleX installs its daemon there
 ```
+</details>
 
 State lives in `~/.hustlex-app`, and the command line is linked as `hustlex-app` (Settings → App).
 
@@ -95,4 +114,6 @@ Everything is in [docs/](docs): [getting started](docs/install.md), [agents](doc
 
 ## License
 
-[MIT](LICENSE). Security issues: [SECURITY.md](SECURITY.md).
+**All rights reserved.** hustleX is free to download and use, for personal or commercial work. You may **not** copy, modify, remake, redistribute or sell it, or use its code, design or images to build a competing product, without written permission from hustle-x. The source is public so you can see what runs on your machine, not so it can be copied.
+
+Full terms: [LICENSE](LICENSE) (hustle-x Use-Only License 1.0). Third-party parts keep their own licenses, next to them in the source. To ask for permission, [open an issue](https://github.com/hustle-x/hustlex/issues). Security issues: [SECURITY.md](SECURITY.md).

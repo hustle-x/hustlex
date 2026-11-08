@@ -26,4 +26,4 @@ Code conventions are in [AGENTS.md](AGENTS.md). They apply to humans and AI agen
 - Make sure `make test` and `make lint` pass.
 - Sign off your commits (`git commit -s`) to certify the [Developer Certificate of Origin](https://developercertificate.org/).
 
-By contributing, you agree that your contributions are licensed under the [MIT License](LICENSE).
+By contributing, you agree that hustle-x may use, change and publish your contribution under any license (see section 3 of the [LICENSE](LICENSE)).
