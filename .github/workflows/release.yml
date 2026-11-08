@@ -6,8 +6,6 @@ name: Release
 # publish by hand: apps update once it is published. A run started by hand
 # keeps them as the run's artifacts, publishing nothing.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:

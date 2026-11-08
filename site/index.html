@@ -864,6 +864,6 @@ document.querySelectorAll('a.sf-link').forEach(a=>{const t=(a.querySelector('.sf
 const byText=(sel,txt,href,ext)=>document.querySelectorAll(sel).forEach(a=>{if(a.textContent.trim().indexOf(txt)<0)return;a.href=href;if(ext){a.target='_blank';a.rel='noopener'}});
 byText('a.gb','Star on GitHub',G,1);byText('a.gb','View source',G,1);byText('a.gb','Read the docs',G+'#readme',1);byText('a.gb','Download free','#download');
 byText('.dfoot a','All releases',R,1);
-const D=R+'/latest/download/',fl={mac:'hustleX%201.0.0%20arm64.dmg',win:'hustleX%20Setup%201.0.0%20amd64.exe'};document.querySelectorAll('.dl').forEach(d=>{const a=d.querySelector('a.dlb2');if(!a)return;a.href=fl[d.dataset.os]?D+fl[d.dataset.os]:R+'/latest';a.target='_blank';a.rel='noopener'});
+const D=R+'/latest/download/',fl={mac:'hustleX-1.0.0-arm64.dmg',win:'hustleX-Setup-1.0.0-amd64.exe'};document.querySelectorAll('.dl').forEach(d=>{const a=d.querySelector('a.dlb2');if(!a)return;a.href=fl[d.dataset.os]?D+fl[d.dataset.os]:R+'/latest';a.target='_blank';a.rel='noopener'});
 document.querySelectorAll('a.gb').forEach(a=>{if(a.getAttribute('href')===null)a.style.cursor='default'})})();</script>
 </body></html>
