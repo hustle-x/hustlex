@@ -1,0 +1,41 @@
+# Build output
+/bin/
+/dist/
+/build/
+# mygo dev builds
+.mygo/
+# Go
+*.test
+*.out
+coverage.*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local env
+.env
+.env.*
+!.env.example
+
+# Local credentials and daemon state
+/secrets/
+/credentials/
+/.hustlex-app/
+/.hustlex-dev/
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Local logs and crash dumps
+*.log
+*.dmp
+
+# Linux daemons embedded in the app (make daemons)
+/hostconn/daemons/*.gz

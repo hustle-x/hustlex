@@ -1,0 +1,2093 @@
+embed AutopushStatus AutopushSettings
+embed BrowserRequest BrowserAction
+embed Canvas CanvasInfo
+embed FanOutParams SessionCreateParams
+embed Note NoteInfo
+embed PipelineStageRun PipelineStage
+embed ProjectDetail ProjectInfo
+embed ProjectLinkState ProjectLink
+embed SessionUsage Usage
+embed TrafficExchange TrafficSummary
+embed VaultRequest VaultAsk
+event android.adb.accepted
+event app.request
+event autopush.ran
+event browser.request
+event canvas.changed
+event canvas.chat
+event canvas.listed
+event canvas.render
+event checks.changed
+event features.changed
+event features.requested
+event note.chat
+event notes.changed
+event notes.groups
+event notes.import
+event notes.proposals
+event notify.settings
+event notify.sound
+event pipeline.updated
+event ports.changed
+event project.clone
+event project.files.changed
+event projectlink.history
+event projectlinks.changed
+event projects.changed
+event session.removed
+event session.updated
+event sync.applied
+event sync.requested
+event sync.status
+event traffic.attached
+event traffic.capture
+event traffic.exchange
+event traffic.paused
+event vault.changed
+event vault.request
+field Account.agent string
+field Account.id string
+field Account.name string
+field AccountAddParams.agent string
+field AccountAddParams.name string
+field AccountRef.id string
+field AgentAPI.apiKey string
+field AgentAPI.baseURL string
+field AgentAPI.effort string
+field AgentAPI.model string
+field AgentAPI.models []AgentAPIModel
+field AgentAPI.protocol string
+field AgentAPI.smallModel string
+field AgentAPIBackup.id string
+field AgentAPIBackup.note string
+field AgentAPIBackup.original bool
+field AgentAPIBackup.time time.Time
+field AgentAPICaps.context string
+field AgentAPICaps.effort string
+field AgentAPICaps.efforts []string
+field AgentAPICaps.multi bool
+field AgentAPICaps.output string
+field AgentAPICaps.vision bool
+field AgentAPIInfo.agent string
+field AgentAPIInfo.backups []AgentAPIBackup
+field AgentAPIInfo.caps AgentAPICaps
+field AgentAPIInfo.current *AgentAPI
+field AgentAPIInfo.error string
+field AgentAPIInfo.files []string
+field AgentAPIInfo.installed bool
+field AgentAPIInfo.name string
+field AgentAPIInfo.noModel bool
+field AgentAPIInfo.note string
+field AgentAPIInfo.protocols []string
+field AgentAPIInfo.small bool
+field AgentAPIModel.context int
+field AgentAPIModel.effort string
+field AgentAPIModel.id string
+field AgentAPIModel.output int
+field AgentAPIModel.vision bool
+field AgentAPIRef.agent string
+field AgentAPIRestoreParams.agent string
+field AgentAPIRestoreParams.backup string
+field AgentAPISetParams.agent string
+field AgentAPISetParams.api AgentAPI
+field AgentCommand.description string
+field AgentCommand.kind string
+field AgentCommand.name string
+field AgentCommands.commands []AgentCommand
+field AgentCommands.loading bool
+field AgentInfo.canSkipPermissions bool
+field AgentInfo.command string
+field AgentInfo.homepage string
+field AgentInfo.id string
+field AgentInfo.install string
+field AgentInfo.installed bool
+field AgentInfo.name string
+field AgentInfo.signIn string
+field AndroidADBConn.id uint32
+field AndroidADBConn.listener uint32
+field AndroidADBListener.id uint32
+field AndroidADBListener.port int
+field AndroidAct.action string
+field AndroidAct.key string
+field AndroidAct.ms int
+field AndroidAct.ref int
+field AndroidAct.serial string
+field AndroidAct.text string
+field AndroidAct.x int
+field AndroidAct.x2 int
+field AndroidAct.y int
+field AndroidAct.y2 int
+field AndroidConnectParams.address string
+field AndroidConnectParams.code string
+field AndroidConnectParams.pairAddress string
+field AndroidControls.count int
+field AndroidControls.text string
+field AndroidDevice.abi string
+field AndroidDevice.api string
+field AndroidDevice.kind string
+field AndroidDevice.name string
+field AndroidDevice.serial string
+field AndroidDevice.state string
+field AndroidDevice.tv bool
+field AndroidDeviceParams.avd string
+field AndroidDeviceParams.serial string
+field AndroidDeviceParams.window bool
+field AndroidForwardParams.port int
+field AndroidLog.last int64
+field AndroidLog.lines []AndroidLogLine
+field AndroidLogLine.level string
+field AndroidLogLine.message string
+field AndroidLogLine.n int64
+field AndroidLogLine.pid int
+field AndroidLogLine.tag string
+field AndroidLogLine.time string
+field AndroidLogcatParams.after int64
+field AndroidLogcatParams.package string
+field AndroidLogcatParams.serial string
+field AndroidMirrorInput.action int
+field AndroidMirrorInput.height int
+field AndroidMirrorInput.key int
+field AndroidMirrorInput.kind string
+field AndroidMirrorInput.serial string
+field AndroidMirrorInput.text string
+field AndroidMirrorInput.width int
+field AndroidMirrorInput.x int
+field AndroidMirrorInput.y int
+field AndroidMirrorParams.maxSize int
+field AndroidMirrorParams.serial string
+field AndroidProject.command string
+field AndroidProject.kind string
+field AndroidProject.package string
+field AndroidProjectParams.dir string
+field AndroidProxyParams.ca string
+field AndroidProxyParams.off bool
+field AndroidProxyParams.port int
+field AndroidProxyParams.serial string
+field AndroidProxyResult.note string
+field AndroidRun.command string
+field AndroidRun.package string
+field AndroidRun.tab string
+field AndroidRunParams.adb string
+field AndroidRunParams.command string
+field AndroidRunParams.serial string
+field AndroidRunParams.session string
+field AndroidScreenshot.png []byte
+field AndroidSetupParams.session string
+field AndroidSetupParams.tv bool
+field AndroidStatus.accel bool
+field AndroidStatus.accelWhy string
+field AndroidStatus.adb bool
+field AndroidStatus.avds []string
+field AndroidStatus.devices []AndroidDevice
+field AndroidStatus.display bool
+field AndroidStatus.emulator bool
+field AndroidStatus.java string
+field AndroidStatus.problem string
+field AndroidStatus.sdk string
+field AppReply.error string
+field AppReply.id string
+field AppReply.result []byte
+field AppRequest.id string
+field AppRequest.kind string
+field AppRequest.params []byte
+field AttachResult.stream uint32
+field Automation.agent string
+field Automation.branch bool
+field Automation.enabled bool
+field Automation.id string
+field Automation.lastError string
+field Automation.lastRun time.Time
+field Automation.lastSession string
+field Automation.name string
+field Automation.nextRun time.Time
+field Automation.project string
+field Automation.prompt string
+field Automation.schedule string
+field Automation.skipPermissions bool
+field AutomationRef.id string
+field AutopushSettings.base string
+field AutopushSettings.branch string
+field AutopushSettings.host string
+field AutopushSettings.hostName string
+field AutopushSettings.interval int
+field AutopushSettings.name string
+field AutopushSettings.on bool
+field AutopushSettings.path string
+field AutopushSettings.pr bool
+field AutopushSettings.project string
+field AutopushSettings.remote string
+field AutopushStatus.branchURL string
+field AutopushStatus.commit string
+field AutopushStatus.err string
+field AutopushStatus.files int
+field AutopushStatus.here bool
+field AutopushStatus.lastPush time.Time
+field AutopushStatus.lastRun time.Time
+field AutopushStatus.next time.Time
+field AutopushStatus.prURL string
+field AutopushStatus.visibility string
+field BrowserAction.action string
+field BrowserAction.ref string
+field BrowserAction.session string
+field BrowserAction.text string
+field BrowserAction.url string
+field BrowserReply.error string
+field BrowserReply.id string
+field BrowserReply.result BrowserResult
+field BrowserRequest.id string
+field BrowserResult.image []byte
+field BrowserResult.text string
+field BrowserResult.title string
+field BrowserResult.url string
+field Canvas.frames []CanvasFrame
+field CanvasAsset.data []byte
+field CanvasAsset.id string
+field CanvasAsset.name string
+field CanvasAsset.path string
+field CanvasChange.canvas Canvas
+field CanvasChange.element string
+field CanvasChange.frame string
+field CanvasChange.frames []string
+field CanvasChange.op string
+field CanvasChange.session string
+field CanvasChatEntry.files []string
+field CanvasChatEntry.n int
+field CanvasChatEntry.session string
+field CanvasChatEntry.state string
+field CanvasChatEntry.text string
+field CanvasChatEntry.time time.Time
+field CanvasChatEntry.version int
+field CanvasChatLog.agent string
+field CanvasChatLog.id string
+field CanvasChatLog.messages []CanvasChatEntry
+field CanvasChatLog.mode string
+field CanvasChatMark.id string
+field CanvasChatMark.n int
+field CanvasChatMark.state string
+field CanvasChatParams.agent string
+field CanvasChatParams.files []string
+field CanvasChatParams.id string
+field CanvasChatParams.mode string
+field CanvasChatParams.session string
+field CanvasChatParams.text string
+field CanvasComment.author string
+field CanvasComment.created time.Time
+field CanvasComment.element string
+field CanvasComment.frame string
+field CanvasComment.id string
+field CanvasComment.resolved bool
+field CanvasComment.text string
+field CanvasCommentParams.comment CanvasComment
+field CanvasCommentParams.id string
+field CanvasCommentParams.op string
+field CanvasControl.action string
+field CanvasControl.frame string
+field CanvasControl.frames []string
+field CanvasControl.id string
+field CanvasCreateParams.frames []CanvasFrame
+field CanvasCreateParams.group string
+field CanvasCreateParams.kind string
+field CanvasCreateParams.projects []string
+field CanvasCreateParams.title string
+field CanvasEdit.before string
+field CanvasEdit.description *string
+field CanvasEdit.element *CanvasElement
+field CanvasEdit.favorite *bool
+field CanvasEdit.frame string
+field CanvasEdit.frameInfo *CanvasFrame
+field CanvasEdit.grid *CanvasGrid
+field CanvasEdit.group *string
+field CanvasEdit.html string
+field CanvasEdit.id string
+field CanvasEdit.into string
+field CanvasEdit.kind *string
+field CanvasEdit.name *string
+field CanvasEdit.op string
+field CanvasEdit.page *string
+field CanvasEdit.projects *[]string
+field CanvasEdit.session string
+field CanvasEdit.target string
+field CanvasEdit.title *string
+field CanvasEdit.variant *string
+field CanvasElement.align string
+field CanvasElement.bold bool
+field CanvasElement.color string
+field CanvasElement.fill string
+field CanvasElement.fontSize float64
+field CanvasElement.from string
+field CanvasElement.h float64
+field CanvasElement.id string
+field CanvasElement.radius float64
+field CanvasElement.src string
+field CanvasElement.stroke string
+field CanvasElement.strokeWidth float64
+field CanvasElement.text string
+field CanvasElement.to string
+field CanvasElement.type string
+field CanvasElement.w float64
+field CanvasElement.x float64
+field CanvasElement.y float64
+field CanvasFrame.background string
+field CanvasFrame.description string
+field CanvasFrame.elements []CanvasElement
+field CanvasFrame.favorite bool
+field CanvasFrame.grid *CanvasGrid
+field CanvasFrame.height int
+field CanvasFrame.html string
+field CanvasFrame.id string
+field CanvasFrame.name string
+field CanvasFrame.page string
+field CanvasFrame.variant string
+field CanvasFrame.width int
+field CanvasGrid.areas []GridArea
+field CanvasGrid.colGap float64
+field CanvasGrid.cols int
+field CanvasGrid.margin float64
+field CanvasGrid.rowGap float64
+field CanvasGrid.rows int
+field CanvasGrid.snap bool
+field CanvasHistory.head int
+field CanvasHistory.versions []CanvasVersion
+field CanvasInfo.agent string
+field CanvasInfo.agentAt time.Time
+field CanvasInfo.created time.Time
+field CanvasInfo.group string
+field CanvasInfo.id string
+field CanvasInfo.kind string
+field CanvasInfo.paused bool
+field CanvasInfo.projects []string
+field CanvasInfo.title string
+field CanvasInfo.updated time.Time
+field CanvasInfo.version int
+field CanvasInfo.winner string
+field CanvasRef.id string
+field CanvasRenderParams.format string
+field CanvasRenderParams.frame string
+field CanvasRenderParams.id string
+field CanvasRenderReply.data []byte
+field CanvasRenderReply.error string
+field CanvasRenderReply.id string
+field CanvasRenderReply.wider int
+field CanvasRenderRequest.format string
+field CanvasRenderRequest.height int
+field CanvasRenderRequest.html string
+field CanvasRenderRequest.id string
+field CanvasRenderRequest.width int
+field CanvasRendered.by string
+field CanvasRendered.data []byte
+field CanvasRendered.format string
+field CanvasRendered.height int
+field CanvasRendered.wider int
+field CanvasRendered.width int
+field CanvasShare.canvas string
+field CanvasShare.created time.Time
+field CanvasShare.title string
+field CanvasShare.token string
+field CanvasShare.urls []string
+field CanvasShareParams.id string
+field CanvasShareParams.stop bool
+field CanvasVersion.element string
+field CanvasVersion.frame string
+field CanvasVersion.n int
+field CanvasVersion.op string
+field CanvasVersion.session string
+field CanvasVersion.time time.Time
+field CanvasVersionRef.id string
+field CanvasVersionRef.n int
+field Catalog.host string
+field Catalog.name string
+field Catalog.projects []CatalogProject
+field Catalog.updated time.Time
+field CatalogProject.group string
+field CatalogProject.name string
+field CatalogProject.path string
+field CatalogProject.remote string
+field Check.command string
+field Check.name string
+field CheckRun.command string
+field CheckRun.duration time.Duration
+field CheckRun.exitCode int
+field CheckRun.name string
+field CheckRun.output string
+field CheckRun.started time.Time
+field CheckRun.state string
+field ChecksInfo.checks []Check
+field ChecksInfo.custom bool
+field ChecksInfo.runs []CheckRun
+field ChecksRunParams.names []string
+field ChecksRunParams.session string
+field ChecksSetParams.checks []Check
+field ChecksSetParams.session string
+field ClaudeMarketplace.name string
+field ClaudeMarketplace.source string
+field ClaudePlugin.description string
+field ClaudePlugin.enabled bool
+field ClaudePlugin.id string
+field ClaudePlugin.marketplace string
+field ClaudePlugin.name string
+field ClaudePlugin.scope string
+field ClaudePlugin.version string
+field ClaudePlugins.cli bool
+field ClaudePlugins.marketplaces []ClaudeMarketplace
+field ClaudePlugins.plugins []ClaudePlugin
+field ClonePrefs.default string
+field ClonePrefs.dir string
+field ClonePrefs.urls []string
+field CloneRef.id string
+field CloneStatus.error string
+field CloneStatus.id string
+field CloneStatus.line string
+field CloneStatus.path string
+field CloneStatus.percent int
+field CloneStatus.phase string
+field CloneStatus.project *ProjectInfo
+field CloneStatus.state string
+field CloneStatus.url string
+field CommandRunParams.command RunCommand
+field CommandRunParams.session string
+field CommandSaveParams.command RunCommand
+field CommandSaveParams.remove bool
+field CommandSaveParams.session string
+field CommitParams.message string
+field CommitParams.session string
+field Conflict.file string
+field Conflict.lines bool
+field Conflict.sessions []string
+field Conversation.agent string
+field Conversation.branch string
+field Conversation.dir string
+field Conversation.id string
+field Conversation.messages int
+field Conversation.model string
+field Conversation.path string
+field Conversation.title string
+field Conversation.updated time.Time
+field CredentialInfo.account string
+field CredentialInfo.auto bool
+field CredentialInfo.checked time.Time
+field CredentialInfo.default bool
+field CredentialInfo.env []string
+field CredentialInfo.expires time.Time
+field CredentialInfo.gitHosts []string
+field CredentialInfo.hint string
+field CredentialInfo.hosts []string
+field CredentialInfo.hostsOnly bool
+field CredentialInfo.id string
+field CredentialInfo.name string
+field CredentialInfo.platform string
+field CredentialInfo.projects []string
+field CredentialInfo.publicKey string
+field CredentialInfo.registries []string
+field CredentialInfo.revoked bool
+field CredentialInfo.status string
+field CredentialInfo.type string
+field CreditAccount.account string
+field CreditAccount.agent string
+field CreditAccount.error string
+field CreditAccount.note string
+field CreditAccount.plan string
+field CreditAccount.ref string
+field CreditAccount.windows []CreditWindow
+field CreditWindow.detail string
+field CreditWindow.label string
+field CreditWindow.resetsAt time.Time
+field CreditWindow.used float64
+field CreditsParams.refresh bool
+field CreditsReport.accounts []CreditAccount
+field CreditsReport.checked time.Time
+field CreditsReport.checking bool
+field DaemonInfo.build string
+field DaemonInfo.display bool
+field DaemonInfo.displayInstall string
+field DaemonInfo.displayNote string
+field DaemonInfo.hash string
+field DaemonInfo.home string
+field DaemonInfo.hostname string
+field DaemonInfo.id string
+field DaemonInfo.pid int
+field DaemonInfo.sessions int
+field DaemonInfo.started time.Time
+field DaemonInfo.version string
+field DaemonLog.path string
+field DaemonLog.text string
+field DaemonLogParams.lines int
+field DaemonSettings.hibernateAfter int
+field DaemonSettings.maxAgents int
+field DaemonStats.daemon Usage
+field DaemonStats.host HostUsage
+field DaemonStats.sessions []SessionUsage
+field DaemonStats.supported bool
+field Diff.base string
+field Diff.files []DiffFile
+field Diff.truncated bool
+field DiffFile.added int
+field DiffFile.binary bool
+field DiffFile.hunks []DiffHunk
+field DiffFile.oldPath string
+field DiffFile.path string
+field DiffFile.removed int
+field DiffFile.status string
+field DiffFile.truncated bool
+field DiffHunk.header string
+field DiffHunk.lines []DiffLine
+field DiffLine.k byte
+field DiffLine.n int
+field DiffLine.o int
+field DiffLine.t string
+field DiscardParams.deleteBranch bool
+field DiscardParams.session string
+field DisplayInfo.display string
+field DisplayInfo.env []string
+field DisplayInfo.port int
+field DisplayScaleParams.scale int
+field DisplayStopParams.id string
+field DisplayStopParams.port int
+field EnvFile.data []byte
+field EnvFile.mode uint32
+field EnvFile.path string
+field EnvImportResult.warnings []string
+field EnvItem.agent string
+field EnvItem.detail string
+field EnvItem.hash string
+field EnvItem.id string
+field EnvItem.kind string
+field EnvItem.name string
+field EnvItem.secrets []string
+field EnvItem.size int64
+field EnvItem.warnings []string
+field EnvItemRef.id string
+field EnvPayload.files []EnvFile
+field EnvPayload.home string
+field EnvPayload.item EnvItem
+field EnvPayload.value []byte
+field EnvProjectImport.payload EnvPayload
+field EnvProjectImport.project string
+field EnvProjectRef.id string
+field EnvProjectRef.project string
+field EnvScan.home string
+field EnvScan.items []EnvItem
+field Event.data json.RawMessage
+field Event.name string
+field FanOutParams.agents []string
+field FeatureAnswer.allowed bool
+field FeatureAnswer.requestId string
+field FeatureAnswer.scope string
+field FeatureInfo.about string
+field FeatureInfo.core bool
+field FeatureInfo.default bool
+field FeatureInfo.from string
+field FeatureInfo.group string
+field FeatureInfo.id string
+field FeatureInfo.lazy bool
+field FeatureInfo.name string
+field FeatureInfo.on bool
+field FeatureInfo.requires []string
+field FeatureInfo.tokens int
+field FeatureRequest.id string
+field FeatureRequest.reason string
+field FeatureRequest.requestId string
+field FeatureRequest.scope string
+field FeatureRequest.session string
+field FeatureSetParams.id string
+field FeatureSetParams.on *bool
+field FeatureSetParams.project string
+field FeatureSetParams.scope string
+field FeatureSetParams.session string
+field FeaturesGuide.guide string
+field FeaturesGuide.on map[string]bool
+field FeaturesLazyParams.lazy bool
+field FeaturesParams.project string
+field FeaturesParams.session string
+field FeaturesPresetParams.name string
+field FeaturesPresetParams.project string
+field FeaturesPresetParams.scope string
+field FeaturesState.allTokens int
+field FeaturesState.features []FeatureInfo
+field FeaturesState.lazy bool
+field FeaturesState.project string
+field FeaturesState.tokens int
+field FileBytes.data []byte
+field FileBytes.modified time.Time
+field FileBytes.size int64
+field FileBytesParams.abs bool
+field FileBytesParams.offset int64
+field FileBytesParams.path string
+field FileBytesParams.session string
+field FileChange.change string
+field FileChange.name string
+field FileChange.path string
+field FileChange.session string
+field FileChanged.path string
+field FileContent.binary bool
+field FileContent.data []byte
+field FileContent.image string
+field FileContent.modified time.Time
+field FileContent.path string
+field FileContent.size int64
+field FileContent.text string
+field FileContent.truncated bool
+field FileContent.unchanged bool
+field FileEntry.dir bool
+field FileEntry.ignored bool
+field FileEntry.name string
+field FileEntry.size int64
+field FileEntry.status string
+field FileFindParams.limit int
+field FileFindParams.query string
+field FileFindParams.session string
+field FileFound.paths []string
+field FileListing.entries []FileEntry
+field FileListing.path string
+field FileListing.root string
+field FileListing.truncated bool
+field FileRef.abs bool
+field FileRef.path string
+field FileRef.session string
+field FileRef.unless time.Time
+field FileStat.abs string
+field FileStat.dir bool
+field FileStat.files int
+field FileStat.folders int
+field FileStat.ignored bool
+field FileStat.link string
+field FileStat.mode string
+field FileStat.modified time.Time
+field FileStat.owner string
+field FileStat.partial bool
+field FileStat.path string
+field FileStat.size int64
+field FileStat.status string
+field FileUpload.data []byte
+field FileUpload.into string
+field FileUpload.name string
+field FileUpload.path string
+field FileUpload.session string
+field FileUploaded.path string
+field FileUploaded.placed bool
+field FolderEntry.git bool
+field FolderEntry.name string
+field FolderListParams.hidden bool
+field FolderListParams.path string
+field FolderListParams.withFiles bool
+field FolderListing.fileNames []FolderEntry
+field FolderListing.files int
+field FolderListing.folders []FolderEntry
+field FolderListing.git bool
+field FolderListing.home string
+field FolderListing.parent string
+field FolderListing.path string
+field FolderRef.path string
+field FoundSkill.description string
+field FoundSkill.name string
+field FoundSkill.path string
+field GridArea.col int
+field GridArea.colSpan int
+field GridArea.name string
+field GridArea.row int
+field GridArea.rowSpan int
+field Header.name string
+field Header.value string
+field Hello.agent string
+field Hello.protocol int
+field HibernatePlan.blocked string
+field HibernatePlan.cpu float64
+field HibernatePlan.display bool
+field HibernatePlan.id string
+field HibernatePlan.name string
+field HibernatePlan.ports []int
+field HibernatePlan.procs []HibernateProc
+field HibernatePlan.rss uint64
+field HibernatePlan.working bool
+field HibernatePrefs.neverByDefault bool
+field HibernateProc.left bool
+field HibernateProc.name string
+field HibernateProc.pid int
+field HibernateProc.rss uint64
+field HibernateState.manual bool
+field HibernateState.since time.Time
+field HistoryParams.limit int
+field HistoryParams.project string
+field HooksParams.project string
+field HooksState.allowed bool
+field HooksState.hooks []ProjectHook
+field HooksState.project string
+field HostUsage.cpu float64
+field HostUsage.cpus int
+field HostUsage.diskTotal uint64
+field HostUsage.diskUsed uint64
+field HostUsage.memTotal uint64
+field HostUsage.memUsed uint64
+field Issue.author string
+field Issue.body string
+field Issue.labels []string
+field Issue.number int
+field Issue.title string
+field Issue.url string
+field IssuesParams.project string
+field IssuesParams.search string
+field MCPTest.error string
+field MCPTest.ok bool
+field MCPTest.protocol string
+field MCPTest.server string
+field MCPTest.stderr string
+field MCPTest.took int64
+field MCPTest.tools []MCPTool
+field MCPTool.description string
+field MCPTool.name string
+field Note.body string
+field NoteAsset.data []byte
+field NoteAssetRef.ref string
+field NoteAttachParams.id string
+field NoteAttachParams.projects []NoteProject
+field NoteChatLog.messages []NoteChatMessage
+field NoteChatLog.note string
+field NoteChatLog.session string
+field NoteChatLog.updated time.Time
+field NoteChatMessage.agent string
+field NoteChatMessage.host string
+field NoteChatMessage.role string
+field NoteChatMessage.session string
+field NoteChatMessage.text string
+field NoteChatMessage.time time.Time
+field NoteChatParams.agent string
+field NoteChatParams.effort string
+field NoteChatParams.id string
+field NoteChatParams.model string
+field NoteChatParams.new bool
+field NoteChatParams.prompt string
+field NoteDetachParams.all bool
+field NoteDetachParams.id string
+field NoteDetachParams.refs []string
+field NoteExportBytesParams.offset int64
+field NoteExportBytesParams.path string
+field NoteExportParams.all bool
+field NoteExportParams.format string
+field NoteExportParams.group string
+field NoteExportParams.ids []string
+field NoteExportParams.out string
+field NoteExported.name string
+field NoteExported.notes int
+field NoteExported.path string
+field NoteExported.size int64
+field NoteGroup.color string
+field NoteGroup.folded bool
+field NoteGroup.icon string
+field NoteGroup.iconReview bool
+field NoteGroup.name string
+field NoteGroupMoveParams.before string
+field NoteGroupMoveParams.name string
+field NoteGroupRef.name string
+field NoteGroupSaveParams.from string
+field NoteGroupSaveParams.group NoteGroup
+field NoteIconPrefs.favorites []string
+field NoteIconPrefs.libraries []string
+field NoteIconPrefs.recent []string
+field NoteImportEntry.action string
+field NoteImportEntry.group string
+field NoteImportEntry.path []string
+field NoteImportEntry.title string
+field NoteImportIssue.what string
+field NoteImportIssue.where string
+field NoteImportParams.dryRun bool
+field NoteImportParams.from string
+field NoteImportParams.group string
+field NoteImportParams.mode string
+field NoteImportParams.path string
+field NoteImportParams.project string
+field NoteImportParams.rowsAsNotes bool
+field NoteImportParams.token string
+field NoteImportPreview.assets int
+field NoteImportPreview.conflicts []string
+field NoteImportPreview.from string
+field NoteImportPreview.notes []NoteImportEntry
+field NoteImportRef.id string
+field NoteImportReport.imported int
+field NoteImportReport.notes []string
+field NoteImportReport.overwritten int
+field NoteImportReport.skipped []NoteImportIssue
+field NoteImportReport.unconverted []NoteImportIssue
+field NoteImportStatus.done int
+field NoteImportStatus.dryRun bool
+field NoteImportStatus.error string
+field NoteImportStatus.from string
+field NoteImportStatus.id string
+field NoteImportStatus.phase string
+field NoteImportStatus.preview *NoteImportPreview
+field NoteImportStatus.report *NoteImportReport
+field NoteImportStatus.source string
+field NoteImportStatus.started time.Time
+field NoteImportStatus.state string
+field NoteImportStatus.total int
+field NoteInfo.agent string
+field NoteInfo.created time.Time
+field NoteInfo.group string
+field NoteInfo.icon string
+field NoteInfo.iconReview bool
+field NoteInfo.id string
+field NoteInfo.order int
+field NoteInfo.parent string
+field NoteInfo.projects []NoteProject
+field NoteInfo.title string
+field NoteInfo.updated time.Time
+field NoteMoveParams.before string
+field NoteMoveParams.id string
+field NoteMoveParams.parent string
+field NoteProject.host string
+field NoteProject.hostName string
+field NoteProject.name string
+field NoteProject.path string
+field NoteProject.ref string
+field NoteProject.remote string
+field NoteProposal.before string
+field NoteProposal.created time.Time
+field NoteProposal.id string
+field NoteProposal.note Note
+field NoteProposal.session string
+field NoteRef.id string
+field NoteSetAgentParams.agent string
+field NoteSetAgentParams.id string
+field NoteSetGroupParams.group string
+field NoteSetGroupParams.id string
+field NoteStage.data []byte
+field NoteStage.name string
+field NoteStage.path string
+field NoteStaged.path string
+field NoteVersion.id string
+field NoteVersion.size int
+field NoteVersion.time time.Time
+field NoteVersion.title string
+field NoteVersionRef.id string
+field NoteVersionRef.version string
+field NotifySettings.badge bool
+field NotifySettings.mutedAgents []string
+field NotifySettings.mutedSessions []string
+field NotifySettings.noBanner bool
+field NotifySettings.off bool
+field NotifySettings.quiet bool
+field NotifySettings.quietFrom string
+field NotifySettings.quietTo string
+field NotifySettings.sounds map[string]string
+field NotifySettings.volume float64
+field NotifySettings.watched bool
+field NotifySoundFile.data []byte
+field NotifySoundFile.name string
+field NotifySoundParams.kind string
+field NotifySoundParams.session string
+field NotifySoundParams.text string
+field PRParams.base string
+field PRParams.body string
+field PRParams.session string
+field PRParams.title string
+field Pipeline.base string
+field Pipeline.branch string
+field Pipeline.created time.Time
+field Pipeline.error string
+field Pipeline.id string
+field Pipeline.project string
+field Pipeline.skipPermissions bool
+field Pipeline.stages []PipelineStageRun
+field Pipeline.status string
+field Pipeline.task string
+field PipelineRef.id string
+field PipelineStage.agent string
+field PipelineStage.name string
+field PipelineStage.prompt string
+field PipelineStageRun.ended time.Time
+field PipelineStageRun.output string
+field PipelineStageRun.session string
+field PipelineStageRun.started time.Time
+field PipelineStageRun.status string
+field PipelineStartParams.base string
+field PipelineStartParams.branch string
+field PipelineStartParams.project string
+field PipelineStartParams.skipPermissions bool
+field PipelineStartParams.stages []PipelineStage
+field PipelineStartParams.task string
+field PluginRun.ok bool
+field PluginRun.output string
+field PluginRunParams.action string
+field PluginRunParams.arg string
+field Port.addr string
+field Port.pid int
+field Port.port int
+field Port.process string
+field PortsChange.opened []Port
+field PortsChange.ports []Port
+field PortsChange.session string
+field ProjectArrangeParams.before string
+field ProjectArrangeParams.group string
+field ProjectArrangeParams.path string
+field ProjectCloneParams.branch string
+field ProjectCloneParams.depth int
+field ProjectCloneParams.dir string
+field ProjectCloneParams.name string
+field ProjectCloneParams.submodules bool
+field ProjectCloneParams.url string
+field ProjectContext.branch string
+field ProjectContext.cached bool
+field ProjectContext.host string
+field ProjectContext.hostName string
+field ProjectContext.lastCommit string
+field ProjectContext.name string
+field ProjectContext.path string
+field ProjectContext.readme string
+field ProjectContext.ref string
+field ProjectContext.remote string
+field ProjectContext.stack []string
+field ProjectContext.taken time.Time
+field ProjectContext.tree []string
+field ProjectContextParams.host string
+field ProjectContextParams.path string
+field ProjectContextParams.ref string
+field ProjectCopyParams.env bool
+field ProjectCopyParams.path string
+field ProjectCopyParams.project string
+field ProjectCopyParams.to string
+field ProjectCopyResult.link ProjectLink
+field ProjectCopyResult.path string
+field ProjectDetail.branches []string
+field ProjectDetail.copy []string
+field ProjectDetail.setup string
+field ProjectEnd.daemon string
+field ProjectEnd.host string
+field ProjectEnd.path string
+field ProjectFile.file string
+field ProjectFile.size int64
+field ProjectFile.text string
+field ProjectFile.truncated bool
+field ProjectFileParams.path string
+field ProjectFileParams.project string
+field ProjectGroupMoveParams.before string
+field ProjectGroupMoveParams.group string
+field ProjectGroupRenameParams.from string
+field ProjectGroupRenameParams.to string
+field ProjectHistoryEntry.err string
+field ProjectHistoryEntry.kind string
+field ProjectHistoryEntry.link string
+field ProjectHistoryEntry.ok bool
+field ProjectHistoryEntry.project string
+field ProjectHistoryEntry.summary string
+field ProjectHistoryEntry.time time.Time
+field ProjectHook.event string
+field ProjectHook.run string
+field ProjectHook.webhook string
+field ProjectIdentity.id string
+field ProjectIdentity.path string
+field ProjectInfo.branch string
+field ProjectInfo.group string
+field ProjectInfo.isGit bool
+field ProjectInfo.name string
+field ProjectInfo.path string
+field ProjectKeepCopyParams.path string
+field ProjectKeepCopyParams.project string
+field ProjectKeepCopyParams.suffix string
+field ProjectLink.all bool
+field ProjectLink.auto bool
+field ProjectLink.bandwidth int
+field ProjectLink.created time.Time
+field ProjectLink.deletes string
+field ProjectLink.direction string
+field ProjectLink.env bool
+field ProjectLink.exclude []string
+field ProjectLink.id string
+field ProjectLink.include []string
+field ProjectLink.interval int
+field ProjectLink.large string
+field ProjectLink.largeMB int
+field ProjectLink.name string
+field ProjectLink.pauseBattery bool
+field ProjectLink.pauseBusy bool
+field ProjectLink.project string
+field ProjectLink.realtime bool
+field ProjectLink.source ProjectEnd
+field ProjectLink.target ProjectEnd
+field ProjectLinkRef.id string
+field ProjectLinkReport.base json.RawMessage
+field ProjectLinkReport.entry ProjectHistoryEntry
+field ProjectLinkReport.link string
+field ProjectLinkReport.status ProjectLinkStatus
+field ProjectLinkState.status ProjectLinkStatus
+field ProjectLinkStatus.conflicts []ProjectSyncConflict
+field ProjectLinkStatus.err string
+field ProjectLinkStatus.last time.Time
+field ProjectLinkStatus.next time.Time
+field ProjectLinkStatus.received int
+field ProjectLinkStatus.sent int
+field ProjectLinksParams.project string
+field ProjectReadParams.file string
+field ProjectReadParams.host string
+field ProjectReadParams.path string
+field ProjectRef.path string
+field ProjectSyncApplyParams.branches map[string]string
+field ProjectSyncApplyParams.delete []string
+field ProjectSyncApplyParams.deleteIn map[string][]string
+field ProjectSyncApplyParams.from string
+field ProjectSyncApplyParams.id string
+field ProjectSyncApplyParams.project string
+field ProjectSyncConflict.binary bool
+field ProjectSyncConflict.found time.Time
+field ProjectSyncConflict.gone []bool
+field ProjectSyncConflict.path string
+field ProjectSyncConflict.sides []SyncFile
+field ProjectSyncPackParams.branches []string
+field ProjectSyncPackParams.files []string
+field ProjectSyncPackParams.have []string
+field ProjectSyncPackParams.project string
+field ProjectSyncPackParams.sessions []SyncSessionPack
+field ProjectSyncResult.notes []string
+field ProjectSyncResult.sessions []SessionInfo
+field ProjectSyncScanParams.all bool
+field ProjectSyncScanParams.env bool
+field ProjectSyncScanParams.exclude []string
+field ProjectSyncScanParams.filesOnly bool
+field ProjectSyncScanParams.include []string
+field ProjectSyncScanParams.project string
+field ProjectSyncState.branches map[string]string
+field ProjectSyncState.files []SyncFile
+field ProjectSyncState.git bool
+field ProjectSyncState.path string
+field ProjectSyncState.sessions []SyncSession
+field ProjectWatchParams.off bool
+field ProjectWatchParams.project string
+field PullRequest.url string
+field Request.id uint64
+field Request.method string
+field Request.params json.RawMessage
+field ResizeParams.cellHeight int
+field ResizeParams.cellWidth int
+field ResizeParams.cols int
+field ResizeParams.rows int
+field ResizeParams.stream uint32
+field Response.error string
+field Response.id uint64
+field Response.result json.RawMessage
+field ReviewRef.base string
+field ReviewRef.session string
+field ReviewStatus.ahead int
+field ReviewStatus.base string
+field ReviewStatus.bases []string
+field ReviewStatus.behind int
+field ReviewStatus.branch string
+field ReviewStatus.canMerge bool
+field ReviewStatus.dir string
+field ReviewStatus.hasGH bool
+field ReviewStatus.projectDirty bool
+field ReviewStatus.remote string
+field ReviewStatus.uncommitted int
+field ReviewStatus.unpushed int
+field ReviewStatus.upstream string
+field ReviewStatus.worktree bool
+field RunCommand.command string
+field RunCommand.name string
+field RunCommand.source string
+field SessionAutoHibernateParams.default bool
+field SessionAutoHibernateParams.id string
+field SessionAutoHibernateParams.never bool
+field SessionBudgetParams.id string
+field SessionBudgetParams.seconds int64
+field SessionCreateParams.account string
+field SessionCreateParams.agent string
+field SessionCreateParams.base string
+field SessionCreateParams.branch string
+field SessionCreateParams.branchMode string
+field SessionCreateParams.budget int64
+field SessionCreateParams.canvasFor string
+field SessionCreateParams.cols int
+field SessionCreateParams.command []string
+field SessionCreateParams.creds []string
+field SessionCreateParams.dir string
+field SessionCreateParams.display bool
+field SessionCreateParams.effort string
+field SessionCreateParams.env []string
+field SessionCreateParams.features map[string]bool
+field SessionCreateParams.group string
+field SessionCreateParams.model string
+field SessionCreateParams.name string
+field SessionCreateParams.notesFor string
+field SessionCreateParams.parent string
+field SessionCreateParams.project string
+field SessionCreateParams.prompt string
+field SessionCreateParams.resume string
+field SessionCreateParams.rows int
+field SessionCreateParams.runSetup bool
+field SessionCreateParams.shell string
+field SessionCreateParams.signIn bool
+field SessionCreateParams.skipPermissions bool
+field SessionEnvVar.name string
+field SessionEnvVar.value string
+field SessionHibernateParams.dryRun bool
+field SessionHibernateParams.force bool
+field SessionHibernateParams.from string
+field SessionHibernateParams.idle bool
+field SessionHibernateParams.ids []string
+field SessionHibernateParams.whenDone bool
+field SessionHibernateResult.hibernated []string
+field SessionHibernateResult.plans []HibernatePlan
+field SessionHibernateResult.waiting []string
+field SessionInfo.account string
+field SessionInfo.active bool
+field SessionInfo.agent string
+field SessionInfo.branch string
+field SessionInfo.budget int64
+field SessionInfo.canvasFor string
+field SessionInfo.command []string
+field SessionInfo.created time.Time
+field SessionInfo.creds []string
+field SessionInfo.dir string
+field SessionInfo.display int
+field SessionInfo.displayScale int
+field SessionInfo.exitCode int
+field SessionInfo.exited bool
+field SessionInfo.group string
+field SessionInfo.hibernated bool
+field SessionInfo.hibernatedHow *HibernateState
+field SessionInfo.id string
+field SessionInfo.name string
+field SessionInfo.noAutoHibernate bool
+field SessionInfo.note string
+field SessionInfo.notesFor string
+field SessionInfo.overBudget bool
+field SessionInfo.parent string
+field SessionInfo.project string
+field SessionInfo.prompt string
+field SessionInfo.queued bool
+field SessionInfo.restored bool
+field SessionInfo.skipPermissions bool
+field SessionInfo.state string
+field SessionInfo.title string
+field SessionInfo.worked int64
+field SessionInfo.worktree bool
+field SessionInputParams.enter bool
+field SessionInputParams.id string
+field SessionInputParams.paste bool
+field SessionInputParams.text string
+field SessionModeParams.id string
+field SessionModeParams.mode string
+field SessionNoteParams.id string
+field SessionNoteParams.note string
+field SessionPorts.ports []Port
+field SessionPorts.supported bool
+field SessionRef.id string
+field SessionRewindParams.back int
+field SessionRewindParams.id string
+field SessionRewindParams.text string
+field SessionScreen.text string
+field SessionStateParams.id string
+field SessionStateParams.state string
+field SessionTokens.cacheCreate int64
+field SessionTokens.cacheRead int64
+field SessionTokens.id string
+field SessionTokens.input int64
+field SessionTokens.model string
+field SessionTokens.output int64
+field SessionUsage.id string
+field SetupScan.arch string
+field SetupScan.distro string
+field SetupScan.gitEmail string
+field SetupScan.gitName string
+field SetupScan.github bool
+field SetupScan.os string
+field SetupScan.packages string
+field SetupScan.release string
+field SetupScan.root bool
+field SetupScan.tools map[string]string
+field ShellInfo.login bool
+field ShellInfo.name string
+field ShellInfo.path string
+field ShellList.default string
+field ShellList.shells []ShellInfo
+field ShellSetParams.path string
+field SkillFetch.id string
+field SkillFetch.skills []FoundSkill
+field SkillFetchParams.url string
+field SkillInstallParams.agent string
+field SkillInstallParams.id string
+field SkillInstallParams.paths []string
+field SkillInstallParams.project string
+field StopAgentsResult.stopped int
+field StreamRef.stream uint32
+field SyncApplied.from string
+field SyncApplied.paths []string
+field SyncChange.data []byte
+field SyncChange.delete bool
+field SyncChange.expect string
+field SyncChange.path string
+field SyncConflict.created time.Time
+field SyncConflict.id string
+field SyncConflict.path string
+field SyncConflict.title string
+field SyncConflict.versions []SyncVersion
+field SyncEntry.hash string
+field SyncEntry.mod time.Time
+field SyncEntry.path string
+field SyncEntry.size int64
+field SyncFile.hash string
+field SyncFile.modified time.Time
+field SyncFile.path string
+field SyncFile.size int64
+field SyncManifest.files []SyncEntry
+field SyncManifest.id string
+field SyncManifest.name string
+field SyncPeerStatus.conflicts int
+field SyncPeerStatus.err string
+field SyncPeerStatus.last time.Time
+field SyncPeerStatus.merged int
+field SyncPeerStatus.name string
+field SyncPeerStatus.peer string
+field SyncPeerStatus.received int
+field SyncPeerStatus.sent int
+field SyncReadParams.paths []string
+field SyncReadResult.files map[string][]byte
+field SyncResolveParams.id string
+field SyncResolveParams.keep string
+field SyncSession.agent string
+field SyncSession.branch string
+field SyncSession.conversation string
+field SyncSession.files []SyncFile
+field SyncSession.id string
+field SyncSession.key string
+field SyncSession.name string
+field SyncSession.parent string
+field SyncSession.running bool
+field SyncSession.said int64
+field SyncSession.talk string
+field SyncSession.worktree bool
+field SyncSessionPack.files []string
+field SyncSessionPack.id string
+field SyncSessionPack.new bool
+field SyncSessionPack.talk bool
+field SyncStatus.conflicts int
+field SyncStatus.files int
+field SyncStatus.id string
+field SyncStatus.name string
+field SyncStatus.peers []SyncPeerStatus
+field SyncStatus.size int64
+field SyncTrashItem.deleted time.Time
+field SyncTrashItem.id string
+field SyncTrashItem.path string
+field SyncTrashItem.title string
+field SyncVersion.data []byte
+field SyncVersion.deleted bool
+field SyncVersion.host string
+field SyncWriteParams.changes []SyncChange
+field SyncWriteParams.from string
+field SyncWriteResult.applied []string
+field SyncWriteResult.stale []string
+field TokenReport.sessions []SessionTokens
+field TrafficAction.body string
+field TrafficAction.bodyFile string
+field TrafficAction.break string
+field TrafficAction.delayMs int
+field TrafficAction.echo bool
+field TrafficAction.fail string
+field TrafficAction.headers []Header
+field TrafficAction.keepHost bool
+field TrafficAction.kind string
+field TrafficAction.messages []string
+field TrafficAction.request *TrafficTransform
+field TrafficAction.response *TrafficTransform
+field TrafficAction.status int
+field TrafficAction.target string
+field TrafficAction.throttle int
+field TrafficAction.times int
+field TrafficAttachParams.agent bool
+field TrafficAttachParams.device string
+field TrafficAttachParams.kind string
+field TrafficAttachParams.label string
+field TrafficAttachParams.program string
+field TrafficAttachParams.session string
+field TrafficAttachParams.tab string
+field TrafficBody.contentType string
+field TrafficBody.data []byte
+field TrafficBody.encoding string
+field TrafficBody.total int64
+field TrafficBody.truncated bool
+field TrafficBodyParams.id int64
+field TrafficBodyParams.offset int64
+field TrafficBodyParams.raw bool
+field TrafficBodyParams.reveal bool
+field TrafficBodyParams.size int
+field TrafficBodyParams.which string
+field TrafficCA.bundle string
+field TrafficCA.file string
+field TrafficCA.fingerprint string
+field TrafficCA.pem string
+field TrafficCA.spki string
+field TrafficCapture.filter string
+field TrafficCapture.gaps []TrafficGap
+field TrafficCapture.reason string
+field TrafficCapture.rules string
+field TrafficCapture.since time.Time
+field TrafficCapture.skipped int
+field TrafficCapture.sources []string
+field TrafficCapture.state string
+field TrafficCaptureParams.action string
+field TrafficCaptureParams.breakpoints string
+field TrafficCaptureParams.filter string
+field TrafficCaptureParams.rules string
+field TrafficCaptureParams.sources []string
+field TrafficCapturePrefs.autoCount int
+field TrafficCapturePrefs.autoMinutes int
+field TrafficCapturePrefs.breakpoints string
+field TrafficCapturePrefs.rules string
+field TrafficClearParams.filter string
+field TrafficClearParams.pinned bool
+field TrafficClientCert.cert string
+field TrafficClientCert.host string
+field TrafficClientCert.key string
+field TrafficEdit.body *[]byte
+field TrafficEdit.headers []Header
+field TrafficEdit.method string
+field TrafficEdit.status int
+field TrafficEdit.url string
+field TrafficEnv.env []string
+field TrafficEnv.shell string
+field TrafficEnv.source string
+field TrafficEnv.unset string
+field TrafficEnvParams.session string
+field TrafficEnvParams.source string
+field TrafficExchange.masked bool
+field TrafficExchange.remote string
+field TrafficExchange.reqHeaders []Header
+field TrafficExchange.reqKept bool
+field TrafficExchange.reqType string
+field TrafficExchange.resHeaders []Header
+field TrafficExchange.resKept bool
+field TrafficExchange.resType string
+field TrafficExchange.timings TrafficTimings
+field TrafficExchange.tls *TrafficTLS
+field TrafficExchange.trailers []Header
+field TrafficExportParams.filter string
+field TrafficExportParams.ids []int64
+field TrafficExportParams.reveal bool
+field TrafficGap.from time.Time
+field TrafficGap.partial bool
+field TrafficGap.skipped int
+field TrafficGap.state string
+field TrafficGap.to time.Time
+field TrafficImportParams.id string
+field TrafficList.exchanges []TrafficSummary
+field TrafficList.more bool
+field TrafficListParams.after int64
+field TrafficListParams.filter string
+field TrafficListParams.limit int
+field TrafficMCP.added []string
+field TrafficMCP.notes []string
+field TrafficMatch.body string
+field TrafficMatch.bodyMode string
+field TrafficMatch.headers map[string]string
+field TrafficMatch.host string
+field TrafficMatch.json map[string]string
+field TrafficMatch.methods []string
+field TrafficMatch.path string
+field TrafficMatch.pathMode string
+field TrafficMatch.query map[string]string
+field TrafficMatch.session string
+field TrafficMatch.source string
+field TrafficMatch.ws bool
+field TrafficMessage.data []byte
+field TrafficMessage.event string
+field TrafficMessage.kind string
+field TrafficMessage.mocked bool
+field TrafficMessage.sent bool
+field TrafficMessage.size int64
+field TrafficMessage.time time.Time
+field TrafficMessagesParams.id int64
+field TrafficMessagesParams.limit int
+field TrafficMessagesParams.offset int
+field TrafficPaused.body []byte
+field TrafficPaused.headers []Header
+field TrafficPaused.id int64
+field TrafficPaused.method string
+field TrafficPaused.session string
+field TrafficPaused.since time.Time
+field TrafficPaused.source string
+field TrafficPaused.stage string
+field TrafficPaused.status int
+field TrafficPaused.url string
+field TrafficPinParams.ids []int64
+field TrafficPinParams.pinned bool
+field TrafficProgram.id string
+field TrafficProgram.name string
+field TrafficProgram.path string
+field TrafficRef.id int64
+field TrafficRef.reveal bool
+field TrafficReplace.from string
+field TrafficReplace.regex bool
+field TrafficReplace.to string
+field TrafficResumeParams.drop bool
+field TrafficResumeParams.edit *TrafficEdit
+field TrafficResumeParams.id int64
+field TrafficReverse.port int
+field TrafficReverse.source string
+field TrafficReverseParams.port int
+field TrafficReverseParams.session string
+field TrafficRule.action TrafficAction
+field TrafficRule.enabled bool
+field TrafficRule.hits int
+field TrafficRule.id string
+field TrafficRule.match TrafficMatch
+field TrafficRule.name string
+field TrafficRule.problem string
+field TrafficRules.filters []string
+field TrafficRules.project string
+field TrafficRules.rules []TrafficRule
+field TrafficRulesParams.project string
+field TrafficSendParams.body []byte
+field TrafficSendParams.direct bool
+field TrafficSendParams.headers []Header
+field TrafficSendParams.method string
+field TrafficSendParams.project string
+field TrafficSendParams.session string
+field TrafficSendParams.url string
+field TrafficSettings.clientCerts []TrafficClientCert
+field TrafficSettings.hosts map[string]string
+field TrafficSettings.insecure []string
+field TrafficSettings.maxExchanges int
+field TrafficSettings.maxMB int
+field TrafficSettings.notifyErrors bool
+field TrafficSettings.upstream string
+field TrafficStatus.browsers []TrafficProgram
+field TrafficStatus.bytes int64
+field TrafficStatus.display bool
+field TrafficStatus.error string
+field TrafficStatus.exchanges int
+field TrafficStatus.fingerprint string
+field TrafficStatus.port int
+field TrafficSummary.duration int64
+field TrafficSummary.error string
+field TrafficSummary.host string
+field TrafficSummary.id int64
+field TrafficSummary.kind string
+field TrafficSummary.messages int
+field TrafficSummary.method string
+field TrafficSummary.mocked bool
+field TrafficSummary.path string
+field TrafficSummary.pinned bool
+field TrafficSummary.proto string
+field TrafficSummary.reqSize int64
+field TrafficSummary.resSize int64
+field TrafficSummary.rule string
+field TrafficSummary.session string
+field TrafficSummary.source string
+field TrafficSummary.started time.Time
+field TrafficSummary.state string
+field TrafficSummary.status int
+field TrafficSummary.type string
+field TrafficSummary.url string
+field TrafficTLS.alpn string
+field TrafficTLS.cipher string
+field TrafficTLS.serverName string
+field TrafficTLS.version string
+field TrafficTarget.attached time.Time
+field TrafficTarget.device string
+field TrafficTarget.kind string
+field TrafficTarget.label string
+field TrafficTarget.note string
+field TrafficTarget.program string
+field TrafficTarget.proxy string
+field TrafficTarget.session string
+field TrafficTarget.source string
+field TrafficTarget.tab string
+field TrafficTargetRef.port int
+field TrafficTargetRef.source string
+field TrafficTimings.connect int64
+field TrafficTimings.done int64
+field TrafficTimings.firstByte int64
+field TrafficTimings.sent int64
+field TrafficTimings.tls int64
+field TrafficTransform.body *string
+field TrafficTransform.json map[string]string
+field TrafficTransform.removeHeaders []string
+field TrafficTransform.replace []TrafficReplace
+field TrafficTransform.setHeaders []Header
+field TrafficTransform.status int
+field TrafficTransform.url string
+field Transcript.contextTokens int64
+field Transcript.contextWindow int64
+field Transcript.conversation string
+field Transcript.effort string
+field Transcript.entries []TranscriptEntry
+field Transcript.mode string
+field Transcript.model string
+field Transcript.reason string
+field Transcript.reset bool
+field Transcript.rev int64
+field Transcript.supported bool
+field TranscriptEntry.added int
+field TranscriptEntry.detail string
+field TranscriptEntry.done bool
+field TranscriptEntry.durationMs int64
+field TranscriptEntry.failed bool
+field TranscriptEntry.index int
+field TranscriptEntry.kind string
+field TranscriptEntry.new string
+field TranscriptEntry.old string
+field TranscriptEntry.removed int
+field TranscriptEntry.result string
+field TranscriptEntry.rev int64
+field TranscriptEntry.text string
+field TranscriptEntry.time time.Time
+field TranscriptParams.before int
+field TranscriptParams.id string
+field TranscriptParams.since int64
+field TranscriptParams.tail int
+field TransferInfo.files int
+field TransferInfo.id string
+field TransferInfo.sessions int
+field TransferInfo.size int64
+field TransferPackParams.env bool
+field TransferPackParams.project string
+field TransferPackParams.sessions []string
+field TransferPart.data []byte
+field TransferPart.id string
+field TransferPart.offset int64
+field TransferReadParams.id string
+field TransferReadParams.offset int64
+field TransferReadParams.size int
+field TransferRef.id string
+field TransferResult.notes []string
+field TransferResult.project ProjectInfo
+field TransferResult.sessions []SessionInfo
+field TransferUnpackParams.dest string
+field TransferUnpackParams.id string
+field TunnelInfo.stream uint32
+field TunnelOpenParams.port int
+field TunnelOpenParams.session string
+field Usage.cpu float64
+field Usage.procs int
+field Usage.rss uint64
+field VaultAsk.account string
+field VaultAsk.action string
+field VaultAsk.command string
+field VaultAsk.data []byte
+field VaultAsk.fields map[string]string
+field VaultAsk.flags uint32
+field VaultAsk.host string
+field VaultAsk.keyBlob []byte
+field VaultAsk.name string
+field VaultAsk.names []string
+field VaultAsk.platform string
+field VaultAsk.session string
+field VaultAsk.type string
+field VaultAttach.names []string
+field VaultAttach.session string
+field VaultAuditEntry.action string
+field VaultAuditEntry.allowed bool
+field VaultAuditEntry.credential string
+field VaultAuditEntry.detail string
+field VaultAuditEntry.session string
+field VaultAuditEntry.time time.Time
+field VaultAuditParams.limit int
+field VaultCopy.data []byte
+field VaultCopy.index VaultIndex
+field VaultFound.account string
+field VaultFound.fields map[string]string
+field VaultFound.name string
+field VaultFound.note string
+field VaultFound.platform string
+field VaultFound.source string
+field VaultFound.type string
+field VaultIndex.credentials []CredentialInfo
+field VaultIndex.present bool
+field VaultIndex.updated time.Time
+field VaultLend.credentials []string
+field VaultLend.env map[string]string
+field VaultLend.files map[string]string
+field VaultLend.message string
+field VaultLend.secret string
+field VaultLend.sigFormat string
+field VaultLend.signature []byte
+field VaultLend.username string
+field VaultReply.error string
+field VaultReply.id string
+field VaultReply.lend VaultLend
+field VaultRequest.agent string
+field VaultRequest.hostname string
+field VaultRequest.id string
+field VaultRequest.project string
+field VaultRequest.sessionName string
+field WorktreeCreateParams.base string
+field WorktreeCreateParams.branch string
+field WorktreeCreateParams.name string
+field WorktreeCreateParams.repo string
+field WorktreeInfo.branch string
+field WorktreeInfo.created bool
+field WorktreeInfo.path string
+frame event=4
+frame hello=1
+frame input=7
+frame output=5
+frame request=2
+frame resize=6
+frame response=3
+frame tunnel-ack=10
+frame tunnel-close=9
+frame tunnel-data=8
+method account.add
+method account.list
+method account.remove
+method agent.history
+method agent.list
+method agentapi.clear
+method agentapi.list
+method agentapi.restore
+method agentapi.set
+method android.act
+method android.adb.accept
+method android.adb.close
+method android.adb.listen
+method android.adb.open
+method android.connect
+method android.controls
+method android.forward.open
+method android.logcat
+method android.mirror
+method android.mirror.input
+method android.project
+method android.proxy
+method android.run
+method android.screenshot
+method android.setup
+method android.start
+method android.status
+method android.stop
+method app.reply
+method app.serve
+method automation.list
+method automation.remove
+method automation.run
+method automation.save
+method autopush.list
+method autopush.now
+method autopush.set
+method browser.act
+method browser.reply
+method browser.serve
+method canvas.asset
+method canvas.assetGet
+method canvas.chat
+method canvas.chatLog
+method canvas.chatMark
+method canvas.comment
+method canvas.comments
+method canvas.control
+method canvas.create
+method canvas.delete
+method canvas.edit
+method canvas.get
+method canvas.history
+method canvas.list
+method canvas.redo
+method canvas.render
+method canvas.renderReply
+method canvas.restore
+method canvas.share
+method canvas.shares
+method canvas.undo
+method canvas.version
+method catalog.list
+method checks.list
+method checks.run
+method checks.set
+method checks.stop
+method commands.list
+method commands.run
+method commands.save
+method credits.get
+method daemon.info
+method daemon.log
+method daemon.restart
+method daemon.setSettings
+method daemon.settings
+method daemon.stats
+method daemon.stopAgents
+method display.scale
+method env.delete
+method env.export
+method env.import
+method env.mcp.test
+method env.plugins
+method env.plugins.run
+method env.project.delete
+method env.project.export
+method env.project.import
+method env.project.scan
+method env.scan
+method env.skill.fetch
+method env.skill.install
+method features.answer
+method features.guide
+method features.lazy
+method features.list
+method features.preset
+method features.request
+method features.set
+method file.bytes
+method file.change
+method file.find
+method file.list
+method file.read
+method file.stat
+method file.upload
+method folder.list
+method folder.make
+method hooks.get
+method hooks.set
+method note.accept
+method note.asset
+method note.attach
+method note.chat
+method note.chatLog
+method note.delete
+method note.detach
+method note.export
+method note.export.bytes
+method note.get
+method note.group.delete
+method note.group.move
+method note.group.save
+method note.groups
+method note.history
+method note.iconPrefs
+method note.iconPrefs.save
+method note.import
+method note.import.cancel
+method note.import.status
+method note.imports
+method note.list
+method note.move
+method note.proposals
+method note.propose
+method note.reject
+method note.restore
+method note.save
+method note.setAgent
+method note.setGroup
+method note.stage
+method note.version
+method notify.get
+method notify.set
+method notify.sound
+method notify.soundRead
+method notify.soundSave
+method pipeline.cancel
+method pipeline.list
+method pipeline.remove
+method pipeline.start
+method project.add
+method project.arrange
+method project.clone
+method project.clone.cancel
+method project.clone.prefs
+method project.clone.status
+method project.clones
+method project.conflicts
+method project.context
+method project.copy.request
+method project.file.read
+method project.find
+method project.group.move
+method project.group.rename
+method project.id
+method project.inspect
+method project.issues
+method project.keepcopy
+method project.list
+method project.read
+method project.remove
+method project.watch
+method projectlink.base
+method projectlink.delete
+method projectlink.history
+method projectlink.list
+method projectlink.report
+method projectlink.save
+method projectlink.sync.now
+method projectsync.apply
+method projectsync.pack
+method projectsync.scan
+method review.commit
+method review.diff
+method review.discard
+method review.merge
+method review.pr
+method review.push
+method review.status
+method session.attach
+method session.autoHibernate
+method session.budget
+method session.clear
+method session.commands
+method session.continue
+method session.create
+method session.detach
+method session.display
+method session.displayStop
+method session.fanOut
+method session.hibernate
+method session.hibernatePrefs
+method session.input
+method session.kill
+method session.list
+method session.mode
+method session.note
+method session.ports
+method session.resize
+method session.rewind
+method session.screen
+method session.state
+method session.transcript
+method session.wake
+method sessionEnv.list
+method sessionEnv.set
+method setup.scan
+method shell.list
+method shell.set
+method sync.conflicts
+method sync.forget
+method sync.manifest
+method sync.read
+method sync.report
+method sync.request
+method sync.resolve
+method sync.restore
+method sync.status
+method sync.trash
+method sync.write
+method traffic.attach
+method traffic.attached
+method traffic.body
+method traffic.ca
+method traffic.ca.new
+method traffic.capture
+method traffic.capture.prefs
+method traffic.capture.prefs.set
+method traffic.capture.set
+method traffic.clear
+method traffic.detach
+method traffic.env
+method traffic.export
+method traffic.get
+method traffic.import
+method traffic.list
+method traffic.mcp
+method traffic.messages
+method traffic.paused
+method traffic.pin
+method traffic.resume
+method traffic.reverse
+method traffic.rules
+method traffic.rules.set
+method traffic.send
+method traffic.settings
+method traffic.settings.set
+method traffic.status
+method traffic.tunnel
+method transfer.discard
+method transfer.pack
+method transfer.read
+method transfer.unpack
+method transfer.write
+method tunnel.open
+method usage.tokens
+method vault.ask
+method vault.attach
+method vault.audit
+method vault.get
+method vault.index
+method vault.put
+method vault.reply
+method vault.scan
+method vault.serve
+method worktree.create
+value ActionBreakpoint=breakpoint
+value ActionFail=fail
+value ActionForward=forward
+value ActionMock=mock
+value ActionPass=pass
+value ActionTransform=transform
+value AgentAPIKeepKey= keep
+value AndroidLongPress=longpress
+value AndroidPress=press
+value AndroidSwipe=swipe
+value AndroidTap=tap
+value AndroidType=type
+value BranchExisting=existing
+value BranchNew=new
+value BranchNone=
+value BrowserBack=back
+value BrowserCapture=capture
+value BrowserClick=click
+value BrowserEval=eval
+value BrowserFill=fill
+value BrowserForward=forward
+value BrowserOpen=open
+value BrowserReload=reload
+value BrowserScreenshot=screenshot
+value BrowserSnapshot=snapshot
+value CanvasBoard=board
+value CanvasChatDirect=direct
+value CanvasChatKept=kept
+value CanvasChatReview=review
+value CanvasChatUndone=undone
+value CanvasCommentAdd=add
+value CanvasCommentDelete=delete
+value CanvasCommentReopen=reopen
+value CanvasCommentResolve=resolve
+value CanvasCompare=compare
+value CanvasDiagram=diagram
+value CanvasMockup=mockup
+value CanvasOpElementDel=el.remove
+value CanvasOpElementSet=el.set
+value CanvasOpFrameAdd=frame.add
+value CanvasOpFrameCopy=frame.copy
+value CanvasOpFrameGrid=frame.grid
+value CanvasOpFrameMeta=frame.meta
+value CanvasOpFrameMove=frame.move
+value CanvasOpFrameRemove=frame.remove
+value CanvasOpFrameSet=frame.set
+value CanvasOpHTMLPatch=html.patch
+value CanvasOpHTMLRemove=html.remove
+value CanvasOpHTMLSet=html.set
+value CanvasOpHTMLText=html.text
+value CanvasOpMeta=meta
+value CanvasOpPick=pick
+value CanvasOpen=open
+value CanvasPause=pause
+value CanvasResume=resume
+value CanvasStop=stop
+value CanvasWireframe=wireframe
+value CapturePause=pause
+value CapturePaused=paused
+value CaptureRecording=recording
+value CaptureResume=resume
+value CaptureStart=start
+value CaptureStop=stop
+value CaptureStopped=stopped
+value CheckFailed=failed
+value CheckPassed=passed
+value CheckQueued=queued
+value CheckRunning=running
+value CheckStopped=stopped
+value CloneCanceled=canceled
+value CloneDone=done
+value CloneFailed=failed
+value CloneRunning=running
+value CommandRecent=recent
+value CommandSaved=saved
+value CredExpired=expired
+value CredInvalid=invalid
+value CredRevoked=revoked
+value CredUnchecked=unchecked
+value CredValid=valid
+value DeletesMirror=mirror
+value DeletesNever=never
+value EnvCanvasChat=HUSTLEX_CANVAS_CHAT
+value EnvCommand=command
+value EnvGit=git
+value EnvMCP=mcp
+value EnvMemory=memory
+value EnvNotesPropose=HUSTLEX_NOTES_PROPOSE
+value EnvSettings=settings
+value EnvSkill=skill
+value EnvSubagent=subagent
+value ExportHTML=html
+value ExportJSON=json
+value ExportMarkdown=md
+value ExportPDF=pdf
+value ExportZip=zip
+value FileAdded=added
+value FileDelete=delete
+value FileDeleted=deleted
+value FileDuplicate=duplicate
+value FileModified=modified
+value FileNewFile=newFile
+value FileNewFolder=newFolder
+value FileRename=rename
+value FileRenamed=renamed
+value ImportBackup=hustlex
+value ImportCanceled=canceled
+value ImportDone=done
+value ImportDuplicate=duplicate
+value ImportEnex=enex
+value ImportFailed=failed
+value ImportHTML=html
+value ImportKeep=keep
+value ImportMarkdown=md
+value ImportNotion=notion
+value ImportNotionAPI=notion-api
+value ImportObsidian=obsidian
+value ImportOverwrite=overwrite
+value ImportRunning=running
+value ImportSkip=skip
+value LargeSkip=skip
+value LargeSource=source
+value NotifyDone=done
+value NotifyError=error
+value NotifyInput=input
+value PipelineCancelled=cancelled
+value PipelineDone=done
+value PipelineFailed=failed
+value PipelinePending=pending
+value PipelineRunning=running
+value PipelineWaiting=waiting
+value PluginDisable=disable
+value PluginEnable=enable
+value PluginInstall=install
+value PluginMarketplaceAdd=marketplace add
+value PluginMarketplaceRemove=marketplace remove
+value PluginMarketplaceUpdate=marketplace update
+value PluginUninstall=uninstall
+value PluginUpdate=update
+value RefDefault=default
+value RenderHTML=html
+value RenderPDF=pdf
+value RenderPNG=png
+value RenderSVG=svg
+value ShapeArrow=arrow
+value ShapeDiamond=diamond
+value ShapeEllipse=ellipse
+value ShapeImage=image
+value ShapeLine=line
+value ShapeRect=rect
+value ShapeSticky=sticky
+value ShapeText=text
+value StateDone=done
+value StateWaiting=waiting
+value StateWorking=working
+value SyncOneWay=one-way
+value SyncReverse=reverse
+value SyncTwoWay=two-way
+value TargetAndroid=android
+value TargetBrowser=browser
+value TargetDocker=docker
+value TargetElectron=electron
+value TargetManual=manual
+value TargetSession=session
+value TargetShell=shell
+value TargetTerminal=terminal
+value TargetWebView=webview
+value TrafficDone=done
+value TrafficFailed=error
+value TrafficGRPC=grpc
+value TrafficHTTP=http
+value TrafficHeld=paused
+value TrafficPending=pending
+value TrafficSSE=sse
+value TrafficTunnel=tunnel
+value TrafficWS=ws
+value TranscriptAssistant=assistant
+value TranscriptNotice=notice
+value TranscriptThinking=thinking
+value TranscriptTool=tool
+value TranscriptUser=user
+value VaultAdd=add
+value VaultDocker=docker
+value VaultEnv=env
+value VaultGit=git
+value VaultLogin=login
+value VaultRemove=rm
+value VaultSession=session
+value VaultSign=sign
+value VaultTest=test

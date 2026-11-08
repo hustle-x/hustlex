@@ -1,0 +1,21 @@
+//go:build windows
+
+package checks
+
+import (
+	"os/exec"
+	"strconv"
+
+	"github.com/hustlex/hustlex/internal/quietcmd"
+)
+
+func shellCommand(command string) *exec.Cmd { return quietcmd.Command("cmd", "/C", command) }
+
+func startGroup(cmd *exec.Cmd) error { return cmd.Start() }
+
+// killGroup ends the command and what it started.
+func killGroup(cmd *exec.Cmd) {
+	if cmd.Process != nil {
+		_ = quietcmd.Command("taskkill", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid)).Run()
+	}
+}

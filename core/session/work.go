@@ -1,0 +1,107 @@
+package session
+
+import (
+	"maps"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/hustlex/hustlex/proto"
+)
+
+// maxTick bounds one look's share of the work counted, so a pause of the
+// watch (a sleeping laptop) doesn't count as work.
+const maxTick = 2 * time.Second
+
+// working reports whether the agent is on a task: as its hooks say, else
+// as its screen shows. The caller holds s.mu.
+func (s *Session) workingLocked(now time.Time) bool {
+	if s.exited {
+		return false
+	}
+	switch s.stateLocked(now) {
+	case proto.StateWorking:
+		return true
+	case proto.StateWaiting, proto.StateDone:
+		return false
+	}
+	return s.active
+}
+
+// countWork adds the time since the last look to the work while the agent
+// works, and reports whether that reached its budget just now. The caller
+// holds s.mu.
+func (s *Session) countWork(now time.Time) bool {
+	if !s.tick.IsZero() && s.workingLocked(now) {
+		s.worked += min(now.Sub(s.tick), maxTick)
+	}
+	s.tick = now
+	if s.meta.Budget > 0 && s.worked >= s.meta.Budget && !s.overBudget {
+		s.overBudget = true
+		return true
+	}
+	return false
+}
+
+// SetBudget sets how long session s's agent may work, 0 for no limit. A
+// budget it is already over interrupts it at the watch's next look.
+func (m *Manager) SetBudget(s *Session, budget time.Duration) {
+	s.mu.Lock()
+	s.meta.Budget = max(budget, 0)
+	s.overBudget = false
+	s.mu.Unlock()
+	m.notify(s)
+}
+
+// noteMax bounds a session's note: a line or two of status.
+const noteMax = 300
+
+// SetCreds records the vault's credentials lent to session s.
+func (m *Manager) SetCreds(s *Session, names []string) {
+	s.mu.Lock()
+	s.meta.Creds = slices.Clone(names)
+	s.mu.Unlock()
+	m.notify(s)
+}
+
+// SetFeatures sets session s's own feature switches.
+func (m *Manager) SetFeatures(s *Session, on map[string]bool) {
+	s.mu.Lock()
+	s.meta.Features = maps.Clone(on)
+	s.mu.Unlock()
+	m.notify(s)
+}
+
+// SetNoAutoHibernate keeps session s from hibernating on its own, or
+// lets it again.
+func (m *Manager) SetNoAutoHibernate(s *Session, never bool) {
+	s.mu.Lock()
+	s.meta.NoAutoHibernate = never
+	s.mu.Unlock()
+	m.notify(s)
+}
+
+// SetNote sets what session s is at, "" to clear it.
+func (m *Manager) SetNote(s *Session, note string) {
+	note = strings.TrimSpace(note)
+	if r := []rune(note); len(r) > noteMax {
+		note = string(r[:noteMax]) + "…"
+	}
+	s.mu.Lock()
+	s.meta.Note = note
+	s.mu.Unlock()
+	m.notify(s)
+}
+
+// Replace starts spec in place of the session spec.ID names, keeping its
+// place among the sessions: a queued session's agent starting.
+func (m *Manager) Replace(spec Spec) (*Session, error) {
+	old, err := m.Get(spec.ID)
+	if err != nil {
+		return nil, err
+	}
+	if spec.Created.IsZero() {
+		spec.Created = old.created
+	}
+	return m.create(spec, old)
+}

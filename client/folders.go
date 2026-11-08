@@ -1,0 +1,22 @@
+package client
+
+import "github.com/hustlex/hustlex/proto"
+
+// ListFolders lists the folders in a folder of the daemon's host.
+func (c *Client) ListFolders(path string, hidden bool) (proto.FolderListing, error) {
+	return c.FolderList(proto.FolderListParams{Path: path, Hidden: hidden})
+}
+
+// FolderList lists a folder of the daemon's host as p asks.
+func (c *Client) FolderList(p proto.FolderListParams) (proto.FolderListing, error) {
+	var out proto.FolderListing
+	err := c.Call(proto.MethodFolderList, p, &out)
+	return out, err
+}
+
+// MakeFolder creates a folder on the daemon's host and returns its path.
+func (c *Client) MakeFolder(path string) (string, error) {
+	var out proto.FolderRef
+	err := c.Call(proto.MethodFolderMake, proto.FolderRef{Path: path}, &out)
+	return out.Path, err
+}

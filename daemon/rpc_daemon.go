@@ -1,0 +1,26 @@
+package daemon
+
+import (
+	"github.com/hustlex/hustlex/core/agent"
+	"github.com/hustlex/hustlex/proto"
+)
+
+var daemonHandlers = map[string]handler{
+	proto.MethodDaemonInfo:     bare(func(c *conn) (any, error) { return c.srv.info(), nil }),
+	proto.MethodDaemonStats:    bare(func(c *conn) (any, error) { return c.srv.stats(), nil }),
+	proto.MethodDaemonSettings: bare(func(c *conn) (any, error) { return c.srv.sched.get(), nil }),
+	proto.MethodDaemonSetSettings: with(func(c *conn, p proto.DaemonSettings) (any, error) {
+		return c.srv.sched.set(p)
+	}),
+	proto.MethodDaemonStopAgents: bare(func(c *conn) (any, error) {
+		return proto.StopAgentsResult{Stopped: c.srv.stopAgents()}, nil
+	}),
+}
+
+var agentHandlers = map[string]handler{
+	proto.MethodAgentList: bare(func(c *conn) (any, error) {
+		// Agents installed since the daemon started show up.
+		refreshLoginPath(c.srv.logger())
+		return agent.List(), nil
+	}),
+}

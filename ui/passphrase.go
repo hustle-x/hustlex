@@ -1,0 +1,77 @@
+package ui
+
+import (
+	"errors"
+
+	"github.com/egoist/mygo/ui"
+	"github.com/hustlex/hustlex/ui/textfmt"
+	"github.com/hustlex/hustlex/ui/theme"
+	"github.com/hustlex/hustlex/ui/widget"
+)
+
+// passphrasePrompt asks for the passphrase of an SSH key; the connecting
+// goroutine waits on answer. Passphrases are never saved.
+type passphrasePrompt struct {
+	path   string
+	value  string
+	answer chan passphraseAnswer
+}
+
+type passphraseAnswer struct {
+	value string
+	err   error
+}
+
+// askPassphrase runs on the connecting goroutine and waits for the user.
+func (a *App) askPassphrase(gen int, path string) (string, error) {
+	answer := make(chan passphraseAnswer, 1)
+	a.onMain(func() {
+		if gen != a.gen {
+			answer <- passphraseAnswer{err: errConnectCancelled}
+			return
+		}
+		a.passphrase = &passphrasePrompt{path: path, answer: answer}
+	})
+	r := <-answer
+	return r.value, r.err
+}
+
+func (a *App) answerPassphrase(ok bool) {
+	p := a.passphrase
+	if p == nil {
+		return
+	}
+	if ok {
+		p.answer <- passphraseAnswer{value: p.value}
+	} else {
+		p.answer <- passphraseAnswer{err: errors.New("no passphrase for " + p.path)}
+	}
+	a.passphrase = nil
+}
+
+func (a *App) passphraseDialog(c *ui.Context) {
+	p := a.passphrase
+	if p == nil {
+		return
+	}
+	open := true
+	widget.Dialog(c, &open, 480, 14, func() {
+		widget.DialogHeader(c, "Unlock your SSH key", "", false, "Hosts", a.host.Name, "Unlock SSH key")
+		ui.Text(c, "The server accepts this key. Type its passphrase to sign in; hustleX doesn't save it.").
+			FontSize(12.5).TextColor(theme.TextSoft)
+		ui.Text(c, textfmt.ShortHome(p.path)).Font(theme.MonoFont).FontSize(12).Padding(10).Radius(theme.RadiusControl).
+			Background(theme.Sunken).Border(1, theme.Border).FillWidth()
+		submit := widget.Input(c, &p.value, "Passphrase").FillWidth().Password().AutoFocus().Submitted()
+		widget.DialogFooter(c, "", func() {
+			if widget.GhostButton(c, "Cancel").Clicked() {
+				a.answerPassphrase(false)
+			}
+			if widget.PrimaryButton(c, nil, "Unlock and connect", "").Clicked() || submit {
+				a.answerPassphrase(true)
+			}
+		})
+	})
+	if !open {
+		a.answerPassphrase(false)
+	}
+}

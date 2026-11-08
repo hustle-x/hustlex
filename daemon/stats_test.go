@@ -1,0 +1,62 @@
+package daemon
+
+import (
+	"runtime"
+	"slices"
+	"testing"
+	"time"
+
+	"github.com/hustlex/hustlex/core/session"
+	"github.com/hustlex/hustlex/proto"
+)
+
+func TestStatsMeasureEachSession(t *testing.T) {
+	if runtime.GOOS != "linux" && runtime.GOOS != "darwin" {
+		t.Skip("not measured on " + runtime.GOOS)
+	}
+	srv := startServer(t)
+	c := connect(t, srv, nil)
+	busy, err := srv.sessions.Create(session.Spec{Command: []string{"sh", "-c", "while :; do :; done"}, Cols: 80, Rows: 24})
+	if err != nil {
+		t.Fatal(err)
+	}
+	idle, err := srv.sessions.Create(session.Spec{Command: []string{"sleep", "30"}, Cols: 80, Rows: 24})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The first sample to see the busy session's processes has no CPU for
+	// them yet: wait for one.
+	for deadline := time.Now().Add(10 * time.Second); ; time.Sleep(minSample) {
+		st, err := c.Stats()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if slices.ContainsFunc(st.Sessions, func(u proto.SessionUsage) bool { return u.ID == busy.ID() && u.Procs >= 2 }) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("the busy session's processes never showed: %+v", st.Sessions)
+		}
+	}
+	time.Sleep(minSample + 200*time.Millisecond)
+	st, err := c.Stats()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !st.Supported || st.Host.MemTotal == 0 || st.Daemon.RSS == 0 {
+		t.Fatalf("stats = %+v", st)
+	}
+	got := map[string]float64{}
+	for _, s := range st.Sessions {
+		if s.RSS == 0 || s.Procs == 0 {
+			t.Fatalf("session %s measured nothing: %+v", s.ID, s)
+		}
+		got[s.ID] = s.CPU
+	}
+	if got[busy.ID()] < 50 {
+		t.Fatalf("busy session CPU = %.0f%%, want a core: %+v", got[busy.ID()], st.Sessions)
+	}
+	if cpu, ok := got[idle.ID()]; !ok || cpu > 10 {
+		t.Fatalf("idle session CPU = %.0f%% (measured %v)", cpu, ok)
+	}
+}

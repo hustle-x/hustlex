@@ -1,0 +1,33 @@
+# The daemon's lifetime
+
+Each host runs one daemon (`hustlexd`, or `hustlex daemon` on a desktop), which owns its sessions. The app connects to it and can come and go.
+
+## On this device
+
+Quitting the app leaves the daemon running: agents keep working, automations run, and the next launch finds every session as it was. To have them stop:
+
+- **Quit and stop all agents**: in the app menu on macOS (⌥⌘Q) and in the command palette everywhere.
+- **Settings → Stop this device's agents when hustleX quits**, off by default.
+- **Stop all agents** in the command palette stops the connected host's agents without quitting.
+
+Stopping an agent ends its program the way hibernation does (`daemon.stopAgents`): the session stays, showing what it showed, and its agent comes back on its conversation when the session is shown. Plain terminals keep running.
+
+## On a server
+
+Connecting installs the daemon at `~/.hustlex-app/bin/hustlexd` and starts it through `hustlexd bridge`. Where the server runs systemd, it starts as the user's service (`~/.config/systemd/user/hustlexd.service`, `core/userservice`; a daemon of another state folder, `HUSTLEX_HOME` set elsewhere, gets a unit of its own, `hustlexd-<hash>.service`, and never replaces the user's), and the app turns on lingering for that user while preparing the server (`hostconn/linger.sh`, as root, or with sudo or doas without a password). The daemon then starts again after a reboot without anyone connecting, its sessions come back, and automations keep running.
+
+Where there is no systemd (Alpine, containers) or lingering couldn't be turned on, the daemon runs as a process as before: it lives until the server reboots, and the next connection starts it. Why a service didn't start is written to `~/.hustlex-app/hustlexd.log`.
+
+`scripts/test-service.sh` checks it in an Ubuntu container booted with systemd.
+
+## Its folder
+
+hustleX keeps its state in `~/.hustlex-app` (`transport.HomeName`), on this device and on servers; `HUSTLEX_HOME` names another (`make dev` uses `~/.hustlex-dev`). Its command line is `hustlex-app`, linked at `~/.local/bin/hustlex-app`. Before, both were `~/.hustlex` and `hustlex`, which another app uses too: the first start of a newer app or daemon stops the daemon there and moves hustleX's own files across (hosts, projects, sessions and their history, worktrees, settings), repairing git's links to the worktrees, and leaves the rest of `~/.hustlex` alone.
+
+## Far and flaky connections
+
+What makes a far server feel close, built in rather than through mosh (which serves one shell over UDP, and needs `mosh-server` and an open port on the server):
+
+- **Keepalives.** Each SSH connection sends one every 15 seconds (`transport/ssh.go`), so routers and NATs keep it while idle; three unanswered in a row close it, so a connection that died with the network is noticed at once.
+- **Connecting again by itself.** When a host's connection drops, the app tries again after 1 second and longer each time, up to 30, without asking anything, until the host answers or the user goes elsewhere; the view comes back as it was, the sessions having kept running.
+- **Resizes once settled.** A window growing or zooming resizes its sessions once the size held for 120 ms, so their programs redraw once.

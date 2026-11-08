@@ -1,0 +1,386 @@
+package daemon
+
+import (
+	"errors"
+	"fmt"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"time"
+
+	"github.com/hustlex/hustlex/core/agent"
+	"github.com/hustlex/hustlex/core/agentapi"
+	"github.com/hustlex/hustlex/core/project"
+	"github.com/hustlex/hustlex/core/session"
+	"github.com/hustlex/hustlex/core/shells"
+	"github.com/hustlex/hustlex/core/worktree"
+	"github.com/hustlex/hustlex/proto"
+)
+
+// How long a typed first prompt waits for the agent to show its input.
+const (
+	promptQuiet   = 1500 * time.Millisecond
+	promptTimeout = 20 * time.Second
+	// pasteSettle is how long a pasted prompt shows before Enter sends it.
+	pasteSettle = 300 * time.Millisecond
+)
+
+// createSession resolves where and what to run for p, then starts it.
+func (s *Server) createSession(p proto.SessionCreateParams) (*session.Session, error) {
+	meta := session.Meta{Name: strings.TrimSpace(p.Name), Prompt: p.Prompt, Project: p.Project, Agent: p.Agent, Group: p.Group, Account: p.Account, NotesFor: p.NotesFor, CanvasFor: p.CanvasFor, Features: p.Features,
+		NoAutoHibernate: s.hibernatePrefs().NeverByDefault}
+	setup := "" // the project's worktree setup, to run in a tab once started
+	dir := p.Dir
+	if p.NotesFor != "" {
+		// On notes only: a folder of its own, empty, no project or branch.
+		if _, err := s.notes.Get(p.NotesFor); err != nil {
+			return nil, err
+		}
+		dir = filepath.Join(filepath.Dir(s.WorktreeRoot), "notes-chat", p.NotesFor)
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			return nil, err
+		}
+		p.Project, p.Parent, p.BranchMode, meta.Project = "", "", proto.BranchNone, ""
+		if meta.Name == "" {
+			meta.Name = "Notes"
+		}
+	}
+	if p.CanvasFor != "" {
+		// On canvases: a folder of its own; the canvas's projects it reads.
+		if _, err := s.canvases.Get(p.CanvasFor); err != nil {
+			return nil, err
+		}
+		dir = filepath.Join(filepath.Dir(s.WorktreeRoot), "canvas-chat", p.CanvasFor)
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			return nil, err
+		}
+		p.Project, p.Parent, p.BranchMode, meta.Project = "", "", proto.BranchNone, ""
+		if meta.Name == "" {
+			meta.Name = "Canvas"
+		}
+	}
+	// Settle what to run before creating a worktree it would leave behind.
+	launch, err := launchFor(p, s.chatOf(p.NotesFor, p.CanvasFor, s.guideFor(meta)))
+	if err != nil {
+		return nil, err
+	}
+	if p.SignIn {
+		// Signing in has nothing to do with branches: the project folder.
+		p.BranchMode, meta.Prompt = proto.BranchNone, ""
+	}
+	if meta.Name == "" {
+		meta.Name = launch.name
+	}
+	accountEnv, err := s.accounts.Env(agent.Base(p.Agent), p.Account)
+	if err != nil {
+		return nil, err
+	}
+	launch.env = append(launch.env, accountEnv...)
+
+	if p.Parent != "" {
+		// A tab: the parent's folder, whatever it is.
+		parent, err := s.sessions.Get(p.Parent)
+		if err != nil {
+			return nil, err
+		}
+		pm := parent.Meta()
+		dir, meta.Parent = parent.Info().Dir, p.Parent
+		meta.Project, meta.Branch, meta.Worktree = pm.Project, pm.Branch, pm.Worktree
+	} else if p.Project != "" {
+		proj := project.Inspect(p.Project)
+		dir = proj.Path
+		switch p.BranchMode {
+		case proto.BranchNone:
+			meta.Branch = proj.Branch
+		case proto.BranchNew, proto.BranchExisting:
+			if !proj.IsGit {
+				return nil, fmt.Errorf("%s is not a git repository, so it has no branches", proj.Name)
+			}
+			branch := strings.TrimSpace(p.Branch)
+			if branch == "" {
+				return nil, errors.New("branch name is empty")
+			}
+			meta.Branch = branch
+			if p.BranchMode == proto.BranchExisting && branch == proj.Branch {
+				break // already checked out in the project folder
+			}
+			if p.BranchMode == proto.BranchNew && contains(proj.Branches, branch) {
+				return nil, fmt.Errorf("branch %s already exists", branch)
+			}
+			if p.BranchMode == proto.BranchExisting && !contains(proj.Branches, branch) {
+				return nil, fmt.Errorf("branch %s does not exist", branch)
+			}
+			wt, err := worktree.Create(s.WorktreeRoot, proto.WorktreeCreateParams{
+				Repo: proj.Path, Name: worktree.FolderName(branch), Branch: branch, Base: p.Base,
+			})
+			if err != nil {
+				return nil, err
+			}
+			dir, meta.Worktree = wt.Path, true
+			if wt.Created {
+				setup = s.readyWorktree(proj.Path, wt.Path, p.RunSetup)
+			}
+		default:
+			return nil, fmt.Errorf("unknown branch mode %q", p.BranchMode)
+		}
+	}
+
+	meta.Restart, meta.Relaunch, meta.SkipPermissions = launch.restart, launch.relaunch, launch.skip
+	meta.Budget = time.Duration(p.Budget) * time.Second
+	spec := session.Spec{
+		ID:      session.NewID(),
+		Command: launch.command, Dir: dir, Env: append(append(slices.Clone(p.Env), launch.env...), s.sessionEnv()...), Cols: p.Cols, Rows: p.Rows, Meta: meta,
+	}
+	// A session whose traffic is caught: its new tabs, and its agent when
+	// asked (traffic.go).
+	if meta.Parent != "" {
+		spec.Env = append(spec.Env, s.trafficEnvFor(meta.Parent, "")...)
+	}
+	if p.Display {
+		disp, err := s.displays.start(spec.ID)
+		if err != nil {
+			return nil, err
+		}
+		spec.Env = append(spec.Env, disp.Env()...)
+		spec.Meta.Display, spec.Meta.DisplayScale = disp.Port, disp.Scale
+	}
+	if p.NotesFor == "" && p.CanvasFor == "" && !p.SignIn {
+		// The vault's credentials it asked for, and its helpers.
+		env, names := s.vaultSessionEnv(spec.ID, meta.Project, meta.Parent, p.Creds)
+		spec.Env, spec.Meta.Creds = append(spec.Env, env...), names
+	}
+	if _, isAgent := agent.Find(p.Agent); isAgent && !p.SignIn && s.mustQueue() {
+		return s.enqueue(spec, launch.command, launch.typed)
+	}
+	sess, err := s.sessions.Create(spec)
+	if err != nil {
+		s.displays.stop(spec.ID)
+		s.vaultRelease(spec.ID)
+		return nil, err
+	}
+	s.began(sess, launch.command, launch.typed)
+	if setup != "" {
+		s.runSetup(sess, setup)
+	}
+	return sess, nil
+}
+
+// readyWorktree gives a worktree just made from the project at repo what
+// its .hustlex.toml says: the ignored files to carry over, now; and its
+// setup script, returned to run once the session started when runSetup.
+func (s *Server) readyWorktree(repo, wt string, runSetup bool) string {
+	cfg, err := project.LoadConfig(repo)
+	if err != nil {
+		s.logger().Warn("could not read the project's settings", "project", repo, "err", err)
+		return ""
+	}
+	if copied, err := cfg.CopyInto(repo, wt); err != nil {
+		s.logger().Warn("could not copy files into a new worktree", "worktree", wt, "err", err)
+	} else if len(copied) > 0 {
+		s.logger().Info("copied into a new worktree", "worktree", wt, "files", strings.Join(copied, ", "))
+	}
+	if !runSetup {
+		return ""
+	}
+	return cfg.Worktree.Setup
+}
+
+// runSetup runs a worktree's setup script in a tab of sess, named Setup,
+// which keeps a shell once it ends, so its output stays to read.
+func (s *Server) runSetup(sess *session.Session, script string) {
+	_, err := s.createSession(proto.SessionCreateParams{
+		Parent: sess.ID(), Name: "Setup", Agent: agent.Custom, Command: thenShell(scriptArgv(script)),
+	})
+	if err != nil {
+		s.logger().Warn("could not run the worktree's setup", "session", sess.ID(), "err", err)
+	}
+}
+
+// sessionEnv is added to every session's environment: the variables the
+// user set for this host, and the program the agents' hooks run to report
+// their state (agent.EnvBin).
+func (s *Server) sessionEnv() []string {
+	env := s.vars.env() // the user's variables for this host
+	if s.HookBin != "" {
+		env = append(env, agent.EnvBin+"="+s.HookBin)
+	}
+	return env
+}
+
+// Bracketed paste marks typed text as pasted, for programs that read it.
+const (
+	pasteStart = "\x1b[200~"
+	pasteEnd   = "\x1b[201~"
+)
+
+// launch is how a session's program starts, now and after a restart.
+type launch struct {
+	command  []string // nil: the login shell
+	env      []string // added to the session's environment
+	name     string   // the session's name when it was given none
+	typed    string   // prompt typed in once the program is ready
+	restart  []string // command after a daemon restart
+	relaunch bool     // restart the program at all after a daemon restart
+	skip     bool     // the agent skips permission prompts
+}
+
+func launchFor(p proto.SessionCreateParams, chat chatFor) (launch, error) {
+	prompt := strings.TrimSpace(p.Prompt)
+	if p.SignIn {
+		preset, ok := agent.Find(p.Agent)
+		if !ok || len(preset.SignIn) == 0 {
+			return launch{}, fmt.Errorf("hustleX doesn't know how to sign in to %q", p.Agent)
+		}
+		return launch{command: thenShell(preset.SignIn), env: preset.SignInEnv, name: "Sign in to " + preset.Name}, nil
+	}
+	switch p.Agent {
+	case "", agent.Custom:
+		// A custom command may not be safe to run twice, so it isn't.
+		return launch{command: p.Command, typed: prompt}, nil
+	case agent.Shell:
+		l := launch{typed: prompt, relaunch: true}
+		shell := p.Shell
+		if shell == "" {
+			shell = defaultShell()
+		} else if _, ok := shells.Find(shell); !ok {
+			return launch{}, fmt.Errorf("%s is not a shell of this host", shell)
+		}
+		if shell != "" {
+			l.command = shells.Argv(shell)
+		}
+		return l, nil
+	}
+	preset, ok := agent.Find(p.Agent)
+	if !ok {
+		return launch{}, fmt.Errorf("unknown agent %q", p.Agent)
+	}
+	skip := p.SkipPermissions && len(preset.SkipPermissions)+len(preset.SkipEnv) > 0
+	if skip && preset.RefusesRootSkip && os.Geteuid() == 0 {
+		return launch{}, fmt.Errorf("%s refuses to skip permission prompts as root; reconnect and let hustleX run as a regular user (Manage hosts → Ask user again), or turn off Skip permission prompts", preset.Name)
+	}
+	switch {
+	case chat.notes != "":
+		if note := agent.NotesNote(preset.ID, chat.notes); note != "" && prompt != "" {
+			prompt = note + "\n\n" + prompt
+		}
+	case chat.canvas != "":
+		if note := agent.CanvasNote(preset.ID, chat.canvas); note != "" && prompt != "" {
+			prompt = note + "\n\n" + prompt
+		}
+	default:
+		if note := agent.GuideNote(preset.ID); note != "" && prompt != "" {
+			prompt += "\n\n" + note
+		}
+	}
+	first := agentLaunch(preset, skip, prompt, false, chat)
+	first.Hooks = append(first.Hooks, agent.LaunchArgs(preset.ID, p.Model, p.Effort)...)
+	if p.Resume != "" {
+		first.Resume = p.Resume
+	}
+	l := launch{
+		command:  thenShell(preset.Argv(first)),
+		env:      append(append(append(preset.Environ(skip), apiEnv(preset.ID)...), notesEnv(chat.notes != "")...), canvasEnv(chat.canvas != "")...),
+		restart:  thenShell(preset.Argv(agentLaunch(preset, skip, "", true, chat))),
+		relaunch: len(preset.Continue) > 0,
+		skip:     skip,
+	}
+	if preset.TypePrompt && prompt != "" {
+		// Pasted, so that its lines don't send it early.
+		l.typed = pasteStart + prompt + pasteEnd
+	}
+	return l, nil
+}
+
+// agentLaunch is how this daemon starts preset: with its hooks and guide,
+// so a session continued after an upgrade gets the current ones; notes
+// starts it as note notes' agent in the Notes page (agent.NotesArgs).
+// chatFor is what an agent is for: a session's (its guide, "" for
+// the Guide), a note's (the Notes page) or a canvas's (the Canvas page),
+// with the folders a canvas's agent reads.
+type chatFor struct {
+	notes, canvas, guide string
+	dirs                 []string
+}
+
+// chatOf is the agent of note notes, or of canvas cv, with the folders it
+// reads (the canvas's own and its projects'), or a session's with guide.
+func (s *Server) chatOf(notes, cv, guide string) chatFor {
+	ch := chatFor{notes: notes, canvas: cv, guide: guide}
+	if cv != "" {
+		if dir, err := s.canvases.Dir(cv); err == nil {
+			ch.dirs = append(ch.dirs, dir)
+		}
+		if c, err := s.canvases.Get(cv); err == nil {
+			ch.dirs = append(ch.dirs, c.Projects...)
+		}
+	}
+	return ch
+}
+
+func agentLaunch(preset agent.Preset, skip bool, prompt string, cont bool, chat chatFor) agent.Launch {
+	guide := chat.guide
+	if guide == "" {
+		guide = agent.Guide
+	}
+	// Skipping stays a mode to switch to from the chat, except as root,
+	// where the agent would refuse to start with it.
+	allow := !(preset.RefusesRootSkip && os.Geteuid() == 0)
+	if home, err := os.UserHomeDir(); err == nil {
+		// Agents whose command line takes no guide read it from their home.
+		if err := agent.PlaceGuideText(preset.ID, home, guide); err != nil {
+			slog.Warn("could not give the agent its guide", "agent", preset.ID, "err", err)
+		}
+	}
+	hooks := append(agent.HookArgs(preset.ID), agent.GuideArgsText(preset.ID, guide)...)
+	switch {
+	case chat.notes != "":
+		exe, _ := os.Executable()
+		hooks = append(agent.HookArgs(preset.ID), agent.NotesArgs(preset.ID, exe, chat.notes)...)
+	case chat.canvas != "":
+		exe, _ := os.Executable()
+		hooks = append(agent.HookArgs(preset.ID), agent.CanvasArgs(preset.ID, exe, chat.canvas, chat.dirs)...)
+	}
+	if home, err := os.UserHomeDir(); err == nil {
+		hooks = append(hooks, agentapi.LaunchArgs(home, preset.ID)...) // its model API's config
+	}
+	return agent.Launch{Prompt: prompt, SkipPermissions: skip, AllowSkip: allow, Continue: cont, Hooks: hooks}
+}
+
+func contains(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+// apiEnv is what agent id's sessions get for the model API it is set to
+// (agentapi): its key, for agents that read it from the environment.
+func apiEnv(id string) []string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	return agentapi.LaunchEnv(home, id)
+}
+
+// canvasEnv is what a Canvas page agent's session adds to its
+// environment: its MCP tools are the canvas's (proto.EnvCanvasChat).
+func canvasEnv(canvas bool) []string {
+	if !canvas {
+		return nil
+	}
+	return []string{proto.EnvCanvasChat + "=1"}
+}
+
+// notesEnv is what a Notes page agent's session adds to its environment:
+// its notes are proposed (proto.EnvNotesPropose).
+func notesEnv(notes bool) []string {
+	if !notes {
+		return nil
+	}
+	return []string{proto.EnvNotesPropose + "=1"}
+}

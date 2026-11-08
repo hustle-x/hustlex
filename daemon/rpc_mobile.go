@@ -1,0 +1,35 @@
+package daemon
+
+import (
+	"github.com/hustlex/hustlex/core/android"
+	"github.com/hustlex/hustlex/proto"
+)
+
+var androidHandlers = map[string]handler{
+	proto.MethodAndroidStatus: bare(func(c *conn) (any, error) { return c.srv.androidStatus(), nil }),
+	proto.MethodAndroidSetup:  with(func(c *conn, p proto.AndroidSetupParams) (any, error) { return c.srv.androidSetup(p) }),
+	proto.MethodAndroidStart:  with(func(c *conn, p proto.AndroidDeviceParams) (any, error) { return ok, c.srv.androidStart(p) }),
+	proto.MethodAndroidStop:   with(func(c *conn, p proto.AndroidDeviceParams) (any, error) { return ok, c.srv.androidStop(p) }),
+	proto.MethodAndroidConnect: with(func(c *conn, p proto.AndroidConnectParams) (any, error) {
+		return ok, c.srv.androidConnect(p)
+	}),
+	proto.MethodAndroidLogcat: with(func(c *conn, p proto.AndroidLogcatParams) (any, error) { return c.srv.androidLogcat(p) }),
+	proto.MethodAndroidRun:    with(func(c *conn, p proto.AndroidRunParams) (any, error) { return c.srv.androidRun(p) }),
+	proto.MethodAndroidProject: with(func(c *conn, p proto.AndroidProjectParams) (any, error) {
+		return android.Project(p.Dir), nil
+	}),
+	proto.MethodAndroidADBOpen:   bare(func(c *conn) (any, error) { return c.adbOpen() }),
+	proto.MethodAndroidADBListen: bare(func(c *conn) (any, error) { return c.adbListen() }),
+	proto.MethodAndroidADBAccept: with(func(c *conn, p proto.AndroidADBConn) (any, error) { return c.adbAccept(p) }),
+	proto.MethodAndroidADBClose: with(func(c *conn, p proto.AndroidADBListener) (any, error) {
+		c.adbClose(p.ID)
+		return ok, nil
+	}),
+	proto.MethodAndroidForwardOpen: with(func(c *conn, p proto.AndroidForwardParams) (any, error) { return c.forwardOpen(p) }),
+	proto.MethodAndroidProxy:       with(func(c *conn, p proto.AndroidProxyParams) (any, error) { return c.srv.androidProxy(p) }),
+	proto.MethodAndroidMirror:      with(func(c *conn, p proto.AndroidMirrorParams) (any, error) { return c.androidMirror(p) }),
+	proto.MethodAndroidMirrorInput: with(func(c *conn, p proto.AndroidMirrorInput) (any, error) { return ok, c.srv.androidMirrorInput(p) }),
+	proto.MethodAndroidScreenshot:  with(func(c *conn, p proto.AndroidDeviceParams) (any, error) { return c.srv.androidScreenshot(p) }),
+	proto.MethodAndroidControls:    with(func(c *conn, p proto.AndroidDeviceParams) (any, error) { return c.srv.androidControls(p) }),
+	proto.MethodAndroidAct:         with(func(c *conn, p proto.AndroidAct) (any, error) { return ok, c.srv.androidAct(p) }),
+}

@@ -1,0 +1,300 @@
+package androidview
+
+import (
+	"crypto/rand"
+	_ "embed"
+	"encoding/hex"
+	"encoding/json"
+	"io"
+	"net"
+	"net/http"
+	"strings"
+
+	"github.com/egoist/mygo/ui"
+
+	"github.com/hustlex/hustlex/client"
+	"github.com/hustlex/hustlex/core/android"
+	"github.com/hustlex/hustlex/proto"
+	"github.com/hustlex/hustlex/ui/icon"
+	"github.com/hustlex/hustlex/ui/theme"
+	"github.com/hustlex/hustlex/ui/widget"
+)
+
+// A device's screen shows in the tool: its host sends it as scrcpy's
+// video (android.mirror), a loopback server of the app hands it to a web
+// view, whose page decodes it with WebCodecs and sends touches and keys
+// back. Pop out opens it in scrcpy's own window instead.
+
+//go:embed screen.html
+var screenPage []byte
+
+// ScreenView is the web view showing a screen's page; the app makes it.
+type ScreenView interface {
+	Show(c *ui.Context) ui.Element
+	Close()
+}
+
+// screen is a device's screen shown. Its fields belong to the main
+// thread, but for the server's, which only read what it was made with.
+type screen struct {
+	key    string
+	label  string
+	serial string
+	host   Host
+	tunnel *client.Tunnel
+	ln     net.Listener
+	view   ScreenView
+	width  int // the video's, as the page last said
+	height int
+	err    string
+	tv     bool // an Android TV: a remote's D-pad under it
+}
+
+func (s *screen) close() {
+	if s.view != nil {
+		s.view.Close()
+	}
+	if s.ln != nil {
+		s.ln.Close()
+	}
+	if s.tunnel != nil {
+		s.tunnel.Close()
+	}
+}
+
+// openScreen shows d's screen in the tool.
+func (v *View) openScreen(o Options, d device) {
+	if v.screen != nil {
+		v.screen.close()
+		v.screen = nil
+	}
+	if o.NewScreenView == nil {
+		v.showScreen(o, d) // no web view here: scrcpy's window
+		return
+	}
+	s := &screen{key: d.key(), label: d.label(), serial: d.dev.Serial, host: d.host, tv: d.dev.TV}
+	v.screen, v.pane = s, paneScreen
+	v.act(o, "Showing "+d.label()+"'s screen…", func() error {
+		t, err := d.host.Client.AndroidMirror(proto.AndroidMirrorParams{Serial: s.serial, MaxSize: 1280})
+		if err != nil {
+			o.Update(func() {
+				if v.screen == s {
+					v.screen = nil
+				}
+			})
+			return err
+		}
+		ln, err := net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			t.Close()
+			return err
+		}
+		var tok [12]byte
+		rand.Read(tok[:])
+		base := "/" + hex.EncodeToString(tok[:]) + "/"
+		go http.Serve(ln, s.handler(o, v, t, base))
+		url := "http://" + ln.Addr().String() + base
+		if s.tv {
+			url += "?tv=1" // Enter is the remote's OK
+		}
+		o.Update(func() {
+			if v.screen != s {
+				t.Close()
+				ln.Close()
+				return
+			}
+			s.tunnel, s.ln = t, ln
+			o.NewScreenView(url, func(sv ScreenView, err error) {
+				if err != nil || v.screen != s {
+					if sv != nil {
+						sv.Close()
+					}
+					if err != nil {
+						v.notice = "The screen can't show here: " + err.Error()
+					}
+					return
+				}
+				s.view = sv
+			})
+		})
+		return nil
+	})
+}
+
+// handler serves the page, the video (once) and the input, under base, a
+// path no other page can guess.
+func (s *screen) handler(o Options, v *View, t *client.Tunnel, base string) http.Handler {
+	h := s.host.Client
+	serial := s.serial
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rest, ok := strings.CutPrefix(r.URL.Path, base)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		switch rest {
+		case "":
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.Write(screenPage)
+		case "video":
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.Header().Set("Cache-Control", "no-store")
+			copyFlushing(w, t)
+		case "input":
+			var in proto.AndroidMirrorInput
+			if json.NewDecoder(io.LimitReader(r.Body, 1<<16)).Decode(&in) != nil {
+				http.Error(w, "bad input", http.StatusBadRequest)
+				return
+			}
+			switch in.Kind {
+			case "size":
+				o.Update(func() { s.width, s.height = in.Width, in.Height })
+			case "unsupported":
+				o.Update(func() { s.err = "This system's web view can't decode video: Pop out shows it in a window of its own." })
+			default:
+				in.Serial = serial
+				if err := h.AndroidMirrorInput(in); err != nil {
+					http.Error(w, err.Error(), http.StatusBadGateway)
+					return
+				}
+			}
+			w.WriteHeader(http.StatusNoContent)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// copyFlushing copies the video to the page as it comes.
+func copyFlushing(w http.ResponseWriter, r io.Reader) {
+	f, _ := w.(http.Flusher)
+	buf := make([]byte, 64<<10)
+	for {
+		n, err := r.Read(buf)
+		if n > 0 {
+			if _, werr := w.Write(buf[:n]); werr != nil {
+				return
+			}
+			if f != nil {
+				f.Flush()
+			}
+		}
+		if err != nil {
+			return
+		}
+	}
+}
+
+// screenPane is the Screen pane: the picked device's screen, or what
+// shows it.
+func (v *View) screenPane(c *ui.Context, o Options) {
+	d, ok := v.pickedDevice(o)
+	if ok && v.screen != nil && v.screen.key == d.key() {
+		v.screenView(c, o, d)
+		return
+	}
+	ui.Column(c).Grow(1).FillWidth().Center().Gap(10).Padding(24).Children(func() {
+		if !ok || d.dev.State != "device" {
+			ui.Text(c, "The device's screen shows here once it runs.").FontSize(12).TextColor(theme.Muted)
+			return
+		}
+		ui.Text(c, "Use "+d.label()+" from here: touch, type, its buttons.").FontSize(12).TextColor(theme.Muted).TextAlign(ui.Center)
+		if widget.PrimaryButton(c, icon.AppWindow, "Show its screen", "").Disabled(v.busy != "").Clicked() {
+			v.openScreen(o, d)
+		}
+	})
+}
+
+// screenView is the screen shown, with the device's buttons under it.
+func (v *View) screenView(c *ui.Context, o Options, d device) {
+	s := v.screen
+	_, winH := c.Size()
+	ui.Column(c).Grow(1).FillWidth().MinHeight(0).Padding(8, 12, 12, 12).Children(func() {
+		// As tall as what is left of the pane, and as wide as the device's
+		// shape makes it at about that height: the page keeps the shape
+		// inside, black around.
+		h := max(240, winH-360)
+		aspect := float32(9) / 19.5
+		if s.width > 0 && s.height > 0 {
+			aspect = float32(s.width) / float32(s.height)
+		}
+		landscape := aspect > 1 // a TV's, a tablet turned: as wide as the pane
+		row := ui.Row(c).FillWidth().MinHeight(0).Justify(ui.Center)
+		if !landscape {
+			row.Grow(1)
+		}
+		row.Children(func() {
+			box := ui.Column(c).Shrink(1).MinWidth(0).MinHeight(0).Center().Radius(16).Background(ui.RGBA(0, 0, 0, 1))
+			if landscape {
+				box.FillWidth().AspectRatio(aspect)
+			} else {
+				box.Width(h * aspect).FillHeight()
+			}
+			box.Children(func() {
+				switch {
+				case s.err != "":
+					ui.Text(c, s.err).FontSize(12).TextColor(ui.RGBA(170, 170, 170, 1)).TextAlign(ui.Center).Padding(16)
+				case s.view != nil:
+					s.view.Show(c).FillWidth().FillHeight()
+				default:
+					ui.Text(c, "Connecting to the device…").FontSize(12).TextColor(ui.RGBA(170, 170, 170, 1))
+				}
+			})
+		})
+		if s.tv {
+			v.remote(c, s)
+		}
+	})
+}
+
+// remote is a TV's remote under its screen: the D-pad and OK, Back, Home
+// and Menu; the keyboard's arrows and Enter do the same in the screen.
+func (v *View) remote(c *ui.Context, s *screen) {
+	key := func(svg *ui.SVG, label string, code int) {
+		if widget.IconButton(c, svg, label, false).Clicked() {
+			go s.host.Client.AndroidMirrorInput(proto.AndroidMirrorInput{Serial: s.serial, Kind: "key", Key: code})
+		}
+	}
+	ui.Row(c).FillWidth().Shrink(0).Padding(10, 0, 0, 0).Gap(4).Justify(ui.Center).AlignItems(ui.Center).Children(func() {
+		key(icon.ArrowLeft, "Left", android.KeyLeft)
+		key(icon.ArrowUp, "Up", android.KeyUp)
+		if widget.Button(c, widget.Secondary, nil, "OK", "").Tooltip("The remote's OK (Enter)").Clicked() {
+			go s.host.Client.AndroidMirrorInput(proto.AndroidMirrorInput{Serial: s.serial, Kind: "key", Key: android.KeyCenter})
+		}
+		key(icon.ArrowDown, "Down", android.KeyDown)
+		key(icon.ArrowRight, "Right", android.KeyRight)
+		ui.Box(c).Width(1).Height(18).Background(theme.Border).Margin(0, 4)
+		key(icon.List, "Menu", android.KeyMenu)
+	})
+}
+
+// screenKeys are the device's buttons, beside the tabs while its screen
+// shows: always in view, whatever the panel's height.
+func (v *View) screenKeys(c *ui.Context, o Options) {
+	s := v.screen
+	d, ok := v.pickedDevice(o)
+	if s == nil || !ok || s.key != d.key() {
+		return
+	}
+	key := func(svg *ui.SVG, label string, code int) {
+		if widget.IconButton(c, svg, label, false).Clicked() {
+			go s.host.Client.AndroidMirrorInput(proto.AndroidMirrorInput{Serial: s.serial, Kind: "key", Key: code})
+		}
+	}
+	key(icon.ArrowLeft, "Back", android.KeyBack)
+	key(icon.Home, "Home", android.KeyHome)
+	key(icon.List, "Recent apps", android.KeyAppSwitch)
+	key(icon.VolumeDown, "Volume down", android.KeyVolumeDown)
+	key(icon.VolumeUp, "Volume up", android.KeyVolumeUp)
+	key(icon.Power, "Power", android.KeyPower)
+	ui.Box(c).Width(1).Height(18).Background(theme.Border).Margin(0, 2)
+	if widget.IconButton(c, icon.External, "Pop out: scrcpy's window, at full speed", false).Clicked() {
+		s.close()
+		v.screen = nil
+		v.showScreen(o, d)
+	}
+	if widget.IconButton(c, icon.Close, "Close the screen", false).Clicked() {
+		s.close()
+		v.screen = nil
+	}
+}

@@ -1,0 +1,180 @@
+// Package android finds and drives what a host has for Android: the SDK,
+// its emulator and virtual devices, the devices adb sees, their logs, and
+// how a project's app runs on one (docs/plans/mobile.md). The emulator
+// runs on the host itself, never in a container: on macOS and Windows a
+// container has no acceleration.
+package android
+
+import (
+	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"time"
+
+	"github.com/hustlex/hustlex/internal/quietcmd"
+)
+
+// SDK is an Android SDK on this host.
+type SDK struct {
+	Root string
+}
+
+// exe is a program's name on this host.
+func exe(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".exe"
+	}
+	return name
+}
+
+// script is a command-line tool's name on this host (a .bat on Windows).
+func script(name string) string {
+	if runtime.GOOS == "windows" {
+		return name + ".bat"
+	}
+	return name
+}
+
+// DefaultRoot is where the SDK goes on this host when none is set:
+// where Android Studio puts it.
+func DefaultRoot() string {
+	home, _ := os.UserHomeDir()
+	switch runtime.GOOS {
+	case "darwin":
+		return filepath.Join(home, "Library", "Android", "sdk")
+	case "windows":
+		if d := os.Getenv("LOCALAPPDATA"); d != "" {
+			return filepath.Join(d, "Android", "Sdk")
+		}
+	}
+	return filepath.Join(home, "Android", "Sdk")
+}
+
+// FindSDK finds the host's SDK: ANDROID_HOME, ANDROID_SDK_ROOT, the
+// default place and the other usual ones, or the SDK of the adb on PATH.
+// One with adb comes first: a setup left half done mustn't hide the SDK
+// next to it that has the devices.
+// An SDK not there yet goes where ANDROID_HOME (or ANDROID_SDK_ROOT) says
+// when set, else to the default place.
+func FindSDK() (SDK, bool) {
+	roots := append([]string{os.Getenv("ANDROID_HOME"), os.Getenv("ANDROID_SDK_ROOT"), DefaultRoot()}, otherRoots()...)
+	roots = append(roots, adbRoot())
+	for _, has := range []func(SDK) bool{
+		func(s SDK) bool { return fileExists(s.ADB()) },
+		func(s SDK) bool { return fileExists(s.SDKManager()) || fileExists(s.Emulator()) },
+	} {
+		for _, root := range roots {
+			if root != "" && has(SDK{Root: root}) {
+				return SDK{Root: root}, true
+			}
+		}
+	}
+	for _, root := range []string{os.Getenv("ANDROID_HOME"), os.Getenv("ANDROID_SDK_ROOT")} {
+		if root != "" {
+			return SDK{Root: root}, false
+		}
+	}
+	return SDK{Root: DefaultRoot()}, false
+}
+
+// otherRoots are where else SDKs are put: by hand, by a distribution's
+// package.
+func otherRoots() []string {
+	home, _ := os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		return nil
+	}
+	return []string{filepath.Join(home, "Android", "sdk"), filepath.Join(home, "android-sdk"), "/opt/android-sdk", "/usr/lib/android-sdk"}
+}
+
+// adbRoot is the SDK the adb on PATH is of (<root>/platform-tools/adb),
+// "" when there is none or it stands alone.
+func adbRoot() string {
+	p, err := exec.LookPath(exe("adb"))
+	if err != nil {
+		return ""
+	}
+	if real, err := filepath.EvalSymlinks(p); err == nil {
+		p = real
+	}
+	dir := filepath.Dir(p)
+	if filepath.Base(dir) != "platform-tools" {
+		return ""
+	}
+	return filepath.Dir(dir)
+}
+
+func (s SDK) ADB() string      { return filepath.Join(s.Root, "platform-tools", exe("adb")) }
+func (s SDK) Emulator() string { return filepath.Join(s.Root, "emulator", exe("emulator")) }
+func (s SDK) SDKManager() string {
+	return filepath.Join(s.Root, "cmdline-tools", "latest", "bin", script("sdkmanager"))
+}
+func (s SDK) AVDManager() string {
+	return filepath.Join(s.Root, "cmdline-tools", "latest", "bin", script("avdmanager"))
+}
+
+// Env is what a session's programs need to find the SDK: ANDROID_HOME,
+// its tools on PATH, and JAVA_HOME when hustleX brought the JDK.
+func (s SDK) Env(path string) []string {
+	sep := string(os.PathListSeparator)
+	dirs := []string{filepath.Join(s.Root, "platform-tools"), filepath.Join(s.Root, "emulator"), filepath.Join(s.Root, "cmdline-tools", "latest", "bin")}
+	env := []string{"ANDROID_HOME=" + s.Root, "ANDROID_SDK_ROOT=" + s.Root}
+	if jdk := JDKHome(); jdk != "" {
+		env = append(env, "JAVA_HOME="+jdk)
+		dirs = append(dirs, filepath.Join(jdk, "bin"))
+	}
+	return append(env, "PATH="+strings.Join(dirs, sep)+sep+path)
+}
+
+// JDKHome is the JDK hustleX set up, "" when it didn't.
+func JDKHome() string {
+	home, _ := os.UserHomeDir()
+	dir := filepath.Join(home, ".hustlex-app", "jdk")
+	if runtime.GOOS == "darwin" {
+		if fileExists(filepath.Join(dir, "Contents", "Home", "bin", exe("java"))) {
+			return filepath.Join(dir, "Contents", "Home")
+		}
+	}
+	if fileExists(filepath.Join(dir, "bin", exe("java"))) {
+		return dir
+	}
+	return ""
+}
+
+// JavaVersion is the java a tool would run, "" for none.
+func JavaVersion() string {
+	java := "java"
+	if jdk := JDKHome(); jdk != "" {
+		java = filepath.Join(jdk, "bin", exe("java"))
+	} else if jh := os.Getenv("JAVA_HOME"); jh != "" {
+		java = filepath.Join(jh, "bin", exe("java"))
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	out, err := quietcmd.CommandContext(ctx, java, "-version").CombinedOutput()
+	if err != nil {
+		return ""
+	}
+	line, _, _ := strings.Cut(string(out), "\n")
+	return strings.TrimSpace(line)
+}
+
+// toolEnv is the environment the SDK's own tools run with.
+func (s SDK) toolEnv() []string {
+	return append(os.Environ(), s.Env(os.Getenv("PATH"))...)
+}
+
+// command runs one of the SDK's tools.
+func (s SDK) command(ctx context.Context, tool string, args ...string) *exec.Cmd {
+	cmd := quietcmd.CommandContext(ctx, tool, args...)
+	cmd.Env = s.toolEnv()
+	return cmd
+}
+
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
+}

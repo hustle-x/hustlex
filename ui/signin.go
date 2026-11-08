@@ -1,0 +1,131 @@
+package ui
+
+import (
+	"errors"
+	"strings"
+
+	"github.com/egoist/mygo/ui"
+
+	"github.com/hustlex/hustlex/core/hosts"
+	"github.com/hustlex/hustlex/transport"
+	"github.com/hustlex/hustlex/ui/theme"
+	"github.com/hustlex/hustlex/ui/widget"
+)
+
+// signInPrompt asks again how to sign in after a server refused: another
+// user, or a password, as ssh would prompt for.
+type signInPrompt struct {
+	host     hosts.Host
+	refusal  *transport.AuthError
+	user     string
+	password string
+	remember bool
+	err      string
+}
+
+// promptSignIn opens the sign-in dialog when err is a refused sign-in.
+func (a *App) promptSignIn(h hosts.Host, err error) {
+	var refusal *transport.AuthError
+	if h.ID == hosts.LocalID || !errors.As(err, &refusal) {
+		return
+	}
+	a.signIn = &signInPrompt{host: h, refusal: refusal, user: refusal.User, remember: true}
+}
+
+func (a *App) submitSignIn() {
+	p := a.signIn
+	user := strings.TrimSpace(p.user)
+	if user == "" || strings.ContainsAny(user, "@ ") {
+		p.err = "Type the user to sign in as."
+		return
+	}
+	if p.refusal.AcceptsPassword() && p.password == "" {
+		p.err = "Type the password."
+		return
+	}
+	t, err := transport.ParseSSHTarget(p.host.Address)
+	if err != nil {
+		p.err = err.Error()
+		return
+	}
+	t.User = user
+	h := p.host
+	h.Address = t.String()
+	password := p.password
+	if password != "" && p.remember {
+		h.PasswordAuth = true
+	}
+	if _, stored := a.storedHost(h.ID); stored {
+		if err := a.opts.Hosts.Update(h); err != nil {
+			p.err = err.Error()
+			return
+		}
+		a.reloadHosts()
+	}
+	a.signIn = nil
+	conn := h
+	if password != "" && !p.remember {
+		// Kept for this run of the app only.
+		if a.passwords == nil {
+			a.passwords = map[string]string{}
+		}
+		a.passwords[h.ID] = password
+		conn.PasswordAuth = true
+	}
+	a.connect(conn)
+	if password != "" && p.remember {
+		// After connect, which clears the status bar: a warning about the
+		// keychain must stay visible.
+		a.savePassword(h, password)
+	}
+}
+
+func (a *App) signInDialog(c *ui.Context) {
+	p := a.signIn
+	if p == nil {
+		return
+	}
+	open := true
+	widget.Dialog(c, &open, 480, 14, func() {
+		widget.DialogHeader(c, "Sign in to "+p.host.Name, "", false, "Hosts", p.host.Name, "Sign in")
+		what := "your SSH keys"
+		if p.refusal.TriedPassword {
+			what = "your SSH keys or the saved password"
+		}
+		ui.Text(c, p.refusal.Addr+" didn't accept "+what+" for "+p.refusal.User+".").FontSize(12.5).TextColor(theme.TextSoft)
+		submit := false
+		widget.Field(c, "User", func() {
+			in := widget.Input(c, &p.user, "root").FillWidth().Font(theme.MonoFont)
+			if !p.refusal.AcceptsPassword() {
+				in.AutoFocus()
+			}
+			submit = in.Submitted()
+		})
+		if p.refusal.AcceptsPassword() {
+			widget.Field(c, "Password", func() {
+				submit = widget.Input(c, &p.password, "The user's password").FillWidth().Password().AutoFocus().Submitted() || submit
+			})
+			ui.Row(c).FillWidth().Gap(10).Children(func() {
+				ui.Text(c, "Remember the password in the keychain").FontSize(12.5).TextColor(theme.TextSoft).Grow(1)
+				widget.Switch(c, &p.remember, "Remember the password in the keychain")
+			})
+		} else {
+			ui.Text(c, "This server accepts SSH keys only. Add your public key (~/.ssh/id_ed25519.pub) to the user's ~/.ssh/authorized_keys, or allow passwords in the server's /etc/ssh/sshd_config.").
+				FontSize(12).TextColor(theme.Muted)
+		}
+		if p.err != "" {
+			ui.Text(c, p.err).FontSize(12).TextColor(theme.Error)
+		}
+		widget.DialogFooter(c, "", func() {
+			if widget.GhostButton(c, "Cancel").Clicked() {
+				a.signIn = nil
+			}
+			if widget.PrimaryButton(c, nil, "Sign in", "").Clicked() || submit {
+				a.submitSignIn()
+			}
+		})
+	})
+	if !open {
+		a.signIn = nil
+	}
+}
