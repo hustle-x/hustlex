@@ -37,3 +37,39 @@ func TestTabsShowInTheirSession(t *testing.T) {
 		t.Fatal("a removed tab stays in front")
 	}
 }
+
+// The split icon puts a session's second tab beside the front one; picking
+// the one beside swaps them, and removing it goes back to one.
+func TestTabsSplitBesideEachOther(t *testing.T) {
+	a := New(Options{})
+	parent := proto.SessionInfo{ID: "s1", Project: "/code/app", Agent: "claude"}
+	tab := proto.SessionInfo{ID: "s2", Project: "/code/app", Agent: "shell", Parent: "s1"}
+	a.agents = []proto.AgentInfo{{ID: "claude", Name: "Claude Code"}, {ID: "shell", Name: "Shell"}}
+
+	a.sessions = []proto.SessionInfo{parent}
+	tt := ui.NewTester(func(c *ui.Context) { a.tabStrip(c, parent) }, 600, 40)
+	tt.Frame()
+	if tt.HasText("Show two tabs side by side") {
+		t.Fatal("a split button with a single tab")
+	}
+
+	a.sessions = []proto.SessionInfo{parent, tab}
+	tt.Frame()
+	a.toggleTabSplit(parent)
+	if side, ok := a.sideTab(parent); !ok || side.ID != "s2" || a.frontTab(parent).ID != "s1" {
+		t.Fatalf("side %+v %v, front %q", side, ok, a.frontTab(parent).ID)
+	}
+	a.showTab("s1", "s2")
+	if side, ok := a.sideTab(parent); !ok || side.ID != "s1" || a.frontTab(parent).ID != "s2" {
+		t.Fatalf("after picking the side tab: side %+v %v, front %q", side, ok, a.frontTab(parent).ID)
+	}
+	a.toggleTabSplit(parent)
+	if _, ok := a.sideTab(parent); ok {
+		t.Fatal("still split after turning it off")
+	}
+	a.toggleTabSplit(parent)
+	a.remove("s2")
+	if _, ok := a.sideTab(parent); ok {
+		t.Fatal("a removed tab stays beside")
+	}
+}

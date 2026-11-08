@@ -144,6 +144,7 @@ type App struct {
 	hibernating        *hibernateForm            // hibernating sessions that would lose work, asked about
 	pipelines          []proto.Pipeline          // the connected host's
 	tabs               map[string]string         // the tab each session shows in front, by session ID
+	tabSide            map[string]string         // the tab each session shows beside the front one, by session ID
 	installs           map[string]func()         // install sessions, by session ID: what to check once each ends
 	chats              map[string]*chatview.Chat // by session ID
 	diffs              map[string]*diffview.View // by session ID
@@ -572,9 +573,15 @@ func (a *App) remove(id string) {
 	a.closeSessionWindow(id)
 	delete(a.panes, id)
 	delete(a.tabs, id)
+	delete(a.tabSide, id)
 	for parent, tab := range a.tabs {
 		if tab == id {
 			delete(a.tabs, parent)
+		}
+	}
+	for parent, tab := range a.tabSide {
+		if tab == id {
+			delete(a.tabSide, parent)
 		}
 	}
 	delete(a.chats, id)

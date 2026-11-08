@@ -201,6 +201,17 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 	})
 	a.tabStrip(c, s)
 	front := a.frontTab(s)
+	if side, ok := a.sideTab(s); ok {
+		ui.Row(c).Grow(1).FillWidth().Gap(1).Background(theme.Border).Children(func() {
+			for _, t := range []proto.SessionInfo{front, side} {
+				pc := c.Key("pane:" + t.ID)
+				ui.Column(pc).Grow(1).MinWidth(0).Clip().Background(theme.Background).Children(func() {
+					a.sessionBody(pc, t)
+				})
+			}
+		})
+		return
+	}
 	a.sessionBody(c.Key("front:"+front.ID), front)
 }
 

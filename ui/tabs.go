@@ -58,6 +58,14 @@ func (a *App) showTab(parent, id string) {
 	if a.tabs == nil {
 		a.tabs = map[string]string{}
 	}
+	if a.tabSide[parent] == id {
+		// The side tab came to the front: the old front takes its place.
+		old := a.tabs[parent]
+		if old == "" {
+			old = parent
+		}
+		a.tabSide[parent] = old
+	}
 	if id == parent {
 		delete(a.tabs, parent)
 		return
@@ -65,18 +73,57 @@ func (a *App) showTab(parent, id string) {
 	a.tabs[parent] = id
 }
 
+// sideTab is the tab session s shows beside its front one, when the user
+// split them.
+func (a *App) sideTab(s proto.SessionInfo) (proto.SessionInfo, bool) {
+	id := a.tabSide[s.ID]
+	front := a.frontTab(s).ID
+	if id == "" || id == front {
+		return proto.SessionInfo{}, false
+	}
+	if id == s.ID {
+		return s, true
+	}
+	for _, t := range a.tabsOf(s.ID) {
+		if t.ID == id {
+			return t, true
+		}
+	}
+	return proto.SessionInfo{}, false
+}
+
+// toggleTabSplit shows two tabs of session s side by side, the front one
+// and the first other, or goes back to one.
+func (a *App) toggleTabSplit(s proto.SessionInfo) {
+	if _, on := a.sideTab(s); on {
+		delete(a.tabSide, s.ID)
+		return
+	}
+	front := a.frontTab(s).ID
+	if a.tabSide == nil {
+		a.tabSide = map[string]string{}
+	}
+	for _, t := range append([]proto.SessionInfo{s}, a.tabsOf(s.ID)...) {
+		if t.ID != front {
+			a.tabSide[s.ID] = t.ID
+			return
+		}
+	}
+}
+
 // tabStrip is the row of session s's tabs, its own first, with the button
 // that opens another.
 func (a *App) tabStrip(c *ui.Context, s proto.SessionInfo) {
 	front := a.frontTab(s).ID
+	side, split := a.sideTab(s)
 	strip := ui.Row(c).Height(36).Shrink(0).FillWidth().Padding(0, panelInset, 0, 8).Gap(4).Background(theme.Panel).
 		BorderWidth(0, 0, 1, 0).BorderColor(theme.Border)
 	narrow := strip.LayoutBounds().W > 0 && strip.LayoutBounds().W < narrowFacts
 	strip.Children(func() {
 		ui.Row(c).MinWidth(0).Gap(4).Clip().Children(func() {
-			a.tabButton(c.Key("tab:"+s.ID), s, s, front == s.ID, false)
+			a.tabButton(c.Key("tab:"+s.ID), s, s, front == s.ID || split && side.ID == s.ID, false)
 			for _, t := range a.tabsOf(s.ID) {
-				a.tabButton(c.Key("tab:"+t.ID), s, t, front == t.ID, true)
+				a.tabButton(c.Key("tab:"+t.ID), s, t, front == t.ID || split && side.ID == t.ID, true)
 			}
 		})
 		add := widget.IconButton(c, icon.Plus, "New tab in this session's folder", false)
@@ -93,6 +140,15 @@ func (a *App) tabStrip(c *ui.Context, s proto.SessionInfo) {
 				}
 			}
 		})
+		if len(a.tabsOf(s.ID)) > 0 {
+			label := "Show two tabs side by side"
+			if split {
+				label = "Show one tab"
+			}
+			if widget.IconButton(c, icon.Split, label, split).Clicked() {
+				a.toggleTabSplit(s)
+			}
+		}
 		a.runButton(c, s)
 		ui.Spacer(c)
 		a.sessionFacts(c, a.frontTab(s), narrow)
