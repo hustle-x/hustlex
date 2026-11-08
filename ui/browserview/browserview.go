@@ -291,7 +291,7 @@ func (v *View) navigate(o Options) {
 }
 
 // HomePage is what the Browser shows before the session runs a dev server.
-const HomePage = "about:blank"
+const HomePage = "https://hustle-x.github.io/hustlex/"
 
 // openHome shows HomePage, once, while the session has no dev server.
 func (v *View) openHome(o Options) {
