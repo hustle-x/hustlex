@@ -53,19 +53,19 @@ Or install from a terminal.
 **macOS** (Apple silicon)
 
 ```sh
-curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/get-mac.sh | sh
+curl -fsSL https://hustle-x.github.io/hustlex/get-mac.sh | sh
 ```
 
 **Linux** (x64, arm64)
 
 ```sh
-curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/get.sh | sh
+curl -fsSL https://hustle-x.github.io/hustlex/get.sh | sh
 ```
 
 **Windows** (PowerShell)
 
 ```powershell
-irm https://github.com/hustle-x/hustlex/releases/latest/download/get.ps1 | iex
+irm https://hustle-x.github.io/hustlex/get.ps1 | iex
 ```
 
 To build it yourself you need Go 1.27+ and git:
