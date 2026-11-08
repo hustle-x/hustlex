@@ -9,7 +9,7 @@ Download the installers from [GitHub Releases](https://github.com/hustle-x/hustl
 - **Linux:** one line installs it for the user in `~/.local` (or use the `.deb`):
 
 ```sh
-curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/hustle-x/hustlex/releases/latest/download/get.sh | sh
 ```
 
 Or build it yourself. **From source** (Go 1.27+ and git):
