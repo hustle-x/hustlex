@@ -18,10 +18,10 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/app.png" alt="hustleX: a prompt sent to an agent, its work shown live in the terminal" width="860">
+  <img src="docs/assets/app.png" alt="hustleX with a Claude Code session that has just finished a change" width="860">
 </p>
 
-<sub align="center">The images on this page use sample data.</sub>
+<p align="center"><sub>Every image on this page uses sample data.</sub></p>
 
 ## What it does
 
@@ -36,10 +36,20 @@
 - **Command line.** `hustlex-app` lets scripts, and agents, start and manage sessions.
 - **Light on memory.** The app is written in Go with [MyGo](https://mygo.egoist.dev/), not a bundled browser, and idle agents hibernate.
 
-<p align="center">
-  <img src="docs/assets/accounts.png" alt="Switching an agent session to another account when one runs low" width="420">
-  <img src="docs/assets/hosts.png" alt="A laptop connected to a server over SSH" width="420">
-</p>
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/compare.png" alt="Compare: one prompt given to three agents, each on its own branch"><br><sub>Compare agents on the same prompt</sub></td>
+<td width="50%"><img src="docs/assets/review.png" alt="A session's diff with a warning that another session changed the same lines"><br><sub>Review a session's diff, then commit or merge</sub></td>
+</tr>
+<tr>
+<td><img src="docs/assets/chat.png" alt="The chat view of a Claude Code session with tool calls and a diff"><br><sub>Chat view for Claude Code and Codex</sub></td>
+<td><img src="docs/assets/traffic.png" alt="The Traffic tool: a list of requests and the selected request's headers and body"><br><sub>Traffic: see, mock and pause an app's HTTP</sub></td>
+</tr>
+<tr>
+<td><img src="docs/assets/notes.png" alt="A note with a checklist, a callout and an agent's proposed change"><br><sub>Notes an agent can help with</sub></td>
+<td><img src="docs/assets/accounts.png" alt="Moving a session to another account when one runs low"><br><sub>Several accounts, one session moved between them</sub></td>
+</tr>
+</table>
 
 Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and many more, plus any program you can run in a terminal. The list and how each one is started is in [docs/agents.md](docs/agents.md).
 
