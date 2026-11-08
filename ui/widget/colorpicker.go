@@ -1,7 +1,6 @@
 package widget
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/egoist/mygo/ui"
@@ -97,6 +96,6 @@ func ColorPicker(c *ui.Context, v *HSV) bool {
 				From: ui.RGB(0, 0, 0), To: HSV{v.H, v.S, 1}.Color()})
 		})
 	})
-	ui.Text(c, fmt.Sprintf("%s", theme.Hex(v.Color()))).FontSize(11).TextColor(theme.Muted).Font(theme.MonoFont)
+	ui.Text(c, theme.Hex(v.Color())).FontSize(11).TextColor(theme.Muted).Font(theme.MonoFont)
 	return changed
 }
