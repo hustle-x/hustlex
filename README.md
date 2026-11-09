@@ -33,7 +33,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/app.png" alt="hustleX with a Claude Code session that has just finished a change" width="860">
+  <img src="docs/assets/hero.gif" alt="hustleX with five sessions: a prompt typed into Claude Code, which reads, edits, writes a test and runs it" width="880">
 </p>
 
 <p align="center"><sub>Every image on this page uses sample data.</sub></p>
@@ -51,13 +51,58 @@
 - **Command line.** `hustlex-app` lets scripts, and agents, start and manage sessions.
 - **Light on memory.** The app is written in Go with [MyGo](https://mygo.egoist.dev/), not a bundled browser, and idle agents hibernate.
 
+Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and many more, plus any program you can run in a terminal. The list and how each one is started is in [docs/agents.md](docs/agents.md).
+
+## See it work
+
+### Compare
+
+One prompt, three agents. Each works on a branch of its own, and Compare shows what every one of them changed, side by side, so you keep the best.
+
 <p align="center">
-  <img src="docs/assets/views-1.png" alt="Compare three agents on one prompt, and review a session's diff before merging">
-  <img src="docs/assets/views-2.png" alt="The chat view of a Claude Code session, and the Traffic tool">
-  <img src="docs/assets/views-3.png" alt="A note with a checklist and an agent's proposed change, and moving a session between accounts">
+  <img src="docs/assets/compare.gif" alt="A new session sent to Claude Code, Codex and Gemini CLI at once, then Compare showing the files each one changed" width="880">
 </p>
 
-Works with Claude Code, Codex, OpenCode, Gemini CLI, Aider, Goose, Cursor and many more, plus any program you can run in a terminal. The list and how each one is started is in [docs/agents.md](docs/agents.md).
+### Review and ship
+
+When an agent is done, the Git panel lists what it changed. Read the diff file by file, then commit from the same place.
+
+<p align="center">
+  <img src="docs/assets/review.gif" alt="Claude Code finishing a change in the terminal, the Git panel listing four changed files, the diff of notes.js, and the Commit dialog" width="880">
+</p>
+
+### Terminal or chat
+
+Read a Claude Code or Codex session as a chat: its tool calls fold into one line, each edit opens to its diff, and the message box types into the agent.
+
+<p align="center">
+  <img src="docs/assets/chat.gif" alt="A Claude Code session shown as a chat: the work folded, an edit opened to its diff, then a second message sent from the message box" width="880">
+</p>
+
+### Traffic
+
+See the HTTP that what a session runs sends and gets back, live. Mock a request from what it answered, and run it again.
+
+<p align="center">
+  <img src="docs/assets/traffic.gif" alt="A caught terminal running a smoke test against a local API, the requests listed with their status, a 500 turned into a mock, and the same call answered 200 by it" width="880">
+</p>
+
+### Notes with an agent
+
+Ask an agent about a page. It proposes its changes above the page, as a diff, and nothing changes until you accept.
+
+<p align="center">
+  <img src="docs/assets/notes.gif" alt="A rough note tidied by Claude Code: its proposal shown as a diff, accepted, and a to-do ticked" width="880">
+</p>
+
+### Accounts
+
+Each account's limits sit in the title bar. When one runs low, pick another, and the session goes on there with the same conversation.
+
+<p align="center">
+  <img src="docs/assets/accounts.gif" alt="An account at 96% of its five-hour limit, a switch to a second account, and the session continuing there on the same conversation" width="880">
+</p>
+
 
 ## Install
 
