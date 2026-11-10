@@ -4,8 +4,11 @@ package agent
 // needs no root (npm's own global folder often does).
 func npmInstall(name, pkg string) string {
 	return `command -v npm >/dev/null 2>&1 || { echo "` + name + ` installs with npm: install Node.js first (https://nodejs.org)." >&2; exit 1; }; ` +
-		`npm install -g --prefix "$HOME/.local" ` + pkg
+		npmGlobal + pkg
 }
+
+// npmGlobal is how npmInstall installs a package.
+const npmGlobal = `npm install -g --prefix "$HOME/.local" `
 
 // Presets are the built-in agents, in the order the UI lists them: the
 // ones hustleX knows most about first. Where each flag comes from is in
@@ -21,6 +24,7 @@ var Presets = []Preset{
 		Interrupt:       "\x1b",
 		SignIn:          []string{"claude", "auth", "login"},
 		Install:         "curl -fsSL https://claude.ai/install.sh | bash",
+		InstallWindows:  "irm https://claude.ai/install.ps1 | iex",
 		Homepage:        "https://code.claude.com/docs",
 	},
 	{
@@ -31,6 +35,7 @@ var Presets = []Preset{
 		Interrupt:       "\x1b",
 		SignIn:          []string{"codex", "login", "--device-auth"},
 		Install:         "curl -fsSL https://chatgpt.com/codex/install.sh | sh",
+		InstallWindows:  "npm install -g @openai/codex",
 		Homepage:        "https://github.com/openai/codex",
 	},
 	{
@@ -40,6 +45,7 @@ var Presets = []Preset{
 		Continue:        []string{"--continue"},
 		SignIn:          []string{"opencode", "auth", "login"},
 		Install:         "curl -fsSL https://opencode.ai/install | bash",
+		InstallWindows:  "npm install -g opencode-ai",
 		Homepage:        "https://opencode.ai/docs/cli/",
 	},
 	{

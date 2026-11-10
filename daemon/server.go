@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -315,6 +316,7 @@ func (s *Server) info() proto.DaemonInfo {
 		Home:     home,
 		Hash:     s.Hash,
 		ID:       s.daemonID,
+		OS:       runtime.GOOS,
 	}
 	info.Display, info.DisplayNote = display.Available()
 	if !info.Display {

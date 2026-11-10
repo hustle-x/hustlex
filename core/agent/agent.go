@@ -6,6 +6,7 @@ package agent
 import (
 	"context"
 	"os/exec"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -68,6 +69,9 @@ type Preset struct {
 	// as a POSIX shell command run without root; "" when hustleX doesn't
 	// know one it has checked.
 	Install string
+	// InstallWindows is the same for Windows, a PowerShell command; for an
+	// agent installed with npmInstall it is npm's own.
+	InstallWindows string
 	// Homepage is where the agent's documentation is, to install it from
 	// when Install is empty.
 	Homepage string
@@ -194,7 +198,7 @@ func List() []proto.AgentInfo {
 	for _, p := range Presets {
 		out = append(out, proto.AgentInfo{
 			ID: p.ID, Name: p.Name, Command: p.Program(), Installed: p.Installed(),
-			CanSkipPermissions: len(p.SkipPermissions)+len(p.SkipEnv) > 0, Install: p.Install, Homepage: p.Homepage,
+			CanSkipPermissions: len(p.SkipPermissions)+len(p.SkipEnv) > 0, Install: p.installCommand(), Homepage: p.Homepage,
 			SignIn: strings.Join(append(slices.Clone(p.SignInEnv), p.SignIn...), " "),
 		})
 	}
@@ -202,4 +206,19 @@ func List() []proto.AgentInfo {
 		proto.AgentInfo{ID: Shell, Name: "Shell", Installed: true},
 		proto.AgentInfo{ID: Custom, Name: "Custom command", Installed: true},
 	)
+}
+
+// installCommand is how the agent installs on this host: Install, or
+// InstallWindows on Windows ("" when there is none).
+func (p Preset) installCommand() string {
+	if runtime.GOOS != "windows" {
+		return p.Install
+	}
+	if p.InstallWindows != "" {
+		return p.InstallWindows
+	}
+	if i := strings.Index(p.Install, npmGlobal); i >= 0 {
+		return "npm install -g " + p.Install[i+len(npmGlobal):]
+	}
+	return ""
 }

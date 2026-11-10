@@ -504,6 +504,7 @@ field DaemonInfo.hash string
 field DaemonInfo.home string
 field DaemonInfo.hostname string
 field DaemonInfo.id string
+field DaemonInfo.os string
 field DaemonInfo.pid int
 field DaemonInfo.sessions int
 field DaemonInfo.started time.Time

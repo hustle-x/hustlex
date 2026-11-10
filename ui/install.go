@@ -80,7 +80,7 @@ func (a *App) runInstall(name, command string, ended func()) {
 		Name:       name,
 		Agent:      agent.Custom,
 		BranchMode: proto.BranchNone,
-		Command:    []string{"sh", "-c", command},
+		Command:    a.installShell(command),
 	}
 	f.busy, f.err = true, ""
 	go func() {
@@ -100,6 +100,14 @@ func (a *App) runInstall(name, command string, ended func()) {
 			a.selectSession(info)
 		})
 	}()
+}
+
+// installShell runs command in the host's shell: PowerShell on Windows.
+func (a *App) installShell(command string) []string {
+	if a.daemonInfo.OS == "windows" {
+		return []string{"powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command}
+	}
+	return []string{"sh", "-c", command}
 }
 
 // installEnded runs what an install session asked for once it exits.

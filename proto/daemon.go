@@ -32,6 +32,9 @@ type DaemonInfo struct {
 	// ID names this daemon's folder for good, whatever the host's name or
 	// address: links between hosts' copies of a project name it.
 	ID string `json:"id,omitempty"`
+	// OS is the host's system as Go names it ("linux", "darwin",
+	// "windows"); "" from older daemons.
+	OS string `json:"os,omitempty"`
 }
 
 // AgentInfo describes an agent the daemon can start.
@@ -42,7 +45,8 @@ type AgentInfo struct {
 	Installed bool   `json:"installed"`
 	// CanSkipPermissions: the agent has a mode that runs tools without asking.
 	CanSkipPermissions bool `json:"canSkipPermissions,omitempty"`
-	// Install is a shell command that installs the agent, "" if unknown.
+	// Install is a command that installs the agent, "" if unknown: POSIX
+	// shell, or PowerShell where DaemonInfo.OS is "windows".
 	Install string `json:"install,omitempty"`
 	// SignIn is the command that signs the agent in without a browser on
 	// the host, as it reads; "" when there is none (or an older daemon).
