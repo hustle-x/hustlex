@@ -17,14 +17,17 @@ import (
 )
 
 // The app updates itself: it looks for a new version a little after it
-// starts and every few hours, shows it in a card in the window's corner
-// (until put off to the next launch) and in the title bar, and installs it
-// when the user says so. Restarting runs the new version, which replaces
+// starts, every hour and when the window comes back to the front after a
+// while, shows it in a card in the window's corner (until put off to the
+// next launch) and in the title bar, and installs it when the user says so. Restarting runs the new version, which replaces
 // the local daemon (hostconn), and the daemon brings the sessions back.
 
 const (
 	firstUpdateCheck  = 15 * time.Second
-	checkUpdatesEvery = 6 * time.Hour
+	checkUpdatesEvery = time.Hour
+	// recheckOnFocus: coming back to the window looks again when the last
+	// look is older than this.
+	recheckOnFocus = 20 * time.Minute
 	checkTimeout      = 30 * time.Second
 )
 
@@ -115,6 +118,14 @@ func (a *App) startUpdates() {
 			})
 		}
 	}()
+}
+
+// updatesOnFocus looks for a new version when the user comes back to the
+// window and the last look is a while ago.
+func (a *App) updatesOnFocus() {
+	if a.updates.source != nil && !a.state.Updates.Manual && !a.updates.checked.IsZero() && time.Since(a.updates.checked) > recheckOnFocus {
+		a.checkForUpdates(false)
+	}
 }
 
 // checkForUpdates asks for a new version. A check the user asked for says

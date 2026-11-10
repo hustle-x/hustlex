@@ -336,7 +336,7 @@ func (a *App) Open() *mygo.Window {
 	a.onMain = a.win.Update
 	a.watchQuit()
 	a.usage.Every = a.usageEvery
-	a.win.OnFocus(func() { a.blurred = false; a.usage.Poke() })
+	a.win.OnFocus(func() { a.blurred = false; a.usage.Poke(); a.updatesOnFocus() })
 	a.win.OnBlur(func() { a.blurred = true })
 	setAppMenu(a)
 	a.win.OnClosed(func() {
