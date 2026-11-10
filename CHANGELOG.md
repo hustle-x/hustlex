@@ -2,6 +2,10 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.5
+
+- **Accounts by name:** a new session's account choices read as their chips do: the name you gave the account, else the email it is signed in as, instead of "Default" and "Account 2".
+
 ## 1.0.4
 
 - **Sessions keep their own chat across updates:** after an update or a restart, each agent session resumes its own conversation, even when several sessions share a folder (before, they all went on with the folder's latest one).

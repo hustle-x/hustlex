@@ -208,6 +208,21 @@ func (a *App) removeAccount(st *accountsState, acc proto.Account) {
 	}()
 }
 
+// accountLabel names an account as the user knows it: the name given its
+// chip, else the email it is signed in as, else fallback.
+func (a *App) accountLabel(agentID, ref, fallback string) string {
+	base := agent.Base(agentID)
+	if name := a.state.AccountNames[a.accountKey(base, ref)]; name != "" {
+		return name
+	}
+	for _, acc := range a.credits.Accounts() {
+		if acc.Agent == base && acc.Ref == ref && acc.Account != "" {
+			return acc.Account
+		}
+	}
+	return fallback
+}
+
 // accountField picks the account the new session's agent signs in as,
 // when it has others.
 func (a *App) accountField(c *ui.Context) {
@@ -222,10 +237,10 @@ func (a *App) accountField(c *ui.Context) {
 		return
 	}
 	widget.Field(c, "Account", func() {
-		labels := []string{"Default"}
+		labels := []string{a.accountLabel(f.agent, proto.RefDefault, "Default")}
 		cur := 0
 		for i, acc := range list {
-			labels = append(labels, acc.Name)
+			labels = append(labels, a.accountLabel(f.agent, acc.ID, acc.Name))
 			if acc.ID == f.account {
 				cur = i + 1
 			}
