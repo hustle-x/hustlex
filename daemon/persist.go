@@ -13,6 +13,7 @@ import (
 
 	"github.com/hustlex/hustlex/core/agent"
 	"github.com/hustlex/hustlex/core/session"
+	"github.com/hustlex/hustlex/core/transcript"
 )
 
 // Sessions outlive the daemon: their records live in sessions.json and the
@@ -55,6 +56,10 @@ type record struct {
 	HibernatedByHand bool      `json:"hibernatedByHand,omitempty"`
 	HibernatedAt     time.Time `json:"hibernatedAt,omitzero"`
 	NoAutoHibernate  bool      `json:"noAutoHibernate,omitempty"`
+	// Conversation is the agent's conversation, as its chat found it: the
+	// one it resumes, where several sessions share a folder and the last
+	// one there may be another's.
+	Conversation string `json:"conversation,omitempty"`
 }
 
 // persistence saves the daemon's sessions. Its methods are safe from any
@@ -132,6 +137,9 @@ func (p *persistence) update(s *session.Session, command []string) {
 	} else if known {
 		r.Command = old.Command
 	}
+	if known {
+		r.Conversation = old.Conversation
+	}
 	if known && equalRecords(old, r) {
 		return
 	}
@@ -140,6 +148,26 @@ func (p *persistence) update(s *session.Session, command []string) {
 		p.order = append(p.order, r.ID)
 	}
 	p.saveLocked()
+}
+
+// setConversation records the conversation session id's agent is on.
+func (p *persistence) setConversation(id, conversation string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	r, ok := p.records[id]
+	if !ok || p.closing || conversation == "" || r.Conversation == conversation {
+		return
+	}
+	r.Conversation = conversation
+	p.records[id] = r
+	p.saveLocked()
+}
+
+// conversation is the one recorded for session id, "" when none is.
+func (p *persistence) conversation(id string) string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.records[id].Conversation
 }
 
 func (p *persistence) remove(id string) {
@@ -248,7 +276,9 @@ func (s *Server) restore() {
 			if preset, ok := agent.Find(r.Agent); ok && len(r.Restart) > 0 && len(preset.Continue) > 0 {
 				// The command saved has the hooks and guide of the daemon
 				// that saved it.
-				spec.Command = thenShell(preset.Argv(agentLaunch(preset, r.Skip, "", true, s.chatOf(r.NotesFor, r.Canvas, s.guideFor(spec.Meta)))))
+				l := agentLaunch(preset, r.Skip, "", true, s.chatOf(r.NotesFor, r.Canvas, s.guideFor(spec.Meta)))
+				l.Resume = r.Conversation
+				spec.Command = thenShell(preset.Argv(l))
 				spec.Meta.Restart = spec.Command
 			}
 			if r.Display {
@@ -290,6 +320,7 @@ func (s *Server) saveHistories(done <-chan struct{}) {
 				continue
 			}
 			s.persist.saveHistory(sess)
+			s.noteConversation(sess)
 			saved[sess] = at
 		}
 		if len(saved) > len(list) {
@@ -319,7 +350,9 @@ func (s *Server) continueSession(id string) (*session.Session, error) {
 	}
 	command := meta.Restart
 	if preset, ok := agent.Find(meta.Agent); ok && len(preset.Continue) > 0 {
-		command = thenShell(preset.Argv(agentLaunch(preset, meta.SkipPermissions, "", true, s.chatOf(meta.NotesFor, meta.CanvasFor, s.guideFor(meta)))))
+		l := agentLaunch(preset, meta.SkipPermissions, "", true, s.chatOf(meta.NotesFor, meta.CanvasFor, s.guideFor(meta)))
+		l.Resume = s.persist.conversation(id)
+		command = thenShell(preset.Argv(l))
 	}
 	meta.Restart, meta.Restored, meta.Hibernated, meta.HibernatedByHand, meta.HibernatedAt = command, false, false, false, time.Time{}
 	env, err := s.agentEnv(meta)
@@ -358,4 +391,16 @@ func (s *Server) agentEnv(meta session.Meta) ([]string, error) {
 		return nil, err
 	}
 	return append(append(append(append(preset.Environ(meta.SkipPermissions), apiEnv(meta.Agent)...), acc...), notesEnv(meta.NotesFor != "")...), canvasEnv(meta.CanvasFor != "")...), nil
+}
+
+// noteConversation records which conversation sess's agent is on, for a
+// relaunch to resume that one.
+func (s *Server) noteConversation(sess *session.Session) {
+	info := sess.Info()
+	if info.Exited || !transcript.Supports(info.Agent) {
+		return
+	}
+	if path := s.transcriptPath(info.ID); path != "" {
+		s.persist.setConversation(info.ID, transcript.ConversationID(info.Agent, path))
+	}
 }

@@ -1,13 +1,12 @@
 #!/bin/sh
 # Builds hustleX's installers on this machine, without publishing anything:
 # the macOS app and disk image (signed ad hoc unless mygo.json names a
-# Developer ID), the Linux .deb and tarball with install.sh, and the Windows
-# setup, with SHA256SUMS. Usage: scripts/package.sh [platforms]
-# (default darwin/universal,linux/amd64,linux/arm64,windows/amd64).
+# Developer ID) and the Windows setup, with SHA256SUMS. Usage: scripts/package.sh [platforms]
+# (default darwin/arm64,windows/amd64).
 # Set MYGO_UPDATER_PRIVATE_KEY to sign the updates installed apps fetch.
 set -eu
 cd "$(dirname "$0")/.."
-platforms=${1:-darwin/universal,linux/amd64,linux/arm64,windows/amd64}
+platforms=${1:-darwin/arm64,windows/amd64}
 version=$(sed -n 's/.*"version": "\(.*\)".*/\1/p' cmd/hustlex/mygo.json)
 dist="$PWD/dist/$version"
 # Disk images are made by mounting them, which macOS refuses on some

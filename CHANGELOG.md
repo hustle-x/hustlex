@@ -2,6 +2,11 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.4
+
+- **Sessions keep their own chat across updates:** after an update or a restart, each agent session resumes its own conversation, even when several sessions share a folder (before, they all went on with the folder's latest one).
+- **macOS and Windows only:** the Linux desktop app is gone. Linux machines stay supported as servers hustleX connects to.
+
 ## 1.0.3
 
 - **Updates itself:** hustleX looks for a new version when it starts and every few hours, shows it in the corner and in the title bar, and installs it with one click. From this version on, no need to download it again.

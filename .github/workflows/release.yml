@@ -41,10 +41,9 @@ jobs:
       matrix:
         include:
           # Disk images and signing need macOS; MyGo needs no cgo, so
-          # Ubuntu builds Windows' as well as Linux's.
+          # Ubuntu builds Windows'.
           - { name: macOS, os: macos-latest, platform: darwin/universal }
           - { name: Windows, os: ubuntu-latest, platform: windows/amd64 }
-          - { name: Linux, os: ubuntu-latest, platform: "linux/amd64,linux/arm64" }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

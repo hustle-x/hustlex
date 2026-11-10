@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/hustle-x/hustlex/releases/latest"><img src="https://img.shields.io/github/v/release/hustle-x/hustlex?style=for-the-badge&color=555&label=release" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/macOS_·_Windows_·_Linux-555?style=for-the-badge" alt="macOS, Windows, Linux">
+  <img src="https://img.shields.io/badge/macOS_·_Windows-555?style=for-the-badge" alt="macOS, Windows">
   <img src="https://img.shields.io/badge/written_in-Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Written in Go">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-use--only-c0392b?style=for-the-badge" alt="License: use only, all rights reserved"></a>
 </p>
@@ -106,7 +106,7 @@ Each account's limits sit in the title bar. When one runs low, pick another, and
 
 ## Install
 
-Download the installer for [macOS (Apple silicon), Windows or Linux](https://github.com/hustle-x/hustlex/releases/latest). The builds are not signed yet, so your system will warn you the first time; [docs/install.md](docs/install.md) shows how to open them.
+Download the installer for [macOS (Apple silicon) or Windows](https://github.com/hustle-x/hustlex/releases/latest). The builds are not signed yet, so your system will warn you the first time; [docs/install.md](docs/install.md) shows how to open them.
 
 Or install from a terminal.
 
@@ -114,12 +114,6 @@ Or install from a terminal.
 
 ```sh
 curl -fsSL https://hustle-x.github.io/hustlex/get-mac.sh | sh
-```
-
-**Linux** (x64, arm64)
-
-```sh
-curl -fsSL https://hustle-x.github.io/hustlex/get.sh | sh
 ```
 
 **Windows** (PowerShell)

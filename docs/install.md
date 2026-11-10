@@ -6,11 +6,8 @@ Download the installers from [GitHub Releases](https://github.com/hustle-x/hustl
 
 - **macOS:** one line (`curl -fsSL https://hustle-x.github.io/hustlex/get-mac.sh | sh`), or the `.dmg`, then drag hustleX to Applications. It isn't notarized yet, so macOS blocks the first launch: right-click it → Open, or `xattr -dr com.apple.quarantine /Applications/hustleX.app`.
 - **Windows:** one line in PowerShell (`irm https://hustle-x.github.io/hustlex/get.ps1 | iex`), or the `Setup` `.exe`. It isn't signed yet: in SmartScreen's warning, More info → Run anyway. The daemon, which keeps sessions running when the window is closed, runs as a copy of the app in `%USERPROFILE%\.hustlex-app\daemon\`, so installing over the app works while it runs. Before 0.2.1 it ran as the app itself: installing over one of those says "Error opening file for writing" until hustleX is ended in Task Manager (`taskkill /F /IM hustleX.exe`), then Retry.
-- **Linux:** one line installs it for the user in `~/.local` (or use the `.deb`):
 
-```sh
-curl -fsSL https://hustle-x.github.io/hustlex/get.sh | sh
-```
+The app runs on macOS and Windows. Linux machines are servers it connects to (below), not a desktop it installs on.
 
 Or build it yourself. **From source** (Go 1.27+ and git):
 
@@ -24,7 +21,6 @@ make build
 | Platform | Installer | Installs to |
 |---|---|---|
 | macOS | `hustleX <version>.dmg` (universal): drag hustleX to Applications. Signed ad hoc unless `cmd/hustlex/mygo.json` names a Developer ID, so Gatekeeper asks the first time (right-click → Open). | `/Applications/hustleX.app` |
-| Linux | `hustlex_<version>_<arch>.deb` (`sudo apt install ./hustlex_….deb`), or `hustlex-<version>-linux-<arch>.tar.gz` with `install-linux-<arch>.sh`, which installs for the user in `~/.local` | `/opt/hustlex` (deb) |
 | Windows | `hustleX Setup <version> <arch>.exe` | the user's programs |
 
 Settings → App → **Command line** links the `hustlex-app` command (see [cli.md](cli.md)) into `~/.local/bin`.

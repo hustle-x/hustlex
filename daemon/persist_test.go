@@ -124,6 +124,38 @@ func TestRestoredAgentGetsCurrentArguments(t *testing.T) {
 	}
 }
 
+// Two sessions in one folder each resume their own conversation after a
+// restart, not the folder's last one.
+func TestRestoredAgentsResumeTheirOwnConversation(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh")
+	}
+	dir, folder := t.TempDir(), t.TempDir()
+	saved := `[{"id":"a1","dir":"` + folder + `","agent":"claude","relaunch":true,"restart":["/bin/sh","-c","exit 0"],"conversation":"conv-one"},` +
+		`{"id":"a2","dir":"` + folder + `","agent":"claude","relaunch":true,"restart":["/bin/sh","-c","exit 0"],"conversation":"conv-two"}]`
+	if err := os.WriteFile(filepath.Join(dir, "sessions.json"), []byte(saved), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	srv, err := NewServer(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(srv.Close)
+	for id, want := range map[string]string{"a1": "conv-one", "a2": "conv-two"} {
+		sess, err := srv.sessions.Get(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cmd := sess.Info().Command
+		if i := slices.Index(cmd, "--resume"); i < 0 || i+1 >= len(cmd) || cmd[i+1] != want {
+			t.Fatalf("%s restored with %q", id, cmd)
+		}
+		if got := srv.persist.conversation(id); got != want {
+			t.Fatalf("%s's conversation recorded as %q", id, got)
+		}
+	}
+}
+
 // Sessions brought back by a restart get HUSTLEX_BIN, which agents' hooks
 // and `hustlex display` need, as new ones do.
 func TestRestoredSessionKnowsTheDaemon(t *testing.T) {

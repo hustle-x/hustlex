@@ -1,7 +1,7 @@
 {
   "name": "hustleX",
   "identifier": "ai.hustlex.app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "copyright": "© 2026 hustleX contributors",
   "out": "../../build",
   "macos": {
