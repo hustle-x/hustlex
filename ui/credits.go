@@ -228,19 +228,17 @@ func (a *App) signInChip(c *ui.Context) {
 	if !b.Clicked() {
 		return
 	}
+	// No project needed: without one, it runs in the home folder.
 	p, ok := a.currentProject()
 	if !ok && len(a.projects) > 0 {
-		p, ok = a.projects[0], true
+		p = a.projects[0]
 	}
-	switch {
-	case !ok:
-		a.notify("Add a project first: Claude Code signs in and installs in a session there.")
-	case ag.Installed:
+	if ag.Installed {
 		a.signInFromCredits(p, ag.ID, proto.RefDefault)
-	default:
-		a.openNewSession(p)
-		a.newSession.agent = ag.ID // the form offers to install it
+		return
 	}
+	a.newSession.project = proto.ProjectDetail{ProjectInfo: p}
+	a.installAgent(ag)
 }
 
 // creditsPage is the Credits page of the connected host.
@@ -275,8 +273,12 @@ func (a *App) signInFromCredits(p proto.ProjectInfo, agentID, ref string) {
 	if ref == proto.RefDefault {
 		account = ""
 	}
+	dir := ""
+	if p.Path == "" {
+		dir = a.daemonInfo.Home // no project yet
+	}
 	go func() {
-		info, err := cl.CreateSession(proto.SessionCreateParams{Project: p.Path, Agent: agentID, SignIn: true, Account: account})
+		info, err := cl.CreateSession(proto.SessionCreateParams{Project: p.Path, Dir: dir, Agent: agentID, SignIn: true, Account: account})
 		a.onMain(func() {
 			if err != nil {
 				a.status = strings.TrimPrefix(err.Error(), proto.MethodSessionCreate+": ")

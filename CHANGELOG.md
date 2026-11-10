@@ -2,6 +2,10 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.2
+
+- **No project needed to start:** Install Claude Code and Sign in to Claude Code in the title bar work before any folder is opened; they run in the home folder and show right away.
+
 ## 1.0.1
 
 - **Windows:** the window's buttons are −, □ and × on the right, as on Windows (macOS keeps its three dots).

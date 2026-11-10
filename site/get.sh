@@ -3,7 +3,7 @@
 #   curl -fsSL https://hustle-x.github.io/hustlex/get.sh | sh
 set -eu
 repo='hustle-x/hustlex'
-version='1.0.1'
+version='1.0.2'
 base="https://github.com/$repo/releases/latest/download"
 
 if [ -t 1 ]; then G=$(printf '\033[32m'); D=$(printf '\033[2m'); B=$(printf '\033[1m'); W=$(printf '\033[97m'); N=$(printf '\033[0m'); else G=''; D=''; B=''; W=''; N=''; fi

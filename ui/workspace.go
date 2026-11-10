@@ -103,6 +103,11 @@ func (a *App) workspaceView(c *ui.Context) {
 	if a.connectionView(c) {
 		return
 	}
+	if s, ok := a.selectedProjectless(); ok {
+		// Installing or signing in an agent before any project.
+		a.focusView(c, proto.ProjectInfo{Name: "Home", Path: s.Dir}, s)
+		return
+	}
 	p, ok := a.currentProject()
 	if !ok {
 		a.viewHeader(c, func() { widget.Breadcrumb(c, a.host.Name, "Start") })
@@ -120,6 +125,17 @@ func (a *App) workspaceView(c *ui.Context) {
 		return
 	}
 	a.focusView(c, p, a.focused(sessions))
+}
+
+// selectedProjectless is the selected session when it runs outside any
+// project, as an agent's install or sign-in does while there is none.
+func (a *App) selectedProjectless() (proto.SessionInfo, bool) {
+	for _, s := range a.sessions {
+		if s.ID == a.selected && s.Project == "" && s.Parent == "" && a.selected != "" {
+			return s, true
+		}
+	}
+	return proto.SessionInfo{}, false
 }
 
 // focused is the session the focus view shows: the maximized one, else

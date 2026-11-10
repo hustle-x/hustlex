@@ -77,6 +77,7 @@ func (a *App) runInstall(name, command string, ended func()) {
 	}
 	params := proto.SessionCreateParams{
 		Project:    f.project.Path,
+		Dir:        a.installDir(f.project.Path),
 		Name:       name,
 		Agent:      agent.Custom,
 		BranchMode: proto.BranchNone,
@@ -100,6 +101,14 @@ func (a *App) runInstall(name, command string, ended func()) {
 			a.selectSession(info)
 		})
 	}()
+}
+
+// installDir is where an install runs without a project: the home folder.
+func (a *App) installDir(project string) string {
+	if project != "" {
+		return ""
+	}
+	return a.daemonInfo.Home
 }
 
 // installShell runs command in the host's shell: PowerShell on Windows.
