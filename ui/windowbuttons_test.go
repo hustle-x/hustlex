@@ -14,9 +14,18 @@ func (w *fakeWindow) Close()          { w.did = append(w.did, "close") }
 func (w *fakeWindow) Minimize()       { w.did = append(w.did, "minimize") }
 func (w *fakeWindow) ToggleMaximize() { w.did = append(w.did, "maximize") }
 
-// The title bar's own buttons close, minimize and maximize the window,
-// the same on every system.
+// The title bar's own buttons close, minimize and maximize the window:
+// macOS's dots, and Windows' and Linux's −, □ and ×.
 func TestWindowButtons(t *testing.T) {
+	for _, mac := range []bool{true, false} {
+		was := macWindowButtons
+		macWindowButtons = mac
+		testWindowButtons(t, map[bool]string{true: "title-bar.png", false: "title-bar-windows.png"}[mac])
+		macWindowButtons = was
+	}
+}
+
+func testWindowButtons(t *testing.T, name string) {
 	a := New(Options{})
 	w := &fakeWindow{}
 	a.winCtl = w
@@ -30,7 +39,7 @@ func TestWindowButtons(t *testing.T) {
 		}
 		tt.Frame()
 	}
-	shot(t, tt, "title-bar.png")
+	shot(t, tt, name)
 	if got := w.did; len(got) != 3 || got[0] != "maximize" || got[1] != "minimize" || got[2] != "close" {
 		t.Fatalf("did %q", got)
 	}

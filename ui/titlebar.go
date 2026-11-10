@@ -25,17 +25,32 @@ func (a *App) titleBar(c *ui.Context) {
 // titleBarWith is the title bar with chips on its right.
 func (a *App) titleBarWith(c *ui.Context, chips func()) {
 	bar := c.TitleBar()
-	ui.Row(c).Height(max(bar.Height, titleBarHeight)).Shrink(0).FillWidth().
-		Padding(0, bar.Right+10, 0, bar.Left+14).Gap(8).DragWindow().Children(func() {
+	height := max(bar.Height, titleBarHeight)
+	right := bar.Right + 10
+	if !macWindowButtons {
+		right = bar.Right // the buttons sit flush with the corner
+	}
+	ui.Row(c).Height(height).Shrink(0).FillWidth().
+		Padding(0, right, 0, bar.Left+14).Gap(8).DragWindow().Children(func() {
 		// The sides keep what they hold, as wide as they were last
 		// frame, the search between them giving way: centered while there
 		// is room.
 		ui.Row(c).Grow(1).Basis(0).MinWidth(a.titleLeftW).Children(func() {
-			inner := ui.Row(c).Shrink(0).Children(func() { a.windowButtons(c) })
+			inner := ui.Row(c).Shrink(0).Children(func() {
+				if macWindowButtons {
+					a.windowButtons(c)
+				}
+			})
 			a.titleLeftW = inner.Bounds().W
 		})
 		ui.Row(c).Grow(1).Basis(0).MinWidth(a.titleRightW).Justify(ui.End).Children(func() {
-			inner := ui.Row(c).Shrink(0).Gap(6).Children(chips)
+			inner := ui.Row(c).Shrink(0).Gap(6).Children(func() {
+				chips()
+				if !macWindowButtons {
+					ui.Box(c).Width(4).Shrink(0)
+					a.systemButtons(c, height)
+				}
+			})
 			if w := inner.Bounds().W; w != a.titleRightW {
 				a.titleRightW = w
 				c.After(0) // lay out again with it
