@@ -28,7 +28,7 @@ const (
 	// recheckOnFocus: coming back to the window looks again when the last
 	// look is older than this.
 	recheckOnFocus = 20 * time.Minute
-	checkTimeout      = 30 * time.Second
+	checkTimeout   = 30 * time.Second
 )
 
 // updateSource finds and installs new versions: mygo.Updater, which
