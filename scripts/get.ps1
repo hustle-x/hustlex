@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5.1 may still default to TLS 1.0, which GitHub refuses.
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 $repo = 'hustle-x/hustlex'
-$version = '1.0.0'
+$version = '1.0.1'
 $file = "hustleX-Setup-$version-amd64.exe"
 $base = "https://github.com/$repo/releases/latest/download"
 if (-not [Environment]::Is64BitOperatingSystem) { throw 'Only 64-bit Windows builds exist for now.' }
@@ -49,12 +49,26 @@ $want = ($sums | Where-Object { $_ -match [regex]::Escape($file) } | ForEach-Obj
 $got = (Get-FileHash $path -Algorithm SHA256).Hash.ToLower()
 if (-not $want -or $want.Trim().ToLower() -ne $got) { throw 'The download does not match SHA256SUMS.' }
 Step 'Verifying installer' 'sha256 ok'
+# A running hustleX, or its daemon (the same program), keeps hustleX.exe
+# open, and the installer then leaves the old one in place.
+$running = Get-Process -Name hustleX, hustlex-app -ErrorAction SilentlyContinue
+if ($running) {
+  $running | Stop-Process -Force
+  Start-Sleep -Seconds 2
+  Step 'Closing hustleX' "$(@($running).Count) process(es)"
+}
 Start-Process -FilePath $path -ArgumentList '/S' -Wait
 Remove-Item $path -ErrorAction SilentlyContinue
-Step 'Installing' 'for the current user'
+$exe = Join-Path $env:LOCALAPPDATA 'Programs\hustleX\hustleX.exe'
+$key = Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue |
+  Get-ItemProperty | Where-Object { $_.DisplayName -eq 'hustleX' } | Select-Object -First 1
+if (-not $key -or $key.DisplayVersion -ne $version) { throw "hustleX $version did not install (found: $($key.DisplayVersion)). Close hustleX in Task Manager and run this again." }
+Step 'Installing' "v$version, for the current user"
+if ($key.InstallLocation) { $exe = Join-Path $key.InstallLocation 'hustleX.exe' }
+if (Test-Path $exe) { Start-Process $exe; Step 'Opening hustleX' '' }
 $sec = [int]((Get-Date) - $t0).TotalSeconds
 Write-Host ''
-Write-Host "  Done in ${sec}s. Open hustleX from the Start menu."
+Write-Host "  Done in ${sec}s. hustleX is open; next time, find it in the Start menu."
 Write-Host ''
 Write-Host '  Docs   https://hustle-x.github.io/hustlex/' -ForegroundColor DarkGray
 Write-Host ''

@@ -2,6 +2,14 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.1
+
+- **Windows:** the window's buttons are −, □ and × on the right, as on Windows (macOS keeps its three dots).
+- **Windows:** agents install from the app (Claude Code with its PowerShell installer, others with npm), and are found as soon as they are installed.
+- **Sign in to Claude Code:** while no account shows, the title bar offers to install Claude Code or sign it in.
+- **Install from PowerShell:** the install command works again, closes a running hustleX first and checks the version it installed.
+- **Tabs side by side:** a small icon in a session's tab strip shows two of its tabs at once.
+
 ## 1.0.0
 
 The first hustleX release, from here on its own version line.

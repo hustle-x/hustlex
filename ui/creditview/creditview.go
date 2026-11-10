@@ -202,6 +202,9 @@ func (t *Tracker) managed() []proto.CreditAccount {
 	return out
 }
 
+// Loaded reports whether the accounts have been read once.
+func (t *Tracker) Loaded() bool { return t.loaded }
+
 // Accounts are the accounts hustleX manages, as last read.
 func (t *Tracker) Accounts() []proto.CreditAccount { return t.managed() }
 

@@ -203,6 +203,44 @@ func (a *App) creditChip(c *ui.Context) {
 		return
 	}
 	a.credits.Chips(c, a.creditsHost())
+	a.signInChip(c)
+}
+
+// signInChip, while no agent account shows, offers Claude Code: to sign
+// in, or first to install it, so a new user sees where to start.
+func (a *App) signInChip(c *ui.Context) {
+	if !a.credits.Loaded() || len(a.credits.Accounts()) > 0 {
+		return
+	}
+	ag := a.agentInfo("claude")
+	if len(a.agents) == 0 || ag.Command == "" {
+		return
+	}
+	label := "Sign in to Claude Code"
+	if !ag.Installed {
+		label = "Install Claude Code"
+	}
+	b := titleChip(c, "sign-in", label)
+	b.TextColor(theme.Accent).Children(func() {
+		ui.Icon(c, icon.Agent(ag.ID)).FontSize(11)
+		ui.Text(c, label).FontSize(11.5).SingleLine()
+	})
+	if !b.Clicked() {
+		return
+	}
+	p, ok := a.currentProject()
+	if !ok && len(a.projects) > 0 {
+		p, ok = a.projects[0], true
+	}
+	switch {
+	case !ok:
+		a.notify("Add a project first: Claude Code signs in and installs in a session there.")
+	case ag.Installed:
+		a.signInFromCredits(p, ag.ID, proto.RefDefault)
+	default:
+		a.openNewSession(p)
+		a.newSession.agent = ag.ID // the form offers to install it
+	}
 }
 
 // creditsPage is the Credits page of the connected host.
