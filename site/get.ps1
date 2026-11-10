@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5.1 may still default to TLS 1.0, which GitHub refuses.
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 $repo = 'hustle-x/hustlex'
-$version = '1.0.2'
+$version = '1.0.3'
 $file = "hustleX-Setup-$version-amd64.exe"
 $base = "https://github.com/$repo/releases/latest/download"
 if (-not [Environment]::Is64BitOperatingSystem) { throw 'Only 64-bit Windows builds exist for now.' }

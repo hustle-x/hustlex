@@ -2,6 +2,10 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.3
+
+- **Updates itself:** hustleX looks for a new version when it starts and every few hours, shows it in the corner and in the title bar, and installs it with one click. From this version on, no need to download it again.
+
 ## 1.0.2
 
 - **No project needed to start:** Install Claude Code and Sign in to Claude Code in the title bar work before any folder is opened; they run in the home folder and show right away.

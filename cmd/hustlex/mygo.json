@@ -1,10 +1,14 @@
 {
   "name": "hustleX",
   "identifier": "ai.hustlex.app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "copyright": "© 2026 hustleX contributors",
   "out": "../../build",
   "macos": {
     "minimumSystemVersion": "13.0"
+  },
+  "updates": {
+    "publicKey": "N13TpNhFuj57MLHqnG1ro2Mt7/YfHWH6Z/ryLT4z2e4=",
+    "github": "hustle-x/hustlex"
   }
 }

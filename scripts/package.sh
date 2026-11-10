@@ -4,6 +4,7 @@
 # Developer ID), the Linux .deb and tarball with install.sh, and the Windows
 # setup, with SHA256SUMS. Usage: scripts/package.sh [platforms]
 # (default darwin/universal,linux/amd64,linux/arm64,windows/amd64).
+# Set MYGO_UPDATER_PRIVATE_KEY to sign the updates installed apps fetch.
 set -eu
 cd "$(dirname "$0")/.."
 platforms=${1:-darwin/universal,linux/amd64,linux/arm64,windows/amd64}
@@ -17,7 +18,7 @@ trap 'rm -rf "$work"' EXIT
 scripts/daemons.sh
 go tool mygo build -o "$work" -platform "$platforms" cmd/hustlex
 mkdir -p "$dist"
-find "$work" -maxdepth 2 -type f \( -name '*.dmg' -o -name '*.deb' -o -name '*.tar.gz' -o -name '*Setup*.exe' -o -name install.sh \) | while read -r f; do
+find "$work" -maxdepth 2 -type f \( -name '*.dmg' -o -name '*.deb' -o -name '*.tar.gz' -o -name '*Setup*.exe' -o -name install.sh -o -name 'update-*.json' -o -name '*.delta' \) | while read -r f; do
 	case "$f" in
 	*/install.sh) cp "$f" "$dist/install-$(basename "$(dirname "$f")").sh" ;;
 	*) cp "$f" "$dist/" ;;

@@ -3,7 +3,7 @@
 #   curl -fsSL https://hustle-x.github.io/hustlex/get-mac.sh | sh
 set -eu
 repo='hustle-x/hustlex'
-version='1.0.2'
+version='1.0.3'
 file="hustleX-$version-arm64.dmg"
 base="https://github.com/$repo/releases/latest/download"
 dest="${INSTALL_DIR:-/Applications}"
