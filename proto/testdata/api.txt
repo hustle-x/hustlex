@@ -885,6 +885,19 @@ field PRParams.base string
 field PRParams.body string
 field PRParams.session string
 field PRParams.title string
+field PhoneDevice.added time.Time
+field PhoneDevice.id string
+field PhoneDevice.name string
+field PhoneDevice.seen time.Time
+field PhoneDeviceRef.id string
+field PhonePairing.code string
+field PhonePairing.expires time.Time
+field PhonePairing.url string
+field PhoneSetParams.enabled bool
+field PhoneStatus.devices []PhoneDevice
+field PhoneStatus.enabled bool
+field PhoneStatus.problem string
+field PhoneStatus.url string
 field Pipeline.base string
 field Pipeline.branch string
 field Pipeline.created time.Time
@@ -1167,6 +1180,7 @@ field SessionInfo.skipPermissions bool
 field SessionInfo.startAt time.Time
 field SessionInfo.state string
 field SessionInfo.title string
+field SessionInfo.turn *TurnChange
 field SessionInfo.worked int64
 field SessionInfo.worktree bool
 field SessionInputParams.enter bool
@@ -1195,6 +1209,9 @@ field SessionTokens.id string
 field SessionTokens.input int64
 field SessionTokens.model string
 field SessionTokens.output int64
+field SessionUndoParams.id string
+field SessionUndoParams.redo bool
+field SessionUndoResult.files []string
 field SessionUsage.id string
 field SetupScan.arch string
 field SetupScan.distro string
@@ -1569,6 +1586,8 @@ field TransferUnpackParams.id string
 field TunnelInfo.stream uint32
 field TunnelOpenParams.port int
 field TunnelOpenParams.session string
+field TurnChange.files int
+field TurnChange.undone bool
 field Usage.cpu float64
 field Usage.procs int
 field Usage.rss uint64
@@ -1802,6 +1821,10 @@ method notify.set
 method notify.sound
 method notify.soundRead
 method notify.soundSave
+method phone.forget
+method phone.pair
+method phone.set
+method phone.status
 method pipeline.cancel
 method pipeline.list
 method pipeline.remove
@@ -1870,6 +1893,7 @@ method session.screen
 method session.state
 method session.title
 method session.transcript
+method session.undo
 method session.wake
 method sessionEnv.list
 method sessionEnv.set

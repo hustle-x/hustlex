@@ -61,6 +61,7 @@ func (a *App) newSessionDialog(c *ui.Context) {
 					Background(theme.Sunken).Border(1, theme.BorderStrong).Placeholder("What should the agent do?")
 				a.issueButton(c)
 			})
+			a.modelHint(c)
 		}
 		a.startField(c)
 		if len(a.sessions) > 0 || len(a.state.Templates) > 0 {

@@ -18,6 +18,7 @@ import (
 	"github.com/hustlex/hustlex/core/agent"
 	"github.com/hustlex/hustlex/core/transcript"
 	"github.com/hustlex/hustlex/proto"
+	"github.com/hustlex/hustlex/ui/icon"
 	"github.com/hustlex/hustlex/ui/theme"
 	"github.com/hustlex/hustlex/ui/widget"
 )
@@ -48,6 +49,7 @@ type Chat struct {
 	nextAttach  int
 	viewing     *attachment // shown large, in a modal
 	compact     bool        // the composer is narrow: settings as icons
+	dictate     bool        // dictation starts once the composer has the focus
 
 	// entries are the conversation's from index base on: older ones load
 	// as the user scrolls up to them.
@@ -331,6 +333,13 @@ type Options struct {
 	// FirstPrompt is the message the session started with, shown as the
 	// user's until the agent records the conversation.
 	FirstPrompt string
+	// Turn is what the agent's last turn changed in the folder, and Undo
+	// puts it back (redo: forth again); nil hides the undo under the turn.
+	Turn *proto.TurnChange
+	Undo func(redo bool)
+	// Dictate starts the system's dictation into the composer, which has
+	// the focus; nil hides the microphone.
+	Dictate func()
 }
 
 // View draws the chat: the conversation, a list of its turns in a
@@ -421,10 +430,47 @@ func (ch *Chat) conversation(c *ui.Context, o Options) {
 					return
 				}
 				t := turns[i-more]
-				ch.turn(c, t, o.Working && i-more == len(turns)-1, t.start >= ch.animateFrom)
+				last := i-more == len(turns)-1
+				ch.turn(c, t, o.Working && last, t.start >= ch.animateFrom)
+				if last && !o.Working && o.Turn != nil && o.Undo != nil {
+					undoRow(c, o)
+				}
 			})
 		})
 	}).Grow(1).FillWidth().MinHeight(0).Padding(22, 24, 12, 24).Gap(16)
+}
+
+// undoRow, under the last turn, puts the files it changed back, or says
+// they were, with Redo.
+func undoRow(c *ui.Context, o Options) {
+	ui.Row(c.Key("undo")).FillWidth().Gap(8).AlignItems(ui.Center).Margin(-6, 0, 0, 0).Children(func() {
+		if o.Turn.Undone {
+			ui.Icon(c, icon.Undo).FontSize(11).TextColor(theme.Muted)
+			ui.Text(c, "Files restored to before this turn").FontSize(11.5).TextColor(theme.Muted).SingleLine().Shrink(1)
+			if undoButton(c.Key("redo"), icon.Redo, "Redo", "Put the turn's changes back") {
+				o.Undo(true)
+			}
+			return
+		}
+		if undoButton(c.Key("undo"), icon.Undo, "Undo turn", "Put the files back as they were before this turn") {
+			o.Undo(false)
+		}
+	})
+}
+
+// undoButton is the small outlined button of the undo row.
+func undoButton(c *ui.Context, svg *ui.SVG, label, tip string) bool {
+	b := ui.ButtonBase(c).Height(24).PaddingX(9).Gap(5).Radius(7).Border(1, theme.BorderStrong).AlignItems(ui.Center).
+		Cursor(ui.CursorPointer).Label(label).Tooltip(tip)
+	col := theme.TextSoft
+	if b.Hovered() {
+		col = theme.Text
+	}
+	b.Children(func() {
+		ui.Icon(c, svg).FontSize(11).TextColor(col)
+		ui.Text(c, label).FontSize(11.5).TextColor(col).SingleLine()
+	})
+	return b.Clicked()
 }
 
 // olderRow stands for the turns not loaded yet; showing it loads them.

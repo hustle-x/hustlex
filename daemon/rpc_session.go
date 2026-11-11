@@ -63,6 +63,9 @@ var sessionHandlers = map[string]handler{
 		c.srv.sessions.SetNote(sess, p.Note)
 		return ok, nil
 	}),
+	proto.MethodSessionUndo: with(func(c *conn, p proto.SessionUndoParams) (any, error) {
+		return c.srv.undoTurn(p)
+	}),
 	proto.MethodSessionTitle: with(func(c *conn, p proto.SessionTitleParams) (any, error) {
 		sess, err := c.srv.sessions.Get(p.ID)
 		if err != nil {

@@ -224,6 +224,7 @@ type App struct {
 	rename        sessionRename      // the session whose name is being edited (sessiontitle.go)
 	movedSeen     map[string]int64   // session ID → the move whose notice was dismissed (accountmove.go)
 	away          awayState          // what moved on while the user was away (away.go)
+	phone         phoneState         // the phone web app (phone.go)
 	welcomePick   string             // the agent the welcome sets up, when the user picked one
 	welcomeSigned map[string]bool    // agents whose sign-in the welcome ran, for those whose accounts hustleX doesn't read
 	welcomeRun    string             // the install or sign-in the welcome started, until done

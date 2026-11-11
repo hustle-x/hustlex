@@ -94,6 +94,15 @@ func (m *Manager) SetNote(s *Session, note string) {
 	m.notify(s)
 }
 
+// SetTurn says what session s's agent's last turn changed; nil for
+// nothing to undo.
+func (m *Manager) SetTurn(s *Session, t *proto.TurnChange) {
+	s.mu.Lock()
+	s.meta.Turn = t
+	s.mu.Unlock()
+	m.notify(s)
+}
+
 // titleMax bounds a session's name; earlierMax how many past names it keeps.
 const (
 	titleMax   = 80

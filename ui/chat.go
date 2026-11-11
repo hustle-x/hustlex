@@ -98,6 +98,9 @@ func (a *App) chatViewSending(c *ui.Context, s proto.SessionInfo, shown func() b
 		Ended:       s.Exited,
 		ShowUser:    tw.showUser,
 		FirstPrompt: s.Prompt,
+		Turn:        s.Turn,
+		Undo:        func(redo bool) { a.undoTurn(s, redo) },
+		Dictate:     a.dictate,
 	})
 }
 

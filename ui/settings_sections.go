@@ -372,6 +372,7 @@ func (a *App) appSection(c *ui.Context) {
 		a.layoutCards(c, current, a.setWindowLayout)
 		ui.Text(c, "Everything stays a "+modKey+"K away, whichever you pick.").FontSize(11.5).TextColor(theme.Muted)
 	})
+	a.phoneCard(c)
 	widget.Field(c, "Editor", func() {
 		names := make([]string, len(editors))
 		for i, e := range editors {

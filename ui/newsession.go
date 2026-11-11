@@ -30,6 +30,8 @@ type newSessionForm struct {
 	creds        []string // the vault's credentials it starts with
 	templateName string   // the name a template is saved under
 	later        bool     // start when the account's fullest limit resets
+	model        string   // the model picked from the hint, "" for the agent's own
+	hintOff      bool     // the model hint was turned down
 
 	busy bool
 	err  string
@@ -122,6 +124,9 @@ func (a *App) startSession() {
 		RunSetup:        f.runSetup,
 		Account:         f.account,
 		Creds:           f.creds,
+	}
+	if agent.Base(f.agent) == "claude" {
+		params.Model = f.model
 	}
 	if _, isAgent := agent.Find(f.agent); isAgent {
 		params.Budget = int64(a.state.DefaultBudget) * 60 // Settings' time budget

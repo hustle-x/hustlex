@@ -69,10 +69,58 @@ func Peers(ctx context.Context) ([]Peer, error) {
 	return parseStatus(out)
 }
 
+// Self is this device on the tailnet.
+func Self(ctx context.Context) (Peer, error) {
+	data, err := localStatus(ctx)
+	if err != nil {
+		cli := findCLI()
+		if cli == "" {
+			return Peer{}, ErrNotInstalled
+		}
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		if data, err = quietcmd.CommandContext(ctx, cli, "status", "--json").Output(); err != nil {
+			return Peer{}, fmt.Errorf("tailnet: tailscale status: %w", err)
+		}
+	}
+	return parseSelf(data)
+}
+
+func parseSelf(data []byte) (Peer, error) {
+	start := strings.IndexByte(string(data), '{')
+	if start < 0 {
+		return Peer{}, fmt.Errorf("tailnet: tailscale said %q", firstLine(strings.TrimSpace(string(data))))
+	}
+	var st status
+	if err := json.Unmarshal(data[start:], &st); err != nil {
+		return Peer{}, err
+	}
+	if st.BackendState != "" && st.BackendState != "Running" {
+		return Peer{}, fmt.Errorf("tailnet: Tailscale is %s", strings.ToLower(st.BackendState))
+	}
+	p := Peer{HostName: st.Self.HostName, DNSName: strings.TrimSuffix(st.Self.DNSName, "."), OS: st.Self.OS, Online: true}
+	for _, ip := range st.Self.TailscaleIPs {
+		if strings.Contains(ip, ".") {
+			p.IP = ip
+			break
+		}
+	}
+	if p.IP == "" {
+		return Peer{}, errors.New("tailnet: this device has no Tailscale address")
+	}
+	return p, nil
+}
+
 // status is the part of `tailscale status --json` hustleX reads.
 type status struct {
 	BackendState string
-	Peer         map[string]struct {
+	Self         struct {
+		HostName     string
+		DNSName      string
+		OS           string
+		TailscaleIPs []string
+	}
+	Peer map[string]struct {
 		HostName     string
 		DNSName      string
 		OS           string

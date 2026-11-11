@@ -65,6 +65,8 @@ Go 1.27+ is required (MyGo needs it). With an older `go`, set `GOTOOLCHAIN=go1.2
 | `core/intercept` | A host's HTTP interceptor: proxy, TLS with the host's CA, capture, rules, filters, HAR (see `docs/traffic.md`) | **No** |
 | `core/android` | A host's Android SDK, emulators and devices, their logs, setup, a project's run command, scrcpy (see `docs/android.md`) | **No** |
 | `core/tokenhistory` | The tokens agents' conversations used by day, model and conversation, read from Claude Code's and Codex's files and kept in a cache, for the Credits page | **No** |
+| `core/turnsnap` | Snapshots of a session's folder as git trees written with an index of their own, to undo an agent's turn and redo it | **No** |
+| `core/phonepair` | The phones paired with a host for its web app, and pairing them with a code (see `docs/phone.md`) | **No** |
 | `core/screenmenu` | Finds the menu an agent waits on in its terminal's text (a question and numbered choices), for the Inbox | **No** |
 | `core/procstat` | Memory and CPU of process trees and of the machine, for the resource usage view | **No** |
 | `hostconn/` | Connects to a host's daemon: starts or replaces it locally, installs or upgrades it over SSH | **No** |

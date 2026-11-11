@@ -56,3 +56,15 @@ func cacheSaving(model string, t usage) float64 {
 	}
 	return float64(t.cacheRead) * (p.input - p.cacheRead) / 1e6
 }
+
+// PriceRatio is how much model a costs against model b, by their output
+// prices (input scales the same for Claude's); false when either has no
+// known price.
+func PriceRatio(a, b string) (float64, bool) {
+	pa, ok1 := priceOf(a)
+	pb, ok2 := priceOf(b)
+	if !ok1 || !ok2 || pb.output == 0 {
+		return 0, false
+	}
+	return pa.output / pb.output, true
+}

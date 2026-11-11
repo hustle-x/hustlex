@@ -354,6 +354,14 @@ func (c *Client) SetTitle(id, title string, byUser bool) error {
 	return c.Call(proto.MethodSessionTitle, proto.SessionTitleParams{ID: id, Title: title, ByUser: byUser}, nil)
 }
 
+// UndoTurn puts session id's files back as before its agent's last turn,
+// or forth again with redo, and lists the files.
+func (c *Client) UndoTurn(id string, redo bool) ([]string, error) {
+	var out proto.SessionUndoResult
+	err := c.Call(proto.MethodSessionUndo, proto.SessionUndoParams{ID: id, Redo: redo}, &out)
+	return out.Files, err
+}
+
 // Screen returns the text session id's terminal shows.
 func (c *Client) Screen(id string) (string, error) {
 	var out proto.SessionScreen

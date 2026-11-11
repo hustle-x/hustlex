@@ -24,6 +24,7 @@ var handlers = merge(
 	envHandlers,
 	worktreeHandlers,
 	creditHandlers,
+	phoneHandlers,
 	reviewHandlers,
 	fileHandlers,
 	checkHandlers,

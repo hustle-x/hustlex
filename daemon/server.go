@@ -93,7 +93,9 @@ type Server struct {
 	commandStore *commands.Store
 	runner       checks.Runner
 	sched        scheduler
-	moves        limitMoves // sessions moved to another account at their limit
+	moves        limitMoves  // sessions moved to another account at their limit
+	turns        turnSnaps   // agents' turns' snapshots, to undo (turns.go)
+	phone        phoneServer // the phone web app (phone.go)
 	displays     displays
 	syncHash     projectsync.Hasher // files' hashes, for syncs
 	traf         traffic            // the HTTP interceptor (traffic.go)
@@ -190,6 +192,7 @@ func newServer(dir, hookBin string) (*Server, error) {
 			s.exitsLogged.Delete(info.ID)
 		}
 		s.sched.poke()
+		s.observeTurn(info)
 		if info.NotesFor != "" && (info.State == proto.StateDone || info.Exited) {
 			go s.keepNoteChat(info.NotesFor, info.ID) // a turn ended: kept with the note
 		}
@@ -199,6 +202,9 @@ func newServer(dir, hookBin string) (*Server, error) {
 		s.broadcast(proto.EventSessionUpdated, info)
 	}
 	if err := s.sched.open(settingsFile(dir)); err != nil {
+		return nil, err
+	}
+	if err := s.openPhone(dir); err != nil {
 		return nil, err
 	}
 	s.runner.OnChange = func(id string) { s.broadcast(proto.EventChecksChanged, proto.SessionRef{ID: id}) }
@@ -216,6 +222,7 @@ func newServer(dir, hookBin string) (*Server, error) {
 	go s.runScheduler(s.done)
 	go s.runAutomations(s.done)
 	go s.runAutopushes(s.done)
+	go s.runPhone(s.done)
 	return s, nil
 }
 
@@ -299,6 +306,7 @@ func (s *Server) deleteSession(id string) error {
 	s.transcripts.forget(id)
 	s.runner.Forget(id)
 	s.unqueue(id)
+	s.turns.forget(id)
 	s.displays.stop(id)
 	s.vaultRelease(id)
 	_ = os.RemoveAll(s.uploadDir(id))

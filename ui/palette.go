@@ -67,6 +67,7 @@ func (a *App) commands() []command {
 		command{"add-host", "Add host", "a VPS or another device", icon.Server, a.openAddHost},
 		command{"hosts", "Manage hosts", "", icon.Server, func() { a.page = pageHosts }},
 		command{"hooks", "Hooks of this project…", "run a command or webhook when an agent finishes or needs you", icon.Play, a.openHooks},
+		command{"pair-phone", "Pair a phone", "open hustleX on your phone over Tailscale", icon.Phone, func() { a.pairPhone() }},
 		command{"auto-switch", "Switch accounts at the limit: " + map[bool]string{true: "turn off", false: "turn on"}[a.state.AutoSwitchAccounts], "new sessions use the account with room left", icon.Credits, func() {
 			a.state.AutoSwitchAccounts = !a.state.AutoSwitchAccounts
 			a.saveState()

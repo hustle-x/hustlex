@@ -176,6 +176,34 @@ type SessionInfo struct {
 	// Moved is the last time the daemon moved the session to another
 	// account, its limit run out; nil when it never did.
 	Moved *AccountMove `json:"moved,omitempty"`
+	// Turn is what the agent's last turn changed in the session's git
+	// folder, to undo (MethodSessionUndo); nil while it works, when it
+	// changed nothing, or outside git.
+	Turn *TurnChange `json:"turn,omitempty"`
+}
+
+// TurnChange is what an agent's turn changed: how many files, and
+// whether they were put back as before it (Undone).
+type TurnChange struct {
+	Files  int  `json:"files"`
+	Undone bool `json:"undone,omitempty"`
+}
+
+// MethodSessionUndo puts the files of a session's folder back as they
+// were before its agent's last turn, or, with Redo, as the turn left them:
+// SessionUndoParams → SessionUndoResult.
+const MethodSessionUndo = "session.undo"
+
+// SessionUndoParams name the session, and redo.
+type SessionUndoParams struct {
+	ID   string `json:"id"`
+	Redo bool   `json:"redo,omitempty"`
+}
+
+// SessionUndoResult lists the files put back, relative to the
+// repository's root.
+type SessionUndoResult struct {
+	Files []string `json:"files"`
 }
 
 // AccountMove is a session going on as another of its agent's accounts

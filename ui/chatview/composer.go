@@ -159,10 +159,20 @@ func (ch *Chat) box(c *ui.Context, o Options) {
 			in.Focus()
 			ch.focus = false
 		}
+		// Dictation types where the focus is: it starts once the box has it.
+		if ch.dictate && in.Focused() {
+			ch.dictate = false
+			if o.Dictate != nil {
+				o.Dictate()
+			}
+		}
 		ui.Row(c).FillWidth().Gap(4).Padding(4, 8, 8, 8).Children(func() {
 			if widget.IconButton(c, icon.Paperclip, "Mention a file (@)", false).Clicked() {
 				ch.input += "@"
 				ch.focus = true
+			}
+			if o.Dictate != nil && widget.IconButton(c, icon.Mic, "Dictate: speak, and it's typed here", false).Clicked() {
+				ch.focus, ch.dictate = true, true
 			}
 			if widget.IconButton(c, icon.Slash, "Commands (/)", false).Clicked() {
 				if !strings.HasPrefix(ch.input, "/") {

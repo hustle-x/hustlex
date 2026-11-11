@@ -2,6 +2,13 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.0
+
+- **Undo turn:** under an agent's last turn in the chat (or in the session's menu), put the files it changed back as they were, and Redo to bring its changes back. Your branch, staged changes and ignored files stay as they are.
+- **A cheaper model for small tasks:** when a new Claude Code session's prompt reads like a small change, New session offers Sonnet 5.5, about half of Opus 5.5's cost.
+- **Dictation:** the microphone in the chat's composer starts your Mac's dictation, which types what you say (on Windows it reminds you of Win+H).
+- **hustleX on your phone:** turn it on in Settings → App → Your phone, scan the QR code and add it to the Home Screen: answer what your agents ask, read and write to sessions and see your limits, over Tailscale.
+
 ## 1.2.1
 
 - **Continue on another account:** when a session's limit runs out mid-task, it goes on with the same conversation as another account with room, and says so. Turn it off in Settings → New sessions.

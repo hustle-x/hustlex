@@ -495,6 +495,16 @@ func (a *App) sessionMenuItems(c *ui.Context, s proto.SessionInfo, done func()) 
 		a.openPanel(panelChanges)
 		done()
 	}
+	if t := s.Turn; t != nil && !isWorking(s) {
+		label, tip := "Undo last turn", "Put back the "+count(t.Files, "file", "files")+" its agent changed"
+		if t.Undone {
+			label, tip = "Redo last turn", "Bring the turn's changes back"
+		}
+		if widget.MenuItemTip(c, icon.Undo, label, tip, false) {
+			a.undoTurn(s, t.Undone)
+			done()
+		}
+	}
 	if s.Named && widget.MenuItemTip(c, icon.Pin, "Let agents name it", "Your name for it goes; its agent names it again", false) {
 		a.renameSession(s, "")
 		done()

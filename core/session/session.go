@@ -104,6 +104,8 @@ type Meta struct {
 	Named   bool
 	Earlier []string
 	Moved   *proto.AccountMove
+	// Turn is what the agent's last turn changed (SessionInfo.Turn).
+	Turn *proto.TurnChange
 }
 
 // EnvSession names the environment variable holding a session's ID in
@@ -183,6 +185,7 @@ func (s *Session) Info() proto.SessionInfo {
 		Named:           s.meta.Named,
 		Earlier:         slices.Clone(s.meta.Earlier),
 		Moved:           s.meta.Moved,
+		Turn:            s.meta.Turn,
 		Project:         s.meta.Project,
 		Agent:           s.meta.Agent,
 		Branch:          s.meta.Branch,
