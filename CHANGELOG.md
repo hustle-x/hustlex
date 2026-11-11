@@ -2,6 +2,11 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.1.1
+
+- **Compact or Expert:** on first launch, pick how much the window shows. Compact keeps Sessions and Notes, a session as a chat or its terminal, and the account in use; Expert shows every page, view and tool. Switch anytime in Settings → App or with ⌘K.
+- **Welcome with your agent:** pick Claude Code, Codex, Gemini CLI, OpenCode or another agent to install, then sign in the way it signs in. Start your first session once all three steps are done.
+
 ## 1.1.0
 
 - **Black and white:** the dark mode's accent is white by default; coral stays one of the accents in Appearance.

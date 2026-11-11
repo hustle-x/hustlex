@@ -219,6 +219,9 @@ type App struct {
 	foldedGroups  map[string]bool
 	groupForm     *groupForm
 	selected      string             // selected session ID
+	layoutPick    string             // the layout the first-launch picker has picked
+	welcomePick   string             // the agent the welcome sets up, when the user picked one
+	welcomeSigned map[string]bool    // agents whose sign-in the welcome ran, for those whose accounts hustleX doesn't read
 	welcomeRun    string             // the install or sign-in the welcome started, until done
 	projectRename *projectRenameForm // the project being renamed, if any
 	maximized     string             // session shown alone, if any

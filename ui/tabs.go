@@ -126,6 +126,15 @@ func (a *App) tabStrip(c *ui.Context, s proto.SessionInfo) {
 				a.tabButton(c.Key("tab:"+t.ID), s, t, front == t.ID || split && side.ID == t.ID, true)
 			}
 		})
+		if a.compact() {
+			ui.Spacer(c)
+			st := statusOf(a.frontTab(s))
+			ui.Row(c).Gap(6).Shrink(0).Children(func() {
+				widget.Dot(c, st.color, st.hollow, 7)
+				ui.Text(c, st.label).FontSize(11.5).TextColor(st.color).SingleLine()
+			})
+			return
+		}
 		add := widget.IconButton(c, icon.Plus, "New tab in this session's folder", false)
 		a.menu.OpenBelow(add, "tab:"+s.ID, 24)
 		a.menu.Show(c, add, "tab:"+s.ID, func(done func()) {

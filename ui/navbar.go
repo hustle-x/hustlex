@@ -31,7 +31,8 @@ func (a *App) navBar(c *ui.Context) {
 				Margin(0, 6, 0, 0).Children(func() { ui.Icon(c, icon.Logo).FontSize(20) })
 			// Each panel's toggle on its panel's side, the logo keeping the
 			// left edge.
-			if left {
+			compact := a.compact()
+			if left && !compact {
 				a.sessionsToggle(c, icon.Sidebar)
 				ui.Box(c).Size(1, 18).Shrink(0).Background(theme.Border).Margin(0, 4)
 			}
@@ -41,6 +42,9 @@ func (a *App) navBar(c *ui.Context) {
 				}
 				if a.navItem(c, icon.Notebook, "Notes", pageNotes, a.page == pageNotes, a.client != nil) {
 					a.togglePage(pageNotes)
+				}
+				if compact {
+					return
 				}
 				if a.navItem(c, icon.Canvas, "Canvas", pageCanvas, a.page == pageCanvas, a.client != nil) {
 					a.togglePage(pageCanvas)
@@ -58,6 +62,14 @@ func (a *App) navBar(c *ui.Context) {
 					a.openSync()
 				}
 			})
+			if compact {
+				ui.Spacer(c)
+				a.searchButton(c)
+				if widget.IconButton(c.Key("nav-settings"), icon.Settings, "Settings", a.page == pageSettings).Clicked() && a.client != nil {
+					a.togglePage(pageSettings)
+				}
+				return
+			}
 			a.searchButton(c)
 			a.hostMenu(c, false)
 			mode, label := icon.Sun, "Switch to the light mode"

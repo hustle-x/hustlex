@@ -79,6 +79,7 @@ func (a *App) view(c *ui.Context) {
 	a.hibernateDialog(c)
 	a.removeProjectDialog(c)
 	a.groupDialog(c)
+	a.layoutPicker(c)
 	a.projectRenameDialog(c)
 	a.cloneDialog(c)
 	a.noteImportDialog(c)
@@ -214,6 +215,9 @@ func (a *App) statusBar(c *ui.Context) {
 			ui.Text(c, a.status).FontSize(11).TextColor(col).SingleLine().Grow(1).Shrink(1)
 		} else {
 			ui.Spacer(c)
+		}
+		if a.compact() {
+			return
 		}
 		if h, ok := a.usage.Host(); ok && h.MemTotal > 0 {
 			col := theme.Muted

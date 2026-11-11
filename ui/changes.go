@@ -37,6 +37,9 @@ func (a *App) sessionViews(s proto.SessionInfo) []string {
 	if canChat(s) {
 		views = append(views, viewChat)
 	}
+	if a.compact() {
+		return views
+	}
 	if webViewAvailable() {
 		views = append(views, viewBrowser)
 	}
@@ -46,6 +49,10 @@ func (a *App) sessionViews(s proto.SessionInfo) []string {
 // currentView is what session s shows now.
 func (a *App) currentView(s proto.SessionInfo) string {
 	switch {
+	case a.compact() && a.showsChat(s.ID):
+		return viewChat
+	case a.compact():
+		return viewTerminal
 	case a.state.BrowserViews[s.ID]:
 		return viewBrowser
 	case a.state.TrafficViews[s.ID]:
@@ -60,6 +67,14 @@ func (a *App) currentView(s proto.SessionInfo) string {
 func (a *App) showView(s proto.SessionInfo, view string) {
 	if a.showsChat(s.ID) != (view == viewChat) {
 		a.toggleChat(s)
+	}
+	if a.state.TerminalViews == nil {
+		a.state.TerminalViews = map[string]bool{}
+	}
+	if view == viewTerminal {
+		a.state.TerminalViews[s.ID] = true
+	} else {
+		delete(a.state.TerminalViews, s.ID)
 	}
 	if a.state.BrowserViews == nil {
 		a.state.BrowserViews = map[string]bool{}

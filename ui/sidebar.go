@@ -414,7 +414,7 @@ func (a *App) sessionRow(c *ui.Context, i int, s proto.SessionInfo) {
 		if a.unread[s.ID] {
 			ui.Box(c).Size(7, 7).Radius(4).Background(theme.Accent).Shrink(0).Tooltip("Unread: its agent finished or asks something")
 		}
-		if u, ok := a.usage.Session(s.ID); ok && u.RSS > 0 {
+		if u, ok := a.usage.Session(s.ID); ok && u.RSS > 0 && !a.compact() {
 			ui.Text(c, textfmt.Bytes(u.RSS)).FontSize(10.5).TextColor(theme.Muted).SingleLine().Shrink(0)
 		}
 	})

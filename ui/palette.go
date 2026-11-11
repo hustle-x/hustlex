@@ -81,6 +81,9 @@ func (a *App) commands() []command {
 		command{"agent-limit", "Agents at once…", "on " + a.host.Name, icon.Gauge, a.askAgentLimit},
 		command{"stop-agents", "Stop all agents", "on " + a.host.Name + " · their sessions stay, to continue", icon.Stop, a.stopAgentsHere},
 		command{"quit-stop", "Quit and stop all agents", "on this device", icon.Stop, a.quitAndStopAgents},
+		command{"layout", map[bool]string{true: "Switch to the Expert layout", false: "Switch to the Compact layout"}[a.compact()], "Layout", icon.Columns, func() {
+			a.setWindowLayout(map[bool]string{true: layoutExpert, false: layoutCompact}[a.compact()])
+		}},
 		command{"updates", "Check for updates", "hustleX " + version.String, icon.ArrowUp, func() { a.checkForUpdates(true) }},
 		command{"settings", "Settings: skills, MCP servers, instructions", "the agents on " + a.host.Name, icon.Settings, func() { a.page = pageSettings }},
 		command{"sessions-panel", "Show or hide the Sessions panel", modKey + "B", icon.Sidebar, a.toggleSessionsPanel},

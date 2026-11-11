@@ -52,6 +52,12 @@ type appState struct {
 	// What New session starts with (Settings): an agent, the project
 	// folder rather than a new branch, a time budget in minutes.
 	DefaultAgent string `json:"defaultAgent,omitempty"`
+	// Layout is the window's layout: layoutCompact or layoutExpert; ""
+	// before the user picked one (Expert for those from before layouts).
+	Layout string `json:"layout,omitempty"`
+	// TerminalViews are the sessions whose terminal the user picked over
+	// the chat Compact shows first.
+	TerminalViews map[string]bool `json:"terminalViews,omitempty"`
 	// WelcomeDone hides the first-run steps for good.
 	WelcomeDone   bool `json:"welcomeDone,omitempty"`
 	ProjectFolder bool `json:"projectFolder,omitempty"`

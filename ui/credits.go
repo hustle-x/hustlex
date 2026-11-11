@@ -33,6 +33,7 @@ func (a *App) creditsHost() creditview.Host {
 		Rename:      a.renameAccountChip,
 		Active:      a.activeRef,
 		Showing:     a.showingRef,
+		Compact:     a.compact(),
 		Switch:      a.switchAccount,
 		Add:         a.addNextAccount,
 		Remove:      a.removeAccountChip,

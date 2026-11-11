@@ -195,6 +195,7 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 	if a.selected == "" {
 		a.selected = s.ID
 	}
+	a.compactChat(a.frontTab(s))
 	a.viewHeader(c, func() {
 		crumbs := ui.Row(c.Key("crumbs")).Grow(1).MinWidth(0)
 		crumbs.Children(func() {
@@ -206,6 +207,9 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 			widget.Breadcrumb(c, a.host.Name, p.Name, a.sessionName(s))
 		})
 		a.viewToggle(c, a.frontTab(s))
+		if a.compact() {
+			return // its menu is a right-click on its row
+		}
 		if len(a.projectSessions(p.Path)) > 1 && a.maximized == "" &&
 			widget.IconButton(c, icon.Split, "Show "+p.Name+"'s sessions side by side", false).Clicked() {
 			a.setSplit(true)

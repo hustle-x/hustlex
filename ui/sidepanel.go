@@ -86,7 +86,9 @@ func (a *App) panelTab() string {
 
 // panelShown reports whether the side panel shows: open, beside a
 // session's workspace (not a rail page).
-func (a *App) panelShown() bool { return a.state.Panel.Open && a.page == "" && a.client != nil }
+func (a *App) panelShown() bool {
+	return a.state.Panel.Open && a.page == "" && a.client != nil && !a.compact()
+}
 
 // panelShows reports whether the side panel shows tool.
 func (a *App) panelShows(tool string) bool { return a.panelShown() && a.panelTab() == tool }

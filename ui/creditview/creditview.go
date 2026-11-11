@@ -56,6 +56,8 @@ type Host struct {
 	Rename func(agent, ref, name string)
 	// Active is the account (a Ref) new sessions of agent start as.
 	Active func(agent string) string
+	// Compact shows the account in use alone, its first limit as "13% used".
+	Compact bool
 	// Showing is the account (a Ref) the session in view runs as, when it
 	// is one of agent's: its chip is outlined then, not Active's.
 	Showing func(agent string) (ref string, ok bool)
@@ -251,6 +253,12 @@ func (t *Tracker) Chips(c *ui.Context, h Host) {
 	for _, a := range accs {
 		count[a.Agent]++
 	}
+	if h.Compact {
+		if i := compactAccount(h, accs); i >= 0 {
+			t.accountChip(c.Key(accs[i].Agent+" "+accs[i].Ref), h, accs[i], names[i], count[accs[i].Agent])
+		}
+		return
+	}
 	for i, a := range accs {
 		t.accountChip(c.Key(a.Agent+" "+a.Ref), h, a, names[i], count[a.Agent])
 	}
@@ -301,6 +309,14 @@ func (t *Tracker) accountChip(c *ui.Context, h Host, a proto.CreditAccount, name
 				}
 				ui.Text(c, label).FontSize(11).TextColor(theme.Warning).SingleLine()
 			}
+			return
+		}
+		if h.Compact {
+			w := a.Windows[0]
+			ui.Row(c).Gap(3).Children(func() {
+				ui.Text(c, fmt.Sprintf("%.0f%%", w.Used)).FontSize(11.5).TextColor(levelText(w.Used)).SingleLine()
+				ui.Text(c, "used").FontSize(11).TextColor(theme.Muted).SingleLine()
+			})
 			return
 		}
 		for i, w := range a.Windows[:min(len(a.Windows), chipWindows)] {
@@ -654,3 +670,24 @@ func (t *Tracker) nextReset() string {
 
 // CheckedLabel says how fresh the reading is, for the page header.
 func (t *Tracker) CheckedLabel() string { return t.checkedLabel() }
+
+// compactAccount is the one account Compact shows: the session in view's,
+// else the one new sessions of the first agent start as; -1 for none.
+func compactAccount(h Host, accs []proto.CreditAccount) int {
+	for i, a := range accs {
+		if h.Showing != nil {
+			if ref, ok := h.Showing(a.Agent); ok && ref == a.Ref {
+				return i
+			}
+		}
+	}
+	for i, a := range accs {
+		if h.Active == nil || h.Active(a.Agent) == a.Ref {
+			return i
+		}
+	}
+	if len(accs) > 0 {
+		return 0
+	}
+	return -1
+}

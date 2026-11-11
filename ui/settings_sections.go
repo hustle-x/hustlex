@@ -340,6 +340,14 @@ func (a *App) floatingAtPointer() bool {
 // appSection is the app's own preferences.
 func (a *App) appSection(c *ui.Context) {
 	sectionIntro(c, "App", "hustleX on this device.")
+	widget.Field(c, "Layout", func() {
+		current := a.state.Layout
+		if current == "" {
+			current = layoutExpert
+		}
+		a.layoutCards(c, current, a.setWindowLayout)
+		ui.Text(c, "Everything stays a "+modKey+"K away, whichever you pick.").FontSize(11.5).TextColor(theme.Muted)
+	})
 	widget.Field(c, "Editor", func() {
 		names := make([]string, len(editors))
 		for i, e := range editors {

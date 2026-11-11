@@ -17,8 +17,12 @@ const titleBarHeight = 40
 func (a *App) titleBar(c *ui.Context) {
 	a.titleBarWith(c, func() {
 		a.updateChip(c)
-		a.memoryChip(c)
-		a.creditChip(c)
+		if !a.compact() {
+			a.memoryChip(c)
+		}
+		if ag, _ := a.welcomeAgent(); !a.welcomeShown() || a.signedIn(ag.ID) {
+			a.creditChip(c) // the welcome's steps say what to install and sign in to
+		}
 	})
 }
 
