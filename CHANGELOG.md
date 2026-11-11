@@ -2,6 +2,15 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.1.0
+
+- **Black and white:** the dark mode's accent is white by default; coral stays one of the accents in Appearance.
+- **Claude's own logo:** Claude Code shows Claude's spark, in its color, instead of Anthropic's mark.
+- **Needs you:** sessions whose agent waits for an answer rise to the top of the Sessions panel.
+- **The session's account:** the title bar outlines the account the session in view runs as, and a bar under the session says which one, what is left of it, with Switch account.
+- **Account chips by email:** chips read as the email an account is signed in as (or the name you gave it), not Account 2.
+- **Search & commands:** a box in the nav bar opens the command palette (⌘K).
+
 ## 1.0.7
 
 - **Welcome:** until the first session, hustleX walks a new user through installing an agent, signing in and opening a folder, ticking each step once done.
