@@ -139,6 +139,16 @@ var (
 	}
 )
 
+// AgentTint is the color an agent's logo is drawn in where it stands for
+// the agent (avatars): its brand's, for those known by one, else fallback.
+func AgentTint(id string, fallback ui.Color) ui.Color {
+	switch id {
+	case "claude", "claude-agent-teams":
+		return ui.Hex("#D97757")
+	}
+	return fallback
+}
+
 // Agent returns the icon of an agent ID: its logo where hustleX has one,
 // else a bot ("" and unknown commands get the terminal's).
 func Agent(id string) *ui.SVG {

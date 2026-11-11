@@ -27,7 +27,7 @@ type Palette struct {
 // blue works, yellow waits, green is done, red failed.
 var (
 	// Obsidian is the dark mode: flat near-black panels on a darker ground,
-	// with a coral accent.
+	// with a white accent: black and white, color kept for what it says.
 	Obsidian = Palette{
 		ID: "obsidian", Name: "Dark",
 		Ground:     ui.Hex("#000000"),
@@ -35,7 +35,7 @@ var (
 		Hover: ui.Hex("#121212"), Selected: ui.Hex("#171717"), Dialog: ui.Hex("#0E0E0E"),
 		Border: ui.Hex("#171717"), BorderStrong: ui.Hex("#242424"),
 		Text: ui.Hex("#F0F0F0"), TextStrong: ui.Hex("#FFFFFF"), TextSoft: ui.Hex("#C4C4C4"), Muted: ui.Hex("#878787"),
-		Accent: ui.Hex("#FF6B5E"), OnAccent: ui.Hex("#2A0905"),
+		Accent: ui.Hex("#F2F2F2"), OnAccent: ui.Hex("#0A0A0A"),
 		Working: ui.Hex("#9DB6F5"), Done: ui.Hex("#86D0A8"), Warning: ui.Hex("#E6C47E"), Error: ui.Hex("#EE8C8C"), Idle: ui.Hex("#555555"),
 	}
 )
@@ -56,6 +56,7 @@ var Palettes = []Palette{Obsidian, Daylight}
 
 // Accents are the colors a user can give any palette instead of its own.
 var Accents = []ui.Color{
+	ui.Hex("#F2F2F2"), // white
 	ui.Hex("#FF6B5E"), // coral
 	ui.Hex("#D8C3A0"), // champagne
 	ui.Hex("#E2E4E9"), // silver

@@ -274,7 +274,7 @@ func (t *Tracker) accountChip(c *ui.Context, h Host, a proto.CreditAccount, name
 		border = theme.AccentLine
 	}
 	b.Border(1, widget.Tint(b, "border", border)).Children(func() {
-		widget.Avatar(c, icon.Agent(a.Agent), 16, theme.Text)
+		widget.Avatar(c, icon.Agent(a.Agent), 16, icon.AgentTint(a.Agent, theme.Text))
 		ui.Text(c, name).FontSize(11.5).TextColor(theme.Text).SingleLine()
 		if len(a.Windows) == 0 {
 			if a.Error != "" {
@@ -455,7 +455,7 @@ func (t *Tracker) addButton(c *ui.Context, h Host) {
 				r.Background(theme.Hover)
 			}
 			r.Children(func() {
-				widget.Avatar(c, icon.Agent(ag.ID), 24, theme.Text)
+				widget.Avatar(c, icon.Agent(ag.ID), 24, icon.AgentTint(ag.ID, theme.Text))
 				ui.Text(c, ag.Name).FontSize(12.5).SingleLine()
 			})
 			if r.Clicked() {
@@ -516,7 +516,7 @@ func (t *Tracker) accounts(c *ui.Context, h Host, cards bool) {
 // accountHead is an account's agent, plan and who it is signed in as.
 func accountHead(c *ui.Context, h Host, a proto.CreditAccount, size float32) {
 	ui.Row(c).FillWidth().Gap(9).Children(func() {
-		widget.Avatar(c, icon.Agent(a.Agent), size, theme.Text)
+		widget.Avatar(c, icon.Agent(a.Agent), size, icon.AgentTint(a.Agent, theme.Text))
 		ui.Column(c).Gap(1).Grow(1).MinWidth(0).Children(func() {
 			ui.Row(c).Gap(7).MinWidth(0).Children(func() {
 				ui.Text(c, h.AgentName(a.Agent)).FontSize(12.5).SingleLine()

@@ -176,7 +176,7 @@ func (a *App) tabButton(c *ui.Context, parent, t proto.SessionInfo, front, closa
 	closed := false
 	b.Children(func() {
 		widget.Dot(c, st.color, st.hollow, 6)
-		ui.Icon(c, icon.Agent(t.Agent)).FontSize(12)
+		ui.Icon(c, icon.Agent(t.Agent)).FontSize(12).TextColor(icon.AgentTint(t.Agent, fg))
 		ui.Text(c, name).FontSize(12).SingleLine().Shrink(1)
 		if !closable {
 			return

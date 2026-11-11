@@ -258,7 +258,7 @@ func (a *App) agentItem(c *ui.Context, sel ui.SelectParts[string], ag proto.Agen
 }
 
 func agentTile(c *ui.Context, id string, size float32) {
-	widget.Avatar(c, icon.Agent(id), size, theme.Text)
+	widget.Avatar(c, icon.Agent(id), size, icon.AgentTint(id, theme.Text))
 }
 
 func (a *App) branchFields(c *ui.Context) {
