@@ -51,10 +51,12 @@ type appState struct {
 	CloseQuits         bool               `json:"closeQuits,omitempty"`   // closing the window quits, rather than keeping the app in the tray
 	// What New session starts with (Settings): an agent, the project
 	// folder rather than a new branch, a time budget in minutes.
-	DefaultAgent  string `json:"defaultAgent,omitempty"`
-	ProjectFolder bool   `json:"projectFolder,omitempty"`
-	DefaultBudget int    `json:"defaultBudget,omitempty"`
-	NotifyOff     bool   `json:"notifyOff,omitempty"` // no desktop notifications
+	DefaultAgent string `json:"defaultAgent,omitempty"`
+	// WelcomeDone hides the first-run steps for good.
+	WelcomeDone   bool `json:"welcomeDone,omitempty"`
+	ProjectFolder bool `json:"projectFolder,omitempty"`
+	DefaultBudget int  `json:"defaultBudget,omitempty"`
+	NotifyOff     bool `json:"notifyOff,omitempty"` // no desktop notifications
 	// VaultRemember keeps the vault's key in the system's keychain.
 	VaultRemember bool `json:"vaultRemember,omitempty"`
 	// OAuthClients are the user's OAuth apps, by platform, for signing

@@ -99,6 +99,9 @@ func (a *App) runInstall(name, command string, ended func()) {
 			a.installs[info.ID] = ended
 			a.upsert(info)
 			a.selectSession(info)
+			if params.Project == "" {
+				a.welcomeRun = info.ID
+			}
 		})
 	}()
 }

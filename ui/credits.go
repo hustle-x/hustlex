@@ -286,6 +286,9 @@ func (a *App) signInFromCredits(p proto.ProjectInfo, agentID, ref string) {
 			}
 			a.upsert(info)
 			a.selectSession(info)
+			if p.Path == "" {
+				a.welcomeRun = info.ID
+			}
 		})
 	}()
 }

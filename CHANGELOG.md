@@ -2,6 +2,12 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.7
+
+- **Welcome:** until the first session, hustleX walks a new user through installing an agent, signing in and opening a folder, ticking each step once done.
+- **New session without an agent:** it offers to install Claude Code instead of starting a plain shell.
+- **Quieter form:** a folder that isn't a git repository gets a one-line tip instead of a warning, and saving the form as a template shows from the second session on.
+
 ## 1.0.6
 
 - **Rename a project:** its menu's Rename… gives it a name in hustleX; the folder on disk keeps its own, so sessions and conversations stay as they are. An empty name goes back to the folder's.

@@ -47,8 +47,8 @@ func (a *App) newSessionDialog(c *ui.Context) {
 			a.alsoField(c)
 			a.worktreeSetupField(c)
 		} else if f.loaded {
-			widget.Notice(c, icon.Folder, ui.Color{}, "This folder isn't a git repository",
-				"The session runs directly in the folder. Sessions here share the same files, so two agents can overwrite each other's changes. Run git init in it to get branches and isolated worktrees.", nil)
+			ui.Text(c, "The agent works directly in this folder. Tip: make it a git repository to give each session a branch of its own.").
+				FontSize(11.5).TextColor(theme.Muted)
 		}
 		if a.agentInfo(f.agent).CanSkipPermissions {
 			a.skipPermissionsField(c)
@@ -62,7 +62,9 @@ func (a *App) newSessionDialog(c *ui.Context) {
 				a.issueButton(c)
 			})
 		}
-		a.saveTemplateRow(c)
+		if len(a.sessions) > 0 || len(a.state.Templates) > 0 {
+			a.saveTemplateRow(c) // for forms used again, not the first
+		}
 		a.formError(c)
 	}, func() {
 		ui.Text(c, modKey+"↩ to start · Esc to cancel").FontSize(11.5).TextColor(theme.Muted)

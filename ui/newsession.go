@@ -92,6 +92,11 @@ func (a *App) defaultAgent() string {
 			return ag.ID
 		}
 	}
+	// None installed: Claude Code, which the form then offers to install,
+	// rather than a shell a new user wouldn't know what to do with.
+	if slices.ContainsFunc(a.agents, func(ag proto.AgentInfo) bool { return ag.ID == "claude" }) {
+		return "claude"
+	}
 	return agent.Shell
 }
 

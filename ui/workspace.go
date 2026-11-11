@@ -103,9 +103,15 @@ func (a *App) workspaceView(c *ui.Context) {
 	if a.connectionView(c) {
 		return
 	}
+	a.welcomeTick()
 	if s, ok := a.selectedProjectless(); ok {
 		// Installing or signing in an agent before any project.
 		a.focusView(c, proto.ProjectInfo{Name: "Home", Path: s.Dir}, s)
+		return
+	}
+	if a.welcomeShown() && (a.selected == "" || len(a.sessions) == 0) {
+		a.viewHeader(c, func() { widget.Breadcrumb(c, a.host.Name, "Welcome") })
+		a.welcome(c)
 		return
 	}
 	p, ok := a.currentProject()

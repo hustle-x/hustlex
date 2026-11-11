@@ -219,6 +219,7 @@ type App struct {
 	foldedGroups  map[string]bool
 	groupForm     *groupForm
 	selected      string             // selected session ID
+	welcomeRun    string             // the install or sign-in the welcome started, until done
 	projectRename *projectRenameForm // the project being renamed, if any
 	maximized     string             // session shown alone, if any
 	page          string             // a rail view shown instead of the sessions, or ""
