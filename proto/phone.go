@@ -17,6 +17,9 @@ const (
 type PhoneStatus struct {
 	Enabled bool   `json:"enabled"`
 	URL     string `json:"url,omitempty"` // while served
+	// WiFi says it is served on the local network, phones on the same
+	// Wi-Fi reaching it, for want of Tailscale.
+	WiFi bool `json:"wifi,omitempty"`
 	// Problem says why it isn't served while on: no Tailscale, say.
 	Problem string        `json:"problem,omitempty"`
 	Devices []PhoneDevice `json:"devices,omitempty"`

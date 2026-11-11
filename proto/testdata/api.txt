@@ -898,6 +898,7 @@ field PhoneStatus.devices []PhoneDevice
 field PhoneStatus.enabled bool
 field PhoneStatus.problem string
 field PhoneStatus.url string
+field PhoneStatus.wifi bool
 field Pipeline.base string
 field Pipeline.branch string
 field Pipeline.created time.Time

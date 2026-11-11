@@ -22,7 +22,8 @@ import (
 )
 
 // The daemon serves hustleX's web app to the user's phones, on the host's
-// Tailscale address only: what waits on the user (answered from the
+// Tailscale address, else on its address on the local network (phones on
+// the same Wi-Fi): what waits on the user (answered from the
 // phone), the sessions (read and written to), the accounts. A phone pairs
 // once with a token the app shows as a QR code; it then holds a secret in
 // a cookie. See docs/phone.md.
@@ -44,6 +45,7 @@ type phoneServer struct {
 	mu      sync.Mutex
 	srv     *http.Server
 	addr    string // what it listens on, "" while it doesn't
+	wifi    bool   // addr is on the local network, not Tailscale
 	problem string
 }
 
@@ -91,16 +93,19 @@ func (s *Server) reconcilePhone() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	self, err := tailnet.Self(ctx)
-	cancel()
-	if err != nil {
-		problem := "Tailscale isn't running on this host: install it and sign in, and phones on your tailnet can open hustleX"
-		if !errors.Is(err, tailnet.ErrNotInstalled) {
-			problem = strings.TrimPrefix(err.Error(), "tailnet: ") + ": phones reach hustleX over Tailscale"
-		}
-		s.stopPhone(problem)
-		return
+	if err == nil && !phoneOnTailnet(ctx) && localIP() != "" {
+		err = errors.New("no phone on the tailnet") // the Wi-Fi reaches phones without Tailscale
 	}
-	addr := net.JoinHostPort(self.IP, strconv.Itoa(phonePort))
+	cancel()
+	ip, wifi := self.IP, false
+	if err != nil {
+		// No Tailscale: phones on the same Wi-Fi reach the local address.
+		if ip, wifi = localIP(), true; ip == "" {
+			s.stopPhone("This computer isn't on a network: connect it to Wi-Fi, the same as your phone's")
+			return
+		}
+	}
+	addr := net.JoinHostPort(ip, strconv.Itoa(phonePort))
 	ps.mu.Lock()
 	same := ps.addr == addr && ps.srv != nil
 	ps.mu.Unlock()
@@ -115,7 +120,7 @@ func (s *Server) reconcilePhone() {
 	}
 	srv := &http.Server{Handler: s.phoneHandler(), ReadHeaderTimeout: 10 * time.Second}
 	ps.mu.Lock()
-	ps.srv, ps.addr, ps.problem = srv, addr, ""
+	ps.srv, ps.addr, ps.wifi, ps.problem = srv, addr, wifi, ""
 	ps.mu.Unlock()
 	go func() { _ = srv.Serve(ln) }()
 	s.logger().Info("serving the phone web app", "addr", addr)
@@ -126,7 +131,7 @@ func (s *Server) stopPhone(problem string) {
 	ps := &s.phone
 	ps.mu.Lock()
 	srv := ps.srv
-	ps.srv, ps.addr, ps.problem = nil, "", problem
+	ps.srv, ps.addr, ps.wifi, ps.problem = nil, "", false, problem
 	ps.mu.Unlock()
 	if srv != nil {
 		_ = srv.Close()
@@ -138,7 +143,7 @@ func (s *Server) phoneStatus() proto.PhoneStatus {
 	st := proto.PhoneStatus{Enabled: ps.store.Enabled()}
 	ps.mu.Lock()
 	if ps.addr != "" {
-		st.URL = "http://" + ps.addr
+		st.URL, st.WiFi = "http://"+ps.addr, ps.wifi
 	}
 	st.Problem = ps.problem
 	ps.mu.Unlock()
@@ -296,8 +301,9 @@ func phoneGuard(h http.Handler) http.Handler {
 	})
 }
 
-// phoneHostOK reports whether host names this host on the tailnet: one of
-// Tailscale's addresses or names, or this machine itself.
+// phoneHostOK reports whether host names this host: one of Tailscale's
+// addresses or names, a private address on the local network, or this
+// machine itself.
 func phoneHostOK(host string) bool {
 	host = strings.TrimSuffix(strings.ToLower(host), ".")
 	if strings.HasSuffix(host, ".ts.net") || host == "localhost" {
@@ -309,7 +315,37 @@ func phoneHostOK(host string) bool {
 	}
 	_, cgnat, _ := net.ParseCIDR("100.64.0.0/10")
 	_, ula, _ := net.ParseCIDR("fd7a:115c:a1e0::/48")
-	return ip.IsLoopback() || cgnat.Contains(ip) || ula.Contains(ip)
+	return ip.IsLoopback() || ip.IsPrivate() || cgnat.Contains(ip) || ula.Contains(ip)
+}
+
+// phoneOnTailnet reports whether a phone is on the tailnet to open the
+// web app over Tailscale.
+func phoneOnTailnet(ctx context.Context) bool {
+	peers, err := tailnet.Peers(ctx)
+	if err != nil {
+		return false
+	}
+	for _, p := range peers {
+		if os := strings.ToLower(p.OS); os == "ios" || os == "android" {
+			return true
+		}
+	}
+	return false
+}
+
+// localIP is this computer's private IPv4 address on the network it
+// reaches others by, "" when it isn't on one. Dialing UDP sends nothing.
+func localIP() string {
+	conn, err := net.Dial("udp4", "192.0.2.1:9")
+	if err != nil {
+		return ""
+	}
+	defer conn.Close()
+	ip := conn.LocalAddr().(*net.UDPAddr).IP
+	if !ip.IsPrivate() {
+		return ""
+	}
+	return ip.String()
 }
 
 func writeJSON(w http.ResponseWriter, v any) {

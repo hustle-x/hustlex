@@ -87,7 +87,8 @@ func TestPhonePairsThenReads(t *testing.T) {
 func TestPhoneHostOK(t *testing.T) {
 	for host, want := range map[string]bool{
 		"100.64.0.1": true, "100.127.255.254": true, "mac.tail1234.ts.net": true, "localhost": true, "[fd7a:115c:a1e0::1]": true,
-		"100.128.0.1": false, "192.168.1.5": false, "example.com": false, "ts.net.example.com": false,
+		"192.168.1.5": true, "10.0.0.7": true, "172.16.4.2": true,
+		"100.128.0.1": false, "8.8.8.8": false, "example.com": false, "ts.net.example.com": false,
 	} {
 		if got := phoneHostOK(host); got != want {
 			t.Errorf("phoneHostOK(%q) = %v", host, got)

@@ -75,7 +75,7 @@ func (a *App) phoneCard(c *ui.Context) {
 			ui.Row(c).FillWidth().Gap(12).Children(func() {
 				ui.Column(c).Grow(1).MinWidth(0).Gap(3).Children(func() {
 					ui.Text(c, "Your phone").FontSize(12.5)
-					ui.Text(c, "Open hustleX on your phone over Tailscale: scan with the camera, then Add to Home Screen. Answer your agents, read and write to sessions, see your accounts.").
+					ui.Text(c, "Open hustleX on your phone on the same Wi-Fi, or anywhere with Tailscale: scan with the camera, then Add to Home Screen. Answer your agents, read and write to sessions, see your accounts.").
 						FontSize(11.5).TextColor(theme.Muted)
 				})
 				on := ps.status.Enabled
@@ -270,8 +270,11 @@ func (a *App) pairPhoneDialog(c *ui.Context) {
 			ui.Column(c).Grow(1).Gap(3).Children(func() {
 				ui.Text(c, "Pair a phone").FontSize(16)
 				about := "Scan with your phone's camera. It opens hustleX on " + a.host.Name + " over Tailscale."
-				if ps.qr == nil && ps.err != "" {
-					about = "hustleX reaches your phone over Tailscale, which this needs first."
+				switch {
+				case ps.qr == nil && ps.err != "":
+					about = "Your phone opens hustleX over the Wi-Fi this computer is on."
+				case ps.status.WiFi:
+					about = "Scan with your phone's camera. It opens hustleX on " + a.host.Name + " over your Wi-Fi."
 				}
 				ui.Text(c, about).FontSize(12).TextColor(theme.Muted)
 			})
@@ -294,8 +297,12 @@ func (a *App) pairPhoneDialog(c *ui.Context) {
 			ui.Text(c, "Check your phone shows").FontSize(12).TextColor(theme.Muted)
 			ui.Text(c, ps.pairing.Code).Font(theme.MonoFont).FontSize(22).TextColor(theme.Text)
 		})
+		need := "Your phone needs Tailscale, signed in to the same account."
+		if ps.status.WiFi {
+			need = "Your phone needs the same Wi-Fi as this computer. Away from it, install Tailscale on both."
+		}
 		for i, step := range []string{
-			"Your phone needs Tailscale, signed in to the same account.",
+			need,
 			"Tap Pair on the phone, then Share → Add to Home Screen.",
 			"The code works once, for " + textfmt.Until(ps.pairing.Expires, time.Now()) + ".",
 		} {
@@ -308,13 +315,13 @@ func (a *App) pairPhoneDialog(c *ui.Context) {
 }
 
 // phoneSetup is the Pair a phone dialog while the host can't serve phones,
-// most often for want of Tailscale: what is wrong, and how to fix it.
+// off any network: what is wrong, and how to fix it.
 func (a *App) phoneSetup(c *ui.Context, problem string) {
 	ps := &a.phone
 	ui.Text(c, problem+".").FontSize(12).TextColor(theme.Warning)
 	for i, step := range []string{
-		"Install Tailscale on this computer and sign in.",
-		"Install Tailscale on your phone and sign in to the same account.",
+		"Connect this computer to Wi-Fi.",
+		"Put your phone on the same Wi-Fi.",
 		"Then try again here: the QR code shows.",
 	} {
 		ui.Row(c.Key(i)).FillWidth().Gap(8).Children(func() {
