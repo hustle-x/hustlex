@@ -20,7 +20,7 @@ func (a *App) canReview(s proto.SessionInfo) bool {
 		return true
 	}
 	i := slices.IndexFunc(a.projects, func(p proto.ProjectInfo) bool { return p.Path == s.Project })
-	return i >= 0 && a.projects[i].IsGit
+	return i >= 0 && (a.projects[i].IsGit || a.projects[i].Repo != "")
 }
 
 // Session views, as the header's toggle names them.

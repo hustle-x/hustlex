@@ -998,6 +998,7 @@ field ProjectInfo.group string
 field ProjectInfo.isGit bool
 field ProjectInfo.name string
 field ProjectInfo.path string
+field ProjectInfo.repo string
 field ProjectKeepCopyParams.path string
 field ProjectKeepCopyParams.project string
 field ProjectKeepCopyParams.suffix string

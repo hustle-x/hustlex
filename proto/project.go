@@ -23,6 +23,9 @@ type ProjectInfo struct {
 	Name   string `json:"name"`
 	IsGit  bool   `json:"isGit"`
 	Branch string `json:"branch,omitempty"` // checked out in the project folder
+	// Repo is the git repository directly inside a project that isn't one
+	// (of several, the one worked in last), which its sessions' Git tab shows.
+	Repo string `json:"repo,omitempty"`
 	// Group is the group the user put it in, if any; a group's projects
 	// follow each other in the list.
 	Group string `json:"group,omitempty"`

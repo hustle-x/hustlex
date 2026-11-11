@@ -5,9 +5,11 @@ package git
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/hustlex/hustlex/internal/quietcmd"
 )
@@ -99,4 +101,33 @@ func ValidBranchName(name string) bool {
 		return false
 	}
 	return quietcmd.Command("git", "check-ref-format", "--branch", name).Run() == nil
+}
+
+// NestedRepo is the git repository directly inside dir, a folder that
+// holds repositories rather than being one: of several, the one worked in
+// last (its index written last); "" when there are none.
+func NestedRepo(dir string) string {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+	found, last := "", time.Time{}
+	for _, e := range entries {
+		if !e.IsDir() || strings.HasPrefix(e.Name(), ".") {
+			continue
+		}
+		sub := filepath.Join(dir, e.Name())
+		gitDir, err := os.Stat(filepath.Join(sub, ".git"))
+		if err != nil {
+			continue
+		}
+		at := gitDir.ModTime()
+		if idx, err := os.Stat(filepath.Join(sub, ".git", "index")); err == nil {
+			at = idx.ModTime()
+		}
+		if found == "" || at.After(last) {
+			found, last = sub, at
+		}
+	}
+	return found
 }

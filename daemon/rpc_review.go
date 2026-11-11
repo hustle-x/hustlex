@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/hustlex/hustlex/core/git"
 	"github.com/hustlex/hustlex/core/review"
 	"github.com/hustlex/hustlex/proto"
 )
@@ -101,6 +102,11 @@ func (s *Server) reviewOf(id, base string) (review.Where, string, error) {
 	}
 	info := sess.Info()
 	w := review.Where{Dir: info.Dir, Project: info.Project, Worktree: info.Worktree}
+	if _, err := git.TopLevel(w.Dir); err != nil && !w.Worktree {
+		if repo := git.NestedRepo(w.Dir); repo != "" {
+			w.Dir = repo // a folder holding repositories: the one worked in
+		}
+	}
 	switch base {
 	case "":
 		base = review.DefaultBase(w)

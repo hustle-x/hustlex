@@ -133,6 +133,9 @@ func Inspect(path string) proto.ProjectDetail {
 	d := proto.ProjectDetail{ProjectInfo: proto.ProjectInfo{Path: path, Name: filepath.Base(path)}}
 	top, err := git.TopLevel(path)
 	if err != nil || top != filepath.Clean(path) {
+		if err != nil {
+			d.Repo = git.NestedRepo(path)
+		}
 		return d
 	}
 	d.IsGit = true

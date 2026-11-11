@@ -2,6 +2,11 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.3
+
+- **Git tab for folders that hold a repository:** a session in a folder that isn't a repository but has one inside (of several, the one you worked in last) shows that repository's changes, commits and branches.
+- **Compact keeps the toolbar:** New session, light or dark, Appearance, your phone, Settings and the side panel stay in the nav bar in the Compact layout too.
+
 ## 1.3.2
 
 - **Your phone, one click away:** a phone button in the nav bar opens Pair a phone and its QR code right away.

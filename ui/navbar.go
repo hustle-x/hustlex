@@ -69,14 +69,6 @@ func (a *App) navBar(c *ui.Context) {
 			})
 			if compact {
 				ui.Spacer(c)
-				a.searchButton(c)
-				if widget.IconButton(c.Key("nav-phone"), icon.Phone, "Pair a phone", a.phoneOf().open).Clicked() {
-					a.pairPhone()
-				}
-				if widget.IconButton(c.Key("nav-settings"), icon.Settings, "Settings", a.page == pageSettings).Clicked() && a.client != nil {
-					a.togglePage(pageSettings)
-				}
-				return
 			}
 			a.searchButton(c)
 			a.hostMenu(c, false)
