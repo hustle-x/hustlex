@@ -71,6 +71,7 @@ func (a *App) commands() []command {
 			a.state.AutoSwitchAccounts = !a.state.AutoSwitchAccounts
 			a.saveState()
 		}},
+		command{"inbox", "Inbox", "what your agents wait on", icon.Inbox, func() { a.page = pageInbox }},
 		command{"credits", "Credits", "what each agent account has left", icon.Credits, func() { a.page = pageCredits }},
 		command{"usage", "Resource usage", "memory and CPU", icon.Usage, func() { a.page = pageUsage }},
 		command{"appearance", "Appearance", "theme and accent", icon.Palette, func() {

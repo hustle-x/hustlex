@@ -83,6 +83,7 @@ type Server struct {
 	hooksAllowed *hooks.Allowed // projects whose hooks may run here
 	hookEvents   hooks.Tracker
 	tokens       transcript.TokenCounter // tokens of Claude Code conversations, read once
+	usageHistory usageHistory            // tokens by day, for the Credits page
 	statsState   stats
 	credits      credits.Checker
 	// commandCache keeps the agents' slash commands (see commands).

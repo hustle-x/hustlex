@@ -40,6 +40,7 @@ const (
 	pageHosts      = "hosts"
 	pageAppearance = "appearance"
 	pageCredits    = "credits"
+	pageInbox      = "inbox"
 )
 
 // workspace is the main area: one focused session, or the project's
@@ -91,6 +92,9 @@ func (a *App) workspaceView(c *ui.Context) {
 		return
 	case a.page == pageCredits && a.client != nil:
 		a.creditsPage(c)
+		return
+	case a.page == pageInbox && a.client != nil:
+		a.inboxPage(c)
 		return
 	case a.page == pageSettings && a.client != nil:
 		a.settingsPage(c)

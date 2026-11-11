@@ -12,7 +12,7 @@ import (
 // navOrder is the order of the pages in the nav bar, the sessions first:
 // a page further along slides in from the right, one before it from the
 // left, as tabs do.
-var navOrder = []string{"", pageNotes, pageCanvas, pageVault, pageCredits, pageUsage, pageSync, pageAppearance, pageSettings, pageHosts}
+var navOrder = []string{"", pageInbox, pageNotes, pageCanvas, pageVault, pageCredits, pageUsage, pageSync, pageAppearance, pageSettings, pageHosts}
 
 // viewMotion is how the view the workspace shows now comes in: from the
 // side of its nav item for another page, from above or below for another

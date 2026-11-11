@@ -34,6 +34,9 @@ type appState struct {
 	// AccountNames are the names the user gave agent accounts' chips:
 	// "<host ID> <agent> <ref>" (creditview's) → name.
 	AccountNames map[string]string `json:"accountNames,omitempty"`
+	// Budgets are projects' weekly budgets in dollars, for the Credits
+	// page: "<host ID> <project path>" → dollars.
+	Budgets map[string]float64 `json:"budgets,omitempty"`
 	// ActiveAccounts is the account new sessions start as: "<host ID>
 	// <agent>" → a CreditAccount.Ref.
 	ActiveAccounts map[string]string `json:"activeAccounts,omitempty"`

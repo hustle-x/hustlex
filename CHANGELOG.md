@@ -2,6 +2,12 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.2.0
+
+- **Credits, redone:** a row per account with each limit, when it resets, whether its pace lasts the week, and Use for new sessions. Below it, what your agents spent: tokens, estimated cost, sessions, active days and cache hit for today, 7 or 30 days, by account; tokens per day, the token mix, where it went by project, session or model, and 13 weeks of activity.
+- **Budgets:** give a project a weekly budget and see how much of it the last seven days used.
+- **Inbox:** what your agents are waiting on, with their question and choices: answer a permission or a question without opening the session. The nav bar counts them.
+
 ## 1.1.1
 
 - **Compact or Expert:** on first launch, pick how much the window shows. Compact keeps Sessions and Notes, a session as a chat or its terminal, and the account in use; Expert shows every page, view and tool. Switch anytime in Settings → App or with ⌘K.

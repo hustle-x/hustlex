@@ -39,6 +39,36 @@ func (a *App) creditsHost() creditview.Host {
 		Remove:      a.removeAccountChip,
 		MoveName:    a.movableSessionName,
 		Move:        a.moveSession,
+		ProjectName: func(path string) string {
+			if n := a.state.ProjectNames[a.host.ID+" "+path]; n != "" {
+				return n
+			}
+			for _, p := range a.projects {
+				if p.Path == path {
+					return p.Name
+				}
+			}
+			return ""
+		},
+		SessionTitle: func(id string) (string, bool) {
+			s, ok := a.sessionByID(id)
+			if !ok {
+				return "", false
+			}
+			return a.sessionName(s), true
+		},
+		Budget: func(project string) float64 { return a.state.Budgets[a.host.ID+" "+project] },
+		SetBudget: func(project string, dollars float64) {
+			if a.state.Budgets == nil {
+				a.state.Budgets = map[string]float64{}
+			}
+			if dollars <= 0 {
+				delete(a.state.Budgets, a.host.ID+" "+project)
+			} else {
+				a.state.Budgets[a.host.ID+" "+project] = dollars
+			}
+			a.saveState()
+		},
 	}
 	for _, ag := range a.accountAgents() {
 		h.AddAgents = append(h.AddAgents, creditview.AddAgent{ID: ag.ID, Name: ag.Name})
@@ -274,12 +304,24 @@ func (a *App) signInChip(c *ui.Context) {
 
 // creditsPage is the Credits page of the connected host.
 func (a *App) creditsPage(c *ui.Context) {
+	if cl, gen := a.client, a.gen; cl != nil {
+		a.credits.FollowHistory(cl, a.onMain, func() bool { return gen == a.gen && a.page == pageCredits })
+	}
 	a.viewHeader(c, func() {
-		ui.Row(c).Grow(1).MinWidth(0).Children(func() {
+		ui.Row(c).Grow(1).MinWidth(0).Gap(10).AlignItems(ui.Center).Children(func() {
 			widget.Breadcrumb(c, a.host.Name, "Credits")
+			if l := a.credits.CheckedLabel(); l != "" {
+				ui.Row(c).Gap(6).AlignItems(ui.Center).Shrink(1).Children(func() {
+					ui.Box(c).Size(6, 6).Radius(3).Background(theme.Done).Shrink(0)
+					if !strings.HasSuffix(l, "…") {
+						l = "Updated " + l
+					}
+					ui.Text(c, l).FontSize(11.5).TextColor(theme.Muted).SingleLine()
+				})
+			}
 		})
-		ui.Text(c, a.credits.CheckedLabel()).FontSize(11).TextColor(theme.Muted).SingleLine()
-		if widget.GhostButton(c, "Read again").Clicked() {
+		a.credits.RangeControl(c)
+		if widget.IconButton(c, icon.Refresh, "Read again", false).Clicked() {
 			a.credits.Refresh()
 		}
 		if widget.IconButton(c, icon.Close, "Back to sessions", false).Clicked() {
@@ -287,7 +329,7 @@ func (a *App) creditsPage(c *ui.Context) {
 		}
 	})
 	ui.Scroll(c).Grow(1).FillWidth().Children(func() {
-		ui.Column(c).FillWidth().Padding(16).Children(func() {
+		ui.Column(c).FillWidth().Padding(22, 24, 36, 24).AlignItems(ui.Center).Children(func() {
 			a.credits.Page(c, a.creditsHost())
 		})
 	})

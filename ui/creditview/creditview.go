@@ -5,6 +5,7 @@ package creditview
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
@@ -39,6 +40,7 @@ type Tracker struct {
 	renaming bool          // the popover asks for the name
 	removing bool          // the popover asks to confirm removing the account
 	force    chan struct{} // asks the poller for a fresh reading
+	spend    spendState
 }
 
 // Host is what the views need of the connected host.
@@ -74,6 +76,33 @@ type Host struct {
 	// starts adding one of agent.
 	AddAgents []AddAgent
 	Add       func(agent string)
+	// ProjectName names a project's folder; SessionTitle a hustleX
+	// session, false for one gone.
+	ProjectName  func(path string) string
+	SessionTitle func(id string) (string, bool)
+	// Budget is a project's weekly budget in dollars, 0 for none;
+	// SetBudget sets it, 0 to remove it. Nil Budget hides budgets.
+	Budget    func(project string) float64
+	SetBudget func(project string, dollars float64)
+}
+
+func (h Host) projectName(path string) string {
+	if h.ProjectName != nil {
+		if n := h.ProjectName(path); n != "" {
+			return n
+		}
+	}
+	if path == "" {
+		return "No project"
+	}
+	return filepath.Base(path)
+}
+
+func (h Host) sessionTitle(id string) (string, bool) {
+	if h.SessionTitle == nil {
+		return "", false
+	}
+	return h.SessionTitle(id)
 }
 
 // AddAgent is an agent that can have another account.
@@ -148,19 +177,6 @@ func describe(err error) string {
 		return "This host runs an older hustleX. Reconnect to update it."
 	}
 	return err.Error()
-}
-
-// tightest is the account closest to a limit, with that limit.
-func (t *Tracker) tightest() (proto.CreditAccount, proto.CreditWindow, bool) {
-	var acc proto.CreditAccount
-	var win proto.CreditWindow
-	found := false
-	for _, a := range t.report.Accounts {
-		if w, ok := a.Tightest(); ok && (!found || w.Used > win.Used) {
-			acc, win, found = a, w, true
-		}
-	}
-	return acc, win, found
 }
 
 // level colors a used percentage.
@@ -626,46 +642,17 @@ func problem(c *ui.Context, h Host, a proto.CreditAccount, offerSignIn bool) {
 	})
 }
 
-// Page is the Credits page's body: a summary, then a card per account.
+// Page is the Credits page's body: a row per account, then what the
+// agents spent.
 func (t *Tracker) Page(c *ui.Context, h Host) {
-	ui.Column(c).FillWidth().Gap(14).Children(func() {
-		widget.FitGrid(c, 220, 3).Gap(10).Children(func() {
-			n := len(t.report.Accounts)
-			summaryCard(c, "Accounts", fmt.Sprintf("%d on %s", n, h.Name), theme.Text)
-			if acc, w, ok := t.tightest(); ok {
-				summaryCard(c, "Closest to its limit", fmt.Sprintf("%s · %.0f%%", h.AgentName(acc.Agent), w.Used), level(w.Used))
-			} else {
-				summaryCard(c, "Closest to its limit", "–", theme.Muted)
-			}
-			summaryCard(c, "Next reset", t.nextReset(), theme.Text)
-		})
-		t.accounts(c, h, true)
-		ui.Text(c, "hustleX reads these with each agent's own sign-in on "+h.Name+", from the agent's vendor only, every few minutes while connected.").
-			FontSize(11.5).TextColor(theme.Muted)
-	})
-}
-
-func summaryCard(c *ui.Context, label, value string, col ui.Color) {
-	widget.Card(c).Gap(4).Children(func() {
-		ui.Text(c, label).FontSize(11).TextColor(theme.Muted).SingleLine()
-		ui.Text(c, value).FontSize(15).TextColor(col).SingleLine()
-	})
-}
-
-// nextReset is how soon the first limit starts over.
-func (t *Tracker) nextReset() string {
-	var next time.Time
-	for _, a := range t.report.Accounts {
-		for _, w := range a.Windows {
-			if !w.ResetsAt.IsZero() && w.ResetsAt.After(time.Now()) && (next.IsZero() || w.ResetsAt.Before(next)) {
-				next = w.ResetsAt
-			}
+	ui.Column(c).FillWidth().MaxWidth(900).Children(func() {
+		if t.err != "" || !t.loaded || len(t.report.Accounts) == 0 {
+			t.accounts(c, h, true)
+		} else {
+			t.accountRows(c, h)
 		}
-	}
-	if next.IsZero() {
-		return "–"
-	}
-	return "in " + textfmt.Until(next, time.Now())
+		t.spending(c, h)
+	})
 }
 
 // CheckedLabel says how fresh the reading is, for the page header.

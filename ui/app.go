@@ -220,6 +220,7 @@ type App struct {
 	groupForm     *groupForm
 	selected      string             // selected session ID
 	layoutPick    string             // the layout the first-launch picker has picked
+	inbox         inboxState         // what waiting agents ask (inbox.go)
 	welcomePick   string             // the agent the welcome sets up, when the user picked one
 	welcomeSigned map[string]bool    // agents whose sign-in the welcome ran, for those whose accounts hustleX doesn't read
 	welcomeRun    string             // the install or sign-in the welcome started, until done

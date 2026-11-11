@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strconv"
+
 	"github.com/egoist/mygo/ui"
 
 	"github.com/hustlex/hustlex/core/hosts"
@@ -39,6 +41,9 @@ func (a *App) navBar(c *ui.Context) {
 			ui.Row(c).Grow(1).MinWidth(0).Gap(2).Clip().Children(func() {
 				if a.navItem(c, icon.Terminal, "Sessions", "sessions", a.page == "", true) {
 					a.page = ""
+				}
+				if a.navItem(c, icon.Inbox, "Inbox", pageInbox, a.page == pageInbox, a.client != nil) {
+					a.togglePage(pageInbox)
 				}
 				if a.navItem(c, icon.Notebook, "Notes", pageNotes, a.page == pageNotes, a.client != nil) {
 					a.togglePage(pageNotes)
@@ -127,6 +132,13 @@ func (a *App) navItem(c *ui.Context, svg *ui.SVG, label, id string, on, enabled 
 		}
 		ui.Icon(c, svg).FontSize(15)
 		ui.Text(c, label).FontSize(12.5).SingleLine()
+		if id == pageInbox {
+			if n := len(a.waiting()); n > 0 {
+				ui.Box(c).MinWidth(16).Height(16).PaddingX(4).Radius(8).Background(theme.Warning).Center().Shrink(0).Children(func() {
+					ui.Text(c, strconv.Itoa(n)).FontSize(10).TextColor(theme.Mix(theme.Warning, ui.Hex("#000000"), 0.9)).SingleLine()
+				})
+			}
+		}
 	})
 	return enabled && b.Clicked()
 }

@@ -1558,6 +1558,22 @@ field TunnelOpenParams.session string
 field Usage.cpu float64
 field Usage.procs int
 field Usage.rss uint64
+field UsageConversation.account string
+field UsageConversation.agent string
+field UsageConversation.project string
+field UsageConversation.session string
+field UsageConversation.title string
+field UsageHistory.conversations []UsageConversation
+field UsageHistory.reading bool
+field UsageHistory.rows []UsageRow
+field UsageHistoryParams.days int
+field UsageRow.cacheCreate int64
+field UsageRow.cacheRead int64
+field UsageRow.conversation int
+field UsageRow.day string
+field UsageRow.input int64
+field UsageRow.model string
+field UsageRow.output int64
 field VaultAsk.account string
 field VaultAsk.action string
 field VaultAsk.command string
@@ -1891,6 +1907,7 @@ method transfer.read
 method transfer.unpack
 method transfer.write
 method tunnel.open
+method usage.history
 method usage.tokens
 method vault.ask
 method vault.attach

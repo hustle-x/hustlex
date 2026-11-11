@@ -30,3 +30,11 @@ func (c *Client) SetHooks(st proto.HooksState) (proto.HooksState, error) {
 	err := c.Call(proto.MethodHooksSet, st, &out)
 	return out, err
 }
+
+// UsageHistory returns the tokens the host's agents used in the last days,
+// by day, conversation and model.
+func (c *Client) UsageHistory(days int) (proto.UsageHistory, error) {
+	var out proto.UsageHistory
+	err := c.Call(proto.MethodUsageHistory, proto.UsageHistoryParams{Days: days}, &out)
+	return out, err
+}

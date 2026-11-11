@@ -9,6 +9,9 @@ import (
 
 var tokenHandlers = map[string]handler{
 	proto.MethodUsageTokens: with(func(c *conn, _ struct{}) (any, error) { return c.srv.tokenReport() }),
+	proto.MethodUsageHistory: with(func(c *conn, p proto.UsageHistoryParams) (any, error) {
+		return c.srv.usageHistoryReport(p.Days)
+	}),
 }
 
 // tokenReport adds up the tokens of every session whose conversation can be
