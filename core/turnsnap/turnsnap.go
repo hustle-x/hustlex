@@ -20,11 +20,25 @@ import (
 // snapshots.
 var ErrNotGit = errors.New("turnsnap: the folder isn't in a git repository")
 
+// ErrTooBig says the folder's files git doesn't track yet are too many
+// or too large to copy into its repository at every turn.
+var ErrTooBig = errors.New("turnsnap: too many or too large untracked files to snapshot")
+
+// What untracked files a snapshot copies into the repository, at most.
+const (
+	maxFile  = 50 << 20
+	maxTotal = 300 << 20
+	maxFiles = 20000
+)
+
 // Take writes dir's files as a git tree and returns its ID.
 func Take(dir string) (string, error) {
 	top, err := git.TopLevel(dir)
 	if err != nil {
 		return "", ErrNotGit
+	}
+	if err := checkUntracked(top); err != nil {
+		return "", err
 	}
 	idx, err := os.CreateTemp("", "hustlex-turn-*.index")
 	if err != nil {
@@ -48,6 +62,36 @@ func Take(dir string) (string, error) {
 		return "", fmt.Errorf("turnsnap: %w", err)
 	}
 	return tree, nil
+}
+
+// checkUntracked refuses a snapshot whose untracked files are too many
+// or too large: each would go into the repository's objects.
+func checkUntracked(top string) error {
+	out, err := git.Run(top, "ls-files", "-z", "--others", "--exclude-standard")
+	if err != nil {
+		return fmt.Errorf("turnsnap: %w", err)
+	}
+	var total int64
+	n := 0
+	for _, f := range strings.Split(out, "\x00") {
+		if f == "" {
+			continue
+		}
+		if n++; n > maxFiles {
+			return ErrTooBig
+		}
+		info, err := os.Lstat(filepath.Join(top, filepath.FromSlash(f)))
+		if err != nil {
+			continue
+		}
+		if info.Size() > maxFile {
+			return ErrTooBig
+		}
+		if total += info.Size(); total > maxTotal {
+			return ErrTooBig
+		}
+	}
+	return nil
 }
 
 // Changed lists the files that differ between trees a and b, relative

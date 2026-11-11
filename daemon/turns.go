@@ -26,7 +26,9 @@ type turnSnap struct {
 	mu      sync.Mutex
 	queue   []func()
 	running bool
-	inTurn  bool // its agent is in a turn, as its states said
+	inTurn  bool   // its agent is in a turn, as its states said
+	dir     string // its folder
+	overlap bool   // another agent worked in its folder during the turn
 
 	before, after, redo string // tree IDs; redo while undone
 }
@@ -43,6 +45,23 @@ func (t *turnSnaps) of(id string) *turnSnap {
 		t.snaps[id] = ts
 	}
 	return ts
+}
+
+// markOverlap notes that an agent other than session id works in folder
+// dir: the turns there now share their files with it, so none is undone.
+func (t *turnSnaps) markOverlap(dir, id string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	for other, ts := range t.snaps {
+		if other == id {
+			continue
+		}
+		ts.mu.Lock()
+		if ts.inTurn && ts.dir == dir {
+			ts.overlap = true
+		}
+		ts.mu.Unlock()
+	}
 }
 
 func (t *turnSnaps) forget(id string) {
@@ -83,13 +102,18 @@ func (s *Server) observeTurn(info proto.SessionInfo) {
 	if _, ok := agent.Find(info.Agent); !ok || info.Parent != "" || info.NotesFor != "" || info.CanvasFor != "" || info.Queued {
 		return
 	}
+	if info.State == proto.StateWorking {
+		s.turns.markOverlap(info.Dir, info.ID)
+	}
+	others := info.State == proto.StateWorking && s.othersWorkIn(info.Dir, info.ID)
 	ts := s.turns.of(info.ID)
 	ts.mu.Lock()
 	began := info.State == proto.StateWorking && !ts.inTurn
 	ended := ts.inTurn && (info.State == proto.StateDone || info.Exited)
+	shared := ts.overlap
 	switch {
 	case began:
-		ts.inTurn = true
+		ts.inTurn, ts.dir, ts.overlap = true, info.Dir, others
 	case ended:
 		ts.inTurn = false
 	}
@@ -116,6 +140,10 @@ func (s *Server) observeTurn(info proto.SessionInfo) {
 			}
 			ts.after = tree
 			files, _ := turnsnap.Changed(dir, ts.before, tree)
+			if shared {
+				ts.before = "" // its changes mix with another agent's
+				return
+			}
 			if len(files) > 0 {
 				s.setTurn(id, &proto.TurnChange{Files: len(files)})
 			}
@@ -139,6 +167,9 @@ func (s *Server) undoTurn(p proto.SessionUndoParams) (proto.SessionUndoResult, e
 	info := sess.Info()
 	if working(info) {
 		return proto.SessionUndoResult{}, errors.New("the agent is still on its turn: undo once it's done")
+	}
+	if s.othersWorkIn(info.Dir, info.ID) {
+		return proto.SessionUndoResult{}, errors.New("another agent is working in this folder: undo once it's done")
 	}
 	ts := s.turns.of(p.ID)
 	type result struct {
@@ -177,4 +208,21 @@ func (s *Server) undoTurn(p proto.SessionUndoParams) (proto.SessionUndoResult, e
 	})
 	r := <-done
 	return proto.SessionUndoResult{Files: r.files}, r.err
+}
+
+// othersWorkIn reports whether an agent other than session id works in
+// folder dir now.
+func (s *Server) othersWorkIn(dir, id string) bool {
+	for _, sess := range s.sessions.List() {
+		if sess.ID() == id {
+			continue
+		}
+		info := sess.Info()
+		if info.Dir == dir && working(info) {
+			if _, ok := agent.Find(info.Agent); ok {
+				return true
+			}
+		}
+	}
+	return false
 }

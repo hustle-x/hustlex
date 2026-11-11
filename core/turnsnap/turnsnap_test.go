@@ -99,3 +99,20 @@ func TestNotGit(t *testing.T) {
 		t.Fatalf("Take = %v", err)
 	}
 }
+
+func TestTooBigUntracked(t *testing.T) {
+	dir := t.TempDir()
+	if _, err := git.Run(dir, "init", "-q"); err != nil {
+		t.Fatal(err)
+	}
+	f, _ := os.Create(filepath.Join(dir, "dump.bin"))
+	f.Truncate(maxFile + 1)
+	f.Close()
+	if _, err := Take(dir); err != ErrTooBig {
+		t.Fatalf("Take = %v", err)
+	}
+	write(t, dir, ".gitignore", "dump.bin\n")
+	if _, err := Take(dir); err != nil {
+		t.Fatalf("ignored, it still counts: %v", err)
+	}
+}

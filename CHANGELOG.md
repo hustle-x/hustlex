@@ -2,6 +2,12 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.1
+
+- **Undo turn is safe with agents side by side:** a turn another agent worked during, in the same folder, isn't offered to undo, so undoing never takes the other agent's changes back.
+- **Undo turn skips huge files:** a folder with very large files git doesn't track yet (over 50 MB, or 300 MB in all) isn't snapshotted, rather than copying them into the repository at every turn.
+- **Several agents at once:** the model and account picked for the first agent no longer go to the others, such as Codex getting Claude's model.
+
 ## 1.3.0
 
 - **Undo turn:** under an agent's last turn in the chat (or in the session's menu), put the files it changed back as they were, and Redo to bring its changes back. Your branch, staged changes and ignored files stay as they are.

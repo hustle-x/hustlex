@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/hustlex/hustlex/core/git"
 	"github.com/hustlex/hustlex/proto"
@@ -73,5 +74,49 @@ func TestUndoAnAgentsTurn(t *testing.T) {
 	}
 	if _, err := c.UndoTurn(info.ID, true); err == nil {
 		t.Fatal("redid twice")
+	}
+}
+
+// Two agents in one folder: a turn another agent worked during can't be
+// undone, which would take the other's changes back too.
+func TestNoUndoWhenAnotherAgentSharesTheFolder(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses sh")
+	}
+	fakeAgent(t)
+	srv := startServer(t)
+	c := connect(t, srv, nil)
+	dir := t.TempDir()
+	if _, err := git.Run(dir, "init", "-q"); err != nil {
+		t.Fatal(err)
+	}
+	a, _ := c.CreateSession(proto.SessionCreateParams{Agent: "claude", Dir: dir, Cols: 80, Rows: 24})
+	b, _ := c.CreateSession(proto.SessionCreateParams{Agent: "claude", Dir: dir, Cols: 80, Rows: 24})
+	state := func(id, st string) {
+		if err := c.Call(proto.MethodSessionState, proto.SessionStateParams{ID: id, State: st}, nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	state(a.ID, proto.StateWorking)
+	waitFor(t, "a's snapshot", func() bool {
+		ts := srv.turns.of(a.ID)
+		ts.mu.Lock()
+		defer ts.mu.Unlock()
+		return !ts.running && len(ts.queue) == 0 && ts.inTurn
+	})
+	state(b.ID, proto.StateWorking)
+	os.WriteFile(filepath.Join(dir, "b.go"), []byte("b's work"), 0o644)
+	state(b.ID, proto.StateDone)
+	state(a.ID, proto.StateDone)
+	time.Sleep(time.Second)
+	sess, _ := srv.sessions.Get(a.ID)
+	if tc := sess.Info().Turn; tc != nil {
+		t.Fatalf("a's turn can be undone: %+v", tc)
+	}
+	if _, err := c.UndoTurn(a.ID, false); err == nil {
+		t.Fatal("undid a turn shared with another agent")
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "b.go")); string(b) != "b's work" {
+		t.Fatal("b's work went")
 	}
 }

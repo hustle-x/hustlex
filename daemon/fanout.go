@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hustlex/hustlex/core/agent"
 	"github.com/hustlex/hustlex/proto"
 )
 
@@ -28,6 +29,10 @@ func (s *Server) fanOut(p proto.FanOutParams) ([]proto.SessionInfo, error) {
 		seen[ag]++
 		params := p.SessionCreateParams
 		params.Agent, params.Group = ag, hex.EncodeToString(group)
+		if agent.Base(ag) != agent.Base(p.Agent) {
+			// The model, effort and account picked are the first agent's.
+			params.Model, params.Effort, params.Account = "", "", ""
+		}
 		params.Branch = p.Branch + "-" + ag
 		if n := seen[ag]; n > 1 {
 			params.Branch += "-" + strconv.Itoa(n)
