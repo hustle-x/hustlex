@@ -232,9 +232,11 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 				})
 			}
 		})
+		a.accountBar(c, s)
 		return
 	}
 	a.sessionBody(c.Key("front:"+front.ID), front)
+	a.accountBar(c, s)
 }
 
 // viewToggle switches a session between its terminal and its chat, for

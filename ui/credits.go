@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/egoist/mygo/ui"
@@ -31,6 +32,7 @@ func (a *App) creditsHost() creditview.Host {
 		AccountName: a.accountChipName,
 		Rename:      a.renameAccountChip,
 		Active:      a.activeRef,
+		Showing:     a.showingRef,
 		Switch:      a.switchAccount,
 		Add:         a.addNextAccount,
 		Remove:      a.removeAccountChip,
@@ -50,19 +52,31 @@ func (a *App) creditsHost() creditview.Host {
 func (a *App) accountKey(agentID, ref string) string { return a.host.ID + " " + agentID + " " + ref }
 
 // accountChipName is the name of an account's chip: the user's, else the
-// one the account was added under; "" for the agent's own, unnamed.
+// one the account was added under unless hustleX made it up ("Account 2");
+// "" leaves the chip to the email it is signed in as.
 func (a *App) accountChipName(agentID, ref string) string {
 	if name := a.state.AccountNames[a.accountKey(agentID, ref)]; name != "" {
 		return name
 	}
 	if ref != proto.RefDefault {
 		for _, acc := range a.accountsOf().list {
-			if acc.ID == ref {
+			if acc.ID == ref && !autoAccountName(acc.Name) {
 				return acc.Name
 			}
 		}
 	}
 	return ""
+}
+
+// autoAccountName reports whether name is one hustleX gave an account
+// added without one: "Account 2".
+func autoAccountName(name string) bool {
+	n, ok := strings.CutPrefix(name, "Account ")
+	if !ok {
+		return false
+	}
+	_, err := strconv.Atoi(n)
+	return err == nil
 }
 
 func (a *App) renameAccountChip(agentID, ref, name string) {
@@ -107,6 +121,22 @@ func accountOfRef(ref string) string {
 		return ""
 	}
 	return ref
+}
+
+// showingRef is the account the session in view runs as, when it is a
+// session of agentID shown in the workspace.
+func (a *App) showingRef(agentID string) (string, bool) {
+	if a.page != "" {
+		return "", false
+	}
+	s, ok := a.selectedSession()
+	if !ok || agent.Base(s.Agent) != agentID {
+		return "", false
+	}
+	if s.Account == "" {
+		return proto.RefDefault, true
+	}
+	return s.Account, true
 }
 
 // movableSession is the session in view if it is of agentID, runs as

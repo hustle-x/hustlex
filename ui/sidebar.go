@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/egoist/mygo/ui"
@@ -90,6 +91,7 @@ func (a *App) sessionList(c *ui.Context) {
 					ui.Text(c, msg).FontSize(12).TextColor(theme.Muted).Padding(6)
 				}
 				shown := 0
+				a.needsYou(c)
 				for _, e := range a.projectEntries() {
 					if e.group != "" {
 						shown += a.groupSection(c.Key("group:"+e.group), e)
@@ -204,9 +206,45 @@ func (a *App) projectGroup(c *ui.Context, p proto.ProjectInfo) bool {
 		ui.Text(c, "No sessions yet").FontSize(11).TextColor(theme.Muted).Padding(4, 8, 4, 22)
 	}
 	for i, s := range sessions {
+		if !filtering && waitsForYou(s) {
+			continue // in Needs you, above
+		}
 		a.sessionRow(c.Key(s.ID), i, s)
 	}
 	return true
+}
+
+// waitsForYou reports whether s's agent asks something of the user.
+func waitsForYou(s proto.SessionInfo) bool {
+	return s.State == proto.StateWaiting && !s.Exited && s.Parent == ""
+}
+
+// needsYou lists, above the projects, the sessions whose agent waits for
+// the user: what to look at first.
+func (a *App) needsYou(c *ui.Context) {
+	if strings.TrimSpace(a.filter) != "" {
+		return
+	}
+	var waiting []proto.SessionInfo
+	for _, p := range a.projects {
+		for _, s := range a.projectSessions(p.Path) {
+			if waitsForYou(s) {
+				waiting = append(waiting, s)
+			}
+		}
+	}
+	if len(waiting) == 0 {
+		return
+	}
+	ui.Row(c.Key("needs-you")).Height(28).FillWidth().Gap(6).PaddingX(4).Margin(6, 0, 0, 0).AlignItems(ui.Center).Children(func() {
+		widget.Dot(c, theme.Warning, false, 6)
+		widget.SectionLabel(c, "NEEDS YOU", theme.Warning)
+		ui.Spacer(c)
+		ui.Text(c, strconv.Itoa(len(waiting))).FontSize(10.5).TextColor(theme.Warning)
+	})
+	for i, s := range waiting {
+		a.sessionRow(c.Key("wait:"+s.ID), i, s)
+	}
 }
 
 // projectMenuItems are a project's menu: its right-click menu and its

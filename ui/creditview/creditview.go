@@ -56,6 +56,9 @@ type Host struct {
 	Rename func(agent, ref, name string)
 	// Active is the account (a Ref) new sessions of agent start as.
 	Active func(agent string) string
+	// Showing is the account (a Ref) the session in view runs as, when it
+	// is one of agent's: its chip is outlined then, not Active's.
+	Showing func(agent string) (ref string, ok bool)
 	// Switch makes ref the account new sessions of agent start as.
 	Switch func(agent, ref, name string)
 	// MoveName is the name of the session in view that could go on as
@@ -202,6 +205,9 @@ func (t *Tracker) managed() []proto.CreditAccount {
 	return out
 }
 
+// SetReport sets the reading as the daemon would, for tests.
+func (t *Tracker) SetReport(r proto.CreditsReport) { t.report, t.loaded = r, true }
+
 // Loaded reports whether the accounts have been read once.
 func (t *Tracker) Loaded() bool { return t.loaded }
 
@@ -221,6 +227,8 @@ func namesOf(h Host, accs []proto.CreditAccount) []string {
 		switch {
 		case h.AccountName != nil && h.AccountName(a.Agent, a.Ref) != "":
 			names[i] = h.AccountName(a.Agent, a.Ref)
+		case a.Account != "":
+			names[i] = a.Account // the email it is signed in as
 		case count[a.Agent] > 1:
 			names[i] = fmt.Sprintf("Account %d", seen[a.Agent])
 		default:
@@ -255,11 +263,20 @@ func (t *Tracker) Chips(c *ui.Context, h Host) {
 func (t *Tracker) accountChip(c *ui.Context, h Host, a proto.CreditAccount, name string, of int) {
 	key := a.Agent + " " + a.Ref
 	inUse := of > 1 && h.Active != nil && h.Active(a.Agent) == a.Ref
+	showRef, showing := "", false
+	if h.Showing != nil {
+		showRef, showing = h.Showing(a.Agent)
+	}
+	if showing {
+		inUse = of > 1 && showRef == a.Ref
+	}
 	tip := name
 	if a.Account != "" {
 		tip += " · " + a.Account
 	}
-	if of > 1 && !inUse {
+	if showing && inUse {
+		tip += ": the session in view runs as it"
+	} else if of > 1 && !inUse {
 		tip += ": click to use it for new sessions"
 	}
 	tip += " (right-click for details)"

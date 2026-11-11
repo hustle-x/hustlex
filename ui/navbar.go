@@ -58,6 +58,7 @@ func (a *App) navBar(c *ui.Context) {
 					a.openSync()
 				}
 			})
+			a.searchButton(c)
 			a.hostMenu(c, false)
 			mode, label := icon.Sun, "Switch to the light mode"
 			if theme.Current().Light {
@@ -124,5 +125,24 @@ func (a *App) togglePage(id string) {
 		a.page = ""
 	} else {
 		a.page = id
+	}
+}
+
+// searchButton opens the command palette: every page, session and
+// command, a click away for whoever doesn't know its shortcut.
+func (a *App) searchButton(c *ui.Context) {
+	b := ui.ButtonBase(c.Key("nav-search")).Height(30).Shrink(0).PaddingX(10).Gap(8).Radius(theme.RadiusControl).Margin(0, 6, 0, 8).
+		Label("Search & commands").Tooltip("Search & commands (" + modKey + "K)").Cursor(ui.CursorPointer).Background(theme.Sunken)
+	border, fg := theme.BorderStrong, theme.Muted
+	if b.Hovered() {
+		border, fg = theme.AccentLine, theme.TextSoft
+	}
+	widget.Pressable(b.Border(1, widget.Tint(b, "border", border)).TextColor(widget.Tint(b, "fg", fg))).Children(func() {
+		ui.Icon(c, icon.Search).FontSize(13)
+		ui.Text(c, "Search & commands").FontSize(12).SingleLine()
+		ui.Text(c, modKey+"K").FontSize(10.5).Padding(1, 5).Radius(5).Border(1, theme.BorderStrong).SingleLine()
+	})
+	if b.Clicked() {
+		a.openPalette()
 	}
 }
