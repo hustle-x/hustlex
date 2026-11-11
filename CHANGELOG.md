@@ -2,6 +2,12 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.2
+
+- **Your phone, one click away:** a phone button in the nav bar opens Pair a phone and its QR code right away.
+- **Layout in Appearance:** pick Compact or Expert on the Appearance page, next to Dark and Light; Settings labels its section menu, so App is easier to find.
+- **Session titles say the gist:** agents name a session for its work in a few words, not your message copied.
+
 ## 1.3.1
 
 - **Undo turn is safe with agents side by side:** a turn another agent worked during, in the same folder, isn't offered to undo, so undoing never takes the other agent's changes back.

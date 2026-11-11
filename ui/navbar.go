@@ -70,6 +70,9 @@ func (a *App) navBar(c *ui.Context) {
 			if compact {
 				ui.Spacer(c)
 				a.searchButton(c)
+				if widget.IconButton(c.Key("nav-phone"), icon.Phone, "Pair a phone", a.phoneOf().open).Clicked() {
+					a.pairPhone()
+				}
 				if widget.IconButton(c.Key("nav-settings"), icon.Settings, "Settings", a.page == pageSettings).Clicked() && a.client != nil {
 					a.togglePage(pageSettings)
 				}
@@ -87,6 +90,9 @@ func (a *App) navBar(c *ui.Context) {
 			if widget.IconButton(c.Key("nav-appearance"), icon.Palette, "Appearance", a.page == pageAppearance).Clicked() {
 				a.accentInput = a.state.Accent
 				a.togglePage(pageAppearance)
+			}
+			if widget.IconButton(c.Key("nav-phone"), icon.Phone, "Pair a phone", a.phoneOf().open).Clicked() {
+				a.pairPhone()
 			}
 			if widget.IconButton(c.Key("nav-settings"), icon.Settings, "Settings", a.page == pageSettings).Clicked() && a.client != nil {
 				a.togglePage(pageSettings)

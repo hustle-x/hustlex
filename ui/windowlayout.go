@@ -95,7 +95,7 @@ func (a *App) layoutCards(c *ui.Context, current string, pick func(string)) {
 			b.Border(1, widget.Tint(b, "border", border))
 			widget.Pressable(b).Children(func() {
 				ui.Column(c).FillWidth().Gap(10).Children(func() {
-					layoutSketch(c, l == layoutExpert)
+					layoutSketch(c, l == layoutExpert, 120)
 					ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 						if l == layoutCompact {
 							ui.Text(c, "Compact").FontSize(13.5)
@@ -124,8 +124,8 @@ func (a *App) layoutCards(c *ui.Context, current string, pick func(string)) {
 
 // layoutSketch is a small drawing of a layout: the nav bar, the Sessions
 // panel, the session, and in Expert the tools.
-func layoutSketch(c *ui.Context, expert bool) {
-	ui.Column(c).FillWidth().Height(120).Padding(7).Gap(5).Radius(9).Background(theme.Sunken).Border(1, theme.Border).Children(func() {
+func layoutSketch(c *ui.Context, expert bool, h float32) {
+	ui.Column(c).FillWidth().Height(h).Padding(7).Gap(5).Radius(9).Background(theme.Sunken).Border(1, theme.Border).Children(func() {
 		ui.Row(c).FillWidth().Height(12).Gap(3).Padding(3, 4).Radius(4).Background(theme.Hover).AlignItems(ui.Center).Children(func() {
 			ui.Box(c).Size(6, 5).Radius(2).Background(theme.Accent)
 			n := 2
@@ -133,18 +133,18 @@ func layoutSketch(c *ui.Context, expert bool) {
 				n = 7
 			}
 			for range n {
-				ui.Box(c).Size(16, 5).Radius(2).Background(theme.BorderStrong)
+				ui.Box(c).Size(h*0.13, 5).Radius(2).Background(theme.BorderStrong)
 			}
 		})
 		ui.Row(c).FillWidth().Grow(1).Gap(5).Children(func() {
-			ui.Box(c).Width(46).FillHeight().Radius(5).Background(theme.Panel).Border(1, theme.Border)
+			ui.Box(c).Width(h*0.38).FillHeight().Radius(5).Background(theme.Panel).Border(1, theme.Border)
 			ui.Column(c).Grow(1).FillHeight().Padding(6).Gap(4).Radius(5).Background(theme.Panel).Border(1, theme.Border).Children(func() {
 				for _, w := range []float32{70, 45, 60} {
 					ui.Box(c).WidthPercent(w).Height(4).Radius(2).Background(theme.BorderStrong)
 				}
 			})
 			if expert {
-				ui.Box(c).Width(38).FillHeight().Radius(5).Background(theme.Panel).Border(1, theme.Border)
+				ui.Box(c).Width(h*0.32).FillHeight().Radius(5).Background(theme.Panel).Border(1, theme.Border)
 			}
 		})
 	})

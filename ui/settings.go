@@ -8,6 +8,7 @@ import (
 	"github.com/hustlex/hustlex/core/hosts"
 	"github.com/hustlex/hustlex/ui/icon"
 	"github.com/hustlex/hustlex/ui/libraryview"
+	"github.com/hustlex/hustlex/ui/theme"
 	"github.com/hustlex/hustlex/ui/widget"
 )
 
@@ -68,19 +69,24 @@ func (a *App) settingsPage(c *ui.Context) {
 				a.settingsTabsW = w
 			}
 		} else {
-			b := widget.Button(c.Key("section-menu"), widget.Secondary, icon.ChevronDown, a.settingsSection, "").Height(30).Label("Settings section")
-			if w := b.Bounds().W; w > 0 {
+			// Labeled, so the menu reads as where the other sections are.
+			row := ui.Row(c.Key("section-pick")).Shrink(0).Gap(8).AlignItems(ui.Center)
+			row.Children(func() {
+				ui.Text(c, "Section").FontSize(12).TextColor(theme.Muted).SingleLine()
+				b := widget.Button(c.Key("section-menu"), widget.Secondary, icon.ChevronDown, a.settingsSection, "").Height(30).Label("Settings section")
+				a.menu.OpenBelow(b, "settings-sections", 30)
+				a.menu.Show(c, b, "settings-sections", func(done func()) {
+					for i, name := range settingsSections {
+						if widget.MenuItem(c.Key(name), nil, name, false) {
+							pick(i)
+							done()
+						}
+					}
+				})
+			})
+			if w := row.Bounds().W; w > 0 {
 				a.settingsMenuW = w
 			}
-			a.menu.OpenBelow(b, "settings-sections", 30)
-			a.menu.Show(c, b, "settings-sections", func(done func()) {
-				for i, name := range settingsSections {
-					if widget.MenuItem(c.Key(name), nil, name, false) {
-						pick(i)
-						done()
-					}
-				}
-			})
 		}
 		if a.settingsSection == sectionLibrary && a.host.ID != hosts.LocalID && a.client != nil && widget.GhostButton(c, "Sync…").Tooltip("Copy items to another host").Clicked() {
 			a.openSync()

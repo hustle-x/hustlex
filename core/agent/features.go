@@ -195,7 +195,7 @@ Done with sessions you spawned? "$HUSTLEX_BIN" hibernate ID... frees the host's 
 	{ID: "titles", Name: "Session titles", Group: GroupCore, Default: true,
 		About:   "Agents name their session for what it does.",
 		Summary: "Name your session for what it does: \"$HUSTLEX_BIN\" title self \"…\".",
-		Guide: `Session titles: once you know what this session is for, name it in a few words, and again when its work changes; a name the user gave it stays theirs:
+		Guide: `Session titles: once you know what this session is for, name it in a few words, and again when its work changes: the gist of the work ("Layout cards in Appearance"), never the user's message copied; a name the user gave it stays theirs:
     "$HUSTLEX_BIN" title self "Fix the login redirect"`,
 		Tools: []string{"session_title"}},
 }

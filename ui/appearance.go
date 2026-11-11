@@ -58,6 +58,24 @@ func (a *App) appearancePage(c *ui.Context) {
 				}
 			})
 
+			widget.SectionLabel(c, "LAYOUT", theme.Muted).Margin(14, 0, 0, 0)
+			current := a.state.Layout
+			if current == "" {
+				current = layoutExpert
+			}
+			widget.FitGrid(c.Key("layout"), 260, 4).Gap(12).Children(func() {
+				for _, l := range []string{layoutCompact, layoutExpert} {
+					if a.layoutCard(c.Key(l), l, current == l) {
+						a.setWindowLayout(l)
+					}
+				}
+			})
+			about := "Compact, the recommended one: Sessions and Notes, terminal or chat. Tools show up when a session needs them."
+			if current == layoutExpert {
+				about = "Expert: every tool in view, canvas, credentials, usage, sync, browser, traffic and the side panel."
+			}
+			ui.Text(c, about+" Everything stays a "+modKey+"K away.").FontSize(12).TextColor(theme.Muted)
+
 			widget.SectionLabel(c, "ACCENT", theme.Muted).Margin(14, 0, 0, 0)
 			ui.Text(c, "Give any theme an accent of your own: its buttons, selection and focus take it.").
 				FontSize(12).TextColor(theme.Muted)
@@ -168,6 +186,35 @@ func (a *App) paletteCard(c *ui.Context, p theme.Palette) bool {
 		})
 		ui.Row(c).FillWidth().Gap(8).Children(func() {
 			ui.Text(c, p.Name).FontSize(12.5).Grow(1).SingleLine()
+			if on {
+				ui.Icon(c, icon.Check).FontSize(13).TextColor(theme.Accent)
+			}
+		})
+	})
+	return card.Clicked()
+}
+
+// layoutCard is one window layout to pick, drawn like a paletteCard; it
+// reports whether it was clicked.
+func (a *App) layoutCard(c *ui.Context, l string, on bool) bool {
+	name := "Compact"
+	if l == layoutExpert {
+		name = "Expert"
+	}
+	card := ui.ButtonBase(c).MinWidth(0).Padding(10).Gap(12).Radius(theme.RadiusCard).Cursor(ui.CursorPointer).Label(name).
+		Background(theme.Raised)
+	switch {
+	case on:
+		card.Border(1, theme.AccentLine)
+	case card.Hovered():
+		card.Border(1, theme.BorderStrong)
+	default:
+		card.Border(1, theme.Border)
+	}
+	card.Children(func() {
+		ui.Column(c).FillWidth().Children(func() { layoutSketch(c, l == layoutExpert, 74) })
+		ui.Row(c).FillWidth().Gap(8).Children(func() {
+			ui.Text(c, name).FontSize(12.5).Grow(1).SingleLine()
 			if on {
 				ui.Icon(c, icon.Check).FontSize(13).TextColor(theme.Accent)
 			}
