@@ -79,6 +79,7 @@ func (a *App) view(c *ui.Context) {
 	a.hibernateDialog(c)
 	a.removeProjectDialog(c)
 	a.groupDialog(c)
+	a.projectRenameDialog(c)
 	a.cloneDialog(c)
 	a.noteImportDialog(c)
 	a.noteExportDialog(c)

@@ -2,6 +2,11 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.0.6
+
+- **Rename a project:** its menu's Rename… gives it a name in hustleX; the folder on disk keeps its own, so sessions and conversations stay as they are. An empty name goes back to the folder's.
+- **Updates are found sooner:** hustleX looks every hour, and when you come back to its window after a while.
+
 ## 1.0.5
 
 - **Accounts by name:** a new session's account choices read as their chips do: the name you gave the account, else the email it is signed in as, instead of "Default" and "Account 2".

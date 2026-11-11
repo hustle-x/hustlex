@@ -257,6 +257,10 @@ func (a *App) projectMenuItems(c *ui.Context, p proto.ProjectInfo, done func()) 
 		a.projectArrangeItems(c, p, done)
 	}
 	widget.MenuSeparator(c)
+	if widget.MenuItemTip(c, icon.Pencil, "Rename…", "Its name in hustleX; the folder keeps its own", false) {
+		a.projectRename = &projectRenameForm{open: true, path: p.Path, name: p.Name}
+		done()
+	}
 	if widget.MenuItemTip(c, icon.Trash, "Remove…", "Remove the project from hustleX; its files stay", true) {
 		a.removing = &p
 		done()

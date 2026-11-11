@@ -28,6 +28,9 @@ type appState struct {
 	Layouts         map[string]layout `json:"layouts,omitempty"`         // "<host ID> <project path>" → layout
 	Panel           sidePanel         `json:"panel,omitempty"`
 	Updates         updatePrefs       `json:"updates,omitempty"`
+	// ProjectNames are the names the user gave projects in the list, in
+	// place of their folders': "<host ID> <project path>" → name.
+	ProjectNames map[string]string `json:"projectNames,omitempty"`
 	// AccountNames are the names the user gave agent accounts' chips:
 	// "<host ID> <agent> <ref>" (creditview's) → name.
 	AccountNames map[string]string `json:"accountNames,omitempty"`

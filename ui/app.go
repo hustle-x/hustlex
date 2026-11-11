@@ -216,12 +216,13 @@ type App struct {
 	project   string          // selected project path
 	collapsed map[string]bool // projects whose sessions are hidden
 	// foldedGroups are the groups of projects whose projects are hidden.
-	foldedGroups map[string]bool
-	groupForm    *groupForm
-	selected     string // selected session ID
-	maximized    string // session shown alone, if any
-	page         string // a rail view shown instead of the sessions, or ""
-	filter       string // the session list's filter
+	foldedGroups  map[string]bool
+	groupForm     *groupForm
+	selected      string             // selected session ID
+	projectRename *projectRenameForm // the project being renamed, if any
+	maximized     string             // session shown alone, if any
+	page          string             // a rail view shown instead of the sessions, or ""
+	filter        string             // the session list's filter
 	// accentInput is the Appearance page's custom accent as typed.
 	accentInput string
 	// accentHSV is the color picker's position, kept apart from the accent
@@ -525,6 +526,11 @@ func (a *App) refresh(c *client.Client, gen int, openProject string) {
 }
 
 func (a *App) setProjects(list []proto.ProjectInfo) {
+	for i := range list {
+		if name := a.state.ProjectNames[a.host.ID+" "+list[i].Path]; name != "" {
+			list[i].Name = name
+		}
+	}
 	a.projects = list
 	if p := a.openProject; p != "" && slices.ContainsFunc(list, func(i proto.ProjectInfo) bool { return i.Path == p }) {
 		a.project, a.openProject = p, "" // just copied here
