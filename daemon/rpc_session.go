@@ -63,6 +63,13 @@ var sessionHandlers = map[string]handler{
 		c.srv.sessions.SetNote(sess, p.Note)
 		return ok, nil
 	}),
+	proto.MethodSessionTitle: with(func(c *conn, p proto.SessionTitleParams) (any, error) {
+		sess, err := c.srv.sessions.Get(p.ID)
+		if err != nil {
+			return nil, err
+		}
+		return ok, c.srv.sessions.SetTitle(sess, p.Title, p.ByUser)
+	}),
 	proto.MethodSessionScreen: with(func(c *conn, p proto.SessionRef) (any, error) {
 		sess, err := c.srv.sessions.Get(p.ID)
 		if err != nil {

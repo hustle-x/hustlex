@@ -93,6 +93,7 @@ type Server struct {
 	commandStore *commands.Store
 	runner       checks.Runner
 	sched        scheduler
+	moves        limitMoves // sessions moved to another account at their limit
 	displays     displays
 	syncHash     projectsync.Hasher // files' hashes, for syncs
 	traf         traffic            // the HTTP interceptor (traffic.go)
@@ -318,6 +319,8 @@ func (s *Server) info() proto.DaemonInfo {
 		Hash:     s.Hash,
 		ID:       s.daemonID,
 		OS:       runtime.GOOS,
+		// Sessions queued until a time (startlater.go).
+		StartLater: true,
 	}
 	info.Display, info.DisplayNote = display.Available()
 	if !info.Display {

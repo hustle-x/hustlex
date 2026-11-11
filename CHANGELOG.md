@@ -2,6 +2,13 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.2.1
+
+- **Continue on another account:** when a session's limit runs out mid-task, it goes on with the same conversation as another account with room, and says so. Turn it off in Settings → New sessions.
+- **Start when a limit resets:** New session can wait for the account's limit to reset; the session sits in the Queued group until then, even if hustleX restarts.
+- **Session titles:** agents name their session for what it does, and rename it as the work changes. Double-click a session's name to give it your own; agents leave that one alone.
+- **While you were away:** back at your computer after a while, see which sessions finished, which need you, what moved to another account and how the limits went.
+
 ## 1.2.0
 
 - **Credits, redone:** a row per account with each limit, when it resets, whether its pace lasts the week, and Use for new sessions. Below it, what your agents spent: tokens, estimated cost, sessions, active days and cache hit for today, 7 or 30 days, by account; tokens per day, the token mix, where it went by project, session or model, and 13 weeks of activity.

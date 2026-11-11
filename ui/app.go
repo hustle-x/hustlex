@@ -221,6 +221,9 @@ type App struct {
 	selected      string             // selected session ID
 	layoutPick    string             // the layout the first-launch picker has picked
 	inbox         inboxState         // what waiting agents ask (inbox.go)
+	rename        sessionRename      // the session whose name is being edited (sessiontitle.go)
+	movedSeen     map[string]int64   // session ID → the move whose notice was dismissed (accountmove.go)
+	away          awayState          // what moved on while the user was away (away.go)
 	welcomePick   string             // the agent the welcome sets up, when the user picked one
 	welcomeSigned map[string]bool    // agents whose sign-in the welcome ran, for those whose accounts hustleX doesn't read
 	welcomeRun    string             // the install or sign-in the welcome started, until done
@@ -354,6 +357,7 @@ func (a *App) Open() *mygo.Window {
 	a.connect(a.opts.Start)
 	a.startUpdates()
 	a.startAutoSync()
+	go a.watchAway()
 	go func() {
 		for range time.Tick(time.Minute) {
 			a.onMain(a.vaultTick)
@@ -557,12 +561,14 @@ func (a *App) upsert(info proto.SessionInfo) {
 		// A program that starts again (continued, or a queued agent's)
 		// runs in a new terminal of the daemon: the old stream shows the
 		// last one, so attach anew.
-		if old := a.sessions[i]; (old.Exited || old.Queued) && !info.Exited && !info.Queued {
+		// So does one moved to another account at its limit, in place.
+		if old := a.sessions[i]; (old.Exited || old.Queued || movedAt(old) != movedAt(info)) && !info.Exited && !info.Queued {
 			if p := a.panes[info.ID]; p != nil {
 				p.close()
 			}
 			delete(a.panes, info.ID)
 		}
+		a.noteMove(a.sessions[i], info)
 		a.sessions[i] = info
 	} else {
 		a.sessions = append(a.sessions, info)

@@ -1,6 +1,7 @@
 package session
 
 import (
+	"errors"
 	"maps"
 	"slices"
 	"strings"
@@ -91,6 +92,44 @@ func (m *Manager) SetNote(s *Session, note string) {
 	s.meta.Note = note
 	s.mu.Unlock()
 	m.notify(s)
+}
+
+// titleMax bounds a session's name; earlierMax how many past names it keeps.
+const (
+	titleMax   = 80
+	earlierMax = 5
+)
+
+// ErrNamedByUser refuses an agent's title for a session the user named.
+var ErrNamedByUser = errors.New("the user named this session, so it keeps their name")
+
+// SetTitle names session s: byUser, the user's name, which agents then
+// leave ("" gives naming back to them); else an agent's, refused once the
+// user named it. The name it replaces joins its earlier ones.
+func (m *Manager) SetTitle(s *Session, title string, byUser bool) error {
+	title = strings.Join(strings.Fields(title), " ")
+	if r := []rune(title); len(r) > titleMax {
+		title = string(r[:titleMax]) + "…"
+	}
+	s.mu.Lock()
+	switch {
+	case !byUser && s.meta.Named:
+		s.mu.Unlock()
+		return ErrNamedByUser
+	case !byUser && title == "":
+		s.mu.Unlock()
+		return errors.New("the title is empty")
+	}
+	if old := s.meta.Name; old != "" && old != title {
+		s.meta.Earlier = append(slices.DeleteFunc(s.meta.Earlier, func(n string) bool { return n == old || n == title }), old)
+		if len(s.meta.Earlier) > earlierMax {
+			s.meta.Earlier = slices.Clone(s.meta.Earlier[len(s.meta.Earlier)-earlierMax:])
+		}
+	}
+	s.meta.Name, s.meta.Named = title, byUser && title != ""
+	s.mu.Unlock()
+	m.notify(s)
+	return nil
 }
 
 // Replace starts spec in place of the session spec.ID names, keeping its

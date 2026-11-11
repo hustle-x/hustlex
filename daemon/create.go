@@ -151,7 +151,12 @@ func (s *Server) createSession(p proto.SessionCreateParams) (*session.Session, e
 		env, names := s.vaultSessionEnv(spec.ID, meta.Project, meta.Parent, p.Creds)
 		spec.Env, spec.Meta.Creds = append(spec.Env, env...), names
 	}
-	if _, isAgent := agent.Find(p.Agent); isAgent && !p.SignIn && s.mustQueue() {
+	_, isAgent := agent.Find(p.Agent)
+	if isAgent && !p.SignIn && p.StartAt.After(time.Now()) {
+		spec.Meta.StartAt = p.StartAt
+		return s.enqueue(spec, launch.command, launch.typed)
+	}
+	if isAgent && !p.SignIn && s.mustQueue() {
 		return s.enqueue(spec, launch.command, launch.typed)
 	}
 	sess, err := s.sessions.Create(spec)

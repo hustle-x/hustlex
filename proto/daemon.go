@@ -35,6 +35,9 @@ type DaemonInfo struct {
 	// OS is the host's system as Go names it ("linux", "darwin",
 	// "windows"); "" from older daemons.
 	OS string `json:"os,omitempty"`
+	// StartLater says sessions can be queued until a time
+	// (SessionCreateParams.StartAt); false from older daemons.
+	StartLater bool `json:"startLater,omitempty"`
 }
 
 // AgentInfo describes an agent the daemon can start.
@@ -80,6 +83,10 @@ type DaemonSettings struct {
 	// stay idle before the daemon stops it to free what it holds, keeping
 	// its session to continue; 0 never does.
 	HibernateAfter int `json:"hibernateAfter,omitempty"`
+	// StayOnAccount keeps a session whose account ran out of a limit
+	// waiting for its reset; by default it goes on with the same
+	// conversation as another account of its agent with room.
+	StayOnAccount bool `json:"stayOnAccount,omitempty"`
 }
 
 // MethodSessionBudget sets how long a session's agent may work:

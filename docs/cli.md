@@ -14,6 +14,7 @@
 | `run [--session S] [N\|NAME\|COMMAND]` | The project's commands, as the Run menu lists them (`commands.list`), or runs one in a new tab of the session (`commands.run`); `--save NAME COMMAND` saves one, `--forget N\|NAME` forgets it. |
 | `wait SESSION [--timeout 30m]` | Returns once the session's agent is `done` or `waiting`, or has exited, printing which. An agent without hooks counts as done once its screen is quiet for 3 seconds. |
 | `note SESSION [TEXT...]` | Sets what the session is at, shown under it in the app and in `ls` (`session.note`, kept across restarts); no text clears it. Agents are told to say so at milestones. |
+| `title SESSION TEXT...` | Names the session for what it does (`session.title`, kept across restarts). Agents are told to name theirs; once the user renames a session in the app, its name is theirs and an agent's title is refused. |
 | `kill SESSION` | Ends the session. |
 | `hibernate SESSION... [--idle] [--when-done] [--force] [--dry-run]`, `hibernate SESSION --auto off\|on`, `wake SESSION` | Stop sessions' agents to free the host, to wake later on their conversation; one that would lose work is only planned unless forced or once done; keep one from hibernating on its own ([agents.md](agents.md#by-hand)). |
 | `agents [--all]` | The agents installed on the host (`--all`: every preset). |

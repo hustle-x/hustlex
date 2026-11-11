@@ -62,6 +62,7 @@ func (a *App) newSessionDialog(c *ui.Context) {
 				a.issueButton(c)
 			})
 		}
+		a.startField(c)
 		if len(a.sessions) > 0 || len(a.state.Templates) > 0 {
 			a.saveTemplateRow(c) // for forms used again, not the first
 		}

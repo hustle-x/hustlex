@@ -80,6 +80,7 @@ var (
 	Sparkle  = load("sparkle")
 	Inbox    = load("inbox")
 	Refresh  = load("refresh")
+	Pin      = load("pin")
 	// Logo is hustleX's mascot, traced to one shape so it takes any color.
 	Logo     = load("logo")
 	Collapse = load("collapse")

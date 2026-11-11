@@ -53,6 +53,7 @@ type hostSettings struct {
 	maxAgent int
 	sleep    int  // HibernateAfter, in minutes
 	neverHib bool // new sessions don't hibernate on their own (every host)
+	moveOn   bool // sessions go on as another account at a limit (!StayOnAccount)
 	log      proto.DaemonLog
 	err      string
 	newName  string
@@ -86,6 +87,7 @@ func (a *App) loadHostSettings() {
 				hs.err = client.Explain(err)
 			}
 			hs.vars, hs.maxAgent, hs.sleep, hs.log = vars, st.MaxAgents, st.HibernateAfter, log
+			hs.moveOn = !st.StayOnAccount
 		})
 	}()
 }
@@ -176,6 +178,9 @@ func (a *App) sessionDefaults(c *ui.Context) {
 		}
 	})
 	hs := a.hostSettingsOf()
+	if hs.loaded && switchRow(c, &hs.moveOn, "Continue on another account", "When a session's limit runs out, it goes on with the same conversation on an account with room.") {
+		a.setMoveOn(hs.moveOn)
+	}
 	n := "No limit"
 	if hs.maxAgent > 0 {
 		n = strconv.Itoa(hs.maxAgent) + " at most; the others wait their turn"
@@ -236,6 +241,25 @@ func (a *App) setHibernation(minutes int) {
 		st, err := cl.Settings()
 		if err == nil {
 			st.HibernateAfter = minutes
+			_, err = cl.SetSettings(st)
+		}
+		if err != nil {
+			a.onMain(func() { a.status = client.Explain(err) })
+		}
+	}()
+}
+
+// setMoveOn says whether the host's sessions go on as another account
+// when theirs runs out of a limit.
+func (a *App) setMoveOn(on bool) {
+	cl := a.client
+	if cl == nil {
+		return
+	}
+	go func() {
+		st, err := cl.Settings()
+		if err == nil {
+			st.StayOnAccount = !on
 			_, err = cl.SetSettings(st)
 		}
 		if err != nil {

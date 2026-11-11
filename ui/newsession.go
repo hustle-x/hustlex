@@ -29,6 +29,7 @@ type newSessionForm struct {
 	accountFor   string   // the agent account was last set for
 	creds        []string // the vault's credentials it starts with
 	templateName string   // the name a template is saved under
+	later        bool     // start when the account's fullest limit resets
 
 	busy bool
 	err  string
@@ -124,6 +125,9 @@ func (a *App) startSession() {
 	}
 	if _, isAgent := agent.Find(f.agent); isAgent {
 		params.Budget = int64(a.state.DefaultBudget) * 60 // Settings' time budget
+		if _, w, ok := a.resetToWait(f.agent, f.account); ok && f.later && a.daemonInfo.StartLater {
+			params.StartAt = w.ResetsAt.Add(startMargin)
+		}
 	}
 	switch f.branchMode {
 	case proto.BranchNew:
@@ -181,6 +185,9 @@ func (a *App) createFromForm(cl *client.Client, params proto.SessionCreateParams
 			f.open = false
 			a.upsert(info)
 			a.selectSession(info)
+			if startsLater(info) {
+				a.notify("Queued: " + a.startsDetail(info))
+			}
 		})
 	}()
 }

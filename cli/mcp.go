@@ -350,6 +350,9 @@ var sessionTools = []mcpTool{
 	{name: "session_note", description: "Say where this session is at, in a line shown under it in hustleX (at milestones).",
 		props: map[string]mcpProp{"text": {"string", "Where you are"}}, required: []string{"text"},
 		args: func(a map[string]any) []string { return []string{"note", "self", str(a, "text")} }},
+	{name: "session_title", description: "Name this session for what it does, in a few words; the user's own name for it stays.",
+		props: map[string]mcpProp{"title": {"string", "The name, a few words"}}, required: []string{"title"},
+		args: func(a map[string]any) []string { return []string{"title", "self", str(a, "title")} }},
 }
 
 // sessionTools' kin: the Ports tool and the Run menu, and the rest of the

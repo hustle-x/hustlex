@@ -91,6 +91,7 @@ func (a *App) sessionList(c *ui.Context) {
 					ui.Text(c, msg).FontSize(12).TextColor(theme.Muted).Padding(6)
 				}
 				shown := 0
+				a.queuedLater(c)
 				a.needsYou(c)
 				for _, e := range a.projectEntries() {
 					if e.group != "" {
@@ -206,8 +207,8 @@ func (a *App) projectGroup(c *ui.Context, p proto.ProjectInfo) bool {
 		ui.Text(c, "No sessions yet").FontSize(11).TextColor(theme.Muted).Padding(4, 8, 4, 22)
 	}
 	for i, s := range sessions {
-		if !filtering && waitsForYou(s) {
-			continue // in Needs you, above
+		if !filtering && (waitsForYou(s) || startsLater(s)) {
+			continue // in Needs you or Queued, above
 		}
 		a.sessionRow(c.Key(s.ID), i, s)
 	}
@@ -381,19 +382,42 @@ func (a *App) sessionRow(c *ui.Context, i int, s proto.SessionInfo) {
 	widget.ListRow(c, row, active, "sessions", func() {
 		agentTile(c, s.Agent, 26)
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
-			name := ui.Text(c, a.sessionName(s)).FontSize(12.5).SingleLine()
-			if active || a.unread[s.ID] {
-				name.TextColor(theme.TextStrong)
-			}
-			if a.unread[s.ID] {
-				name.FontWeight(650)
-			}
-			// The agent's note stays out of the row, which keeps every row
-			// two lines high; hovering the name shows it.
-			if s.Note != "" {
-				name.Tooltip(s.Note)
-			}
-			ui.Row(c).Gap(5).MinWidth(0).Children(func() {
+			ui.Row(c).Gap(4).MinWidth(0).AlignItems(ui.Center).Children(func() {
+				name := ui.Text(c, a.sessionName(s)).FontSize(12.5).SingleLine().Shrink(1)
+				switch {
+				case startsLater(s):
+					name.TextColor(theme.TextSoft)
+				case active || a.unread[s.ID]:
+					name.TextColor(theme.TextStrong)
+				}
+				if a.unread[s.ID] {
+					name.FontWeight(650)
+				}
+				// The agent's note stays out of the row, which keeps every row
+				// two lines high; hovering the name shows it, and the names
+				// the session had.
+				var tip []string
+				if s.Note != "" {
+					tip = append(tip, s.Note)
+				}
+				if len(s.Earlier) > 0 {
+					tip = append(tip, "Earlier: "+strings.Join(s.Earlier, " → "))
+				}
+				if len(tip) > 0 {
+					name.Tooltip(strings.Join(tip, "\n"))
+				}
+				if s.Named {
+					ui.Box(c.Key("pin")).Shrink(0).Tooltip("Named by you: agents leave it").Children(func() {
+						ui.Icon(c, icon.Pin).FontSize(10).TextColor(theme.Muted)
+					})
+				}
+			})
+			ui.Row(c).Gap(5).MinWidth(0).AlignItems(ui.Center).Children(func() {
+				if startsLater(s) {
+					ui.Icon(c, icon.Clock).FontSize(10.5).TextColor(theme.Muted)
+					ui.Text(c, a.startsDetail(s)).FontSize(11).TextColor(theme.Muted).SingleLine().Shrink(1)
+					return
+				}
 				widget.Dot(c, st.color, st.hollow, 6)
 				detail := st.label
 				switch {
@@ -469,6 +493,10 @@ func (a *App) sessionMenuItems(c *ui.Context, s proto.SessionInfo, done func()) 
 	if a.canReview(s) && !(a.panelShows(panelChanges) && a.selected == s.ID) && widget.MenuItem(c, icon.Git, "Show changes", false) {
 		a.selectSession(s)
 		a.openPanel(panelChanges)
+		done()
+	}
+	if s.Named && widget.MenuItemTip(c, icon.Pin, "Let agents name it", "Your name for it goes; its agent names it again", false) {
+		a.renameSession(s, "")
 		done()
 	}
 	if !a.unread[s.ID] && widget.MenuItem(c, icon.Chat, "Mark as unread", false) {

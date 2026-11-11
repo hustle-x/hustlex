@@ -49,6 +49,26 @@ type CreditWindow struct {
 	Detail   string    `json:"detail,omitempty"` // "611 of 1000 credits"
 }
 
+// LimitName names the window in a sentence: "5-hour limit", "weekly
+// limit", "weekly Fable limit".
+func (w CreditWindow) LimitName() string {
+	switch w.Label {
+	case "Week":
+		return "weekly limit"
+	case "Month":
+		return "monthly limit"
+	}
+	if rest, ok := strings.CutPrefix(w.Label, "Week · "); ok {
+		return "weekly " + rest + " limit"
+	}
+	for _, unit := range []struct{ long, short string }{{" days", "-day"}, {" hours", "-hour"}} {
+		if n, ok := strings.CutSuffix(w.Label, unit.long); ok {
+			return n + unit.short + " limit"
+		}
+	}
+	return w.Label + " limit"
+}
+
 // Short is the window's label as a chip fits it: "5h", "Wk", "Fable".
 func (w CreditWindow) Short() string {
 	switch w.Label {

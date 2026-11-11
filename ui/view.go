@@ -80,6 +80,7 @@ func (a *App) view(c *ui.Context) {
 	a.removeProjectDialog(c)
 	a.groupDialog(c)
 	a.layoutPicker(c)
+	a.awayDialog(c)
 	a.projectRenameDialog(c)
 	a.cloneDialog(c)
 	a.noteImportDialog(c)

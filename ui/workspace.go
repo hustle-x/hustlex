@@ -204,11 +204,8 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 		crumbs := ui.Row(c.Key("crumbs")).Grow(1).MinWidth(0)
 		crumbs.Children(func() {
 			// Narrow, the session's name alone, whole rather than three cut.
-			if w := crumbs.LayoutBounds().W; w > 0 && w < narrowCrumbs {
-				widget.Breadcrumb(c, a.sessionName(s))
-				return
-			}
-			widget.Breadcrumb(c, a.host.Name, p.Name, a.sessionName(s))
+			w := crumbs.LayoutBounds().W
+			a.sessionCrumb(c, s, w > 0 && w < narrowCrumbs, a.host.Name, p.Name)
 		})
 		a.viewToggle(c, a.frontTab(s))
 		if a.compact() {
@@ -240,10 +237,12 @@ func (a *App) focusView(c *ui.Context, p proto.ProjectInfo, s proto.SessionInfo)
 				})
 			}
 		})
+		a.movedNotice(c, s)
 		a.accountBar(c, s)
 		return
 	}
 	a.sessionBody(c.Key("front:"+front.ID), front)
+	a.movedNotice(c, s)
 	a.accountBar(c, s)
 }
 

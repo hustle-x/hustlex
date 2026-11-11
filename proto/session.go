@@ -166,6 +166,39 @@ type SessionInfo struct {
 	HibernatedHow *HibernateState `json:"hibernatedHow,omitempty"`
 	// NoAutoHibernate keeps the daemon from hibernating it on its own.
 	NoAutoHibernate bool `json:"noAutoHibernate,omitempty"`
+	// StartAt is when a queued session's agent starts (a limit's reset),
+	// zero when it starts as soon as it can.
+	StartAt time.Time `json:"startAt,omitzero"`
+	// Named: the user named the session, so agents leave its name; Earlier
+	// are the names it had before, oldest first.
+	Named   bool     `json:"named,omitempty"`
+	Earlier []string `json:"earlier,omitempty"`
+	// Moved is the last time the daemon moved the session to another
+	// account, its limit run out; nil when it never did.
+	Moved *AccountMove `json:"moved,omitempty"`
+}
+
+// AccountMove is a session going on as another of its agent's accounts
+// when its own ran out of a limit: From and To are accounts as
+// SessionInfo.Account names them ("" for the agent's own), Limit the one
+// that ran out ("5-hour limit").
+type AccountMove struct {
+	From  string    `json:"from,omitempty"`
+	To    string    `json:"to,omitempty"`
+	Limit string    `json:"limit,omitempty"`
+	At    time.Time `json:"at"`
+}
+
+// MethodSessionTitle names a session: SessionTitleParams. An agent's
+// title is refused once the user named the session.
+const MethodSessionTitle = "session.title"
+
+// SessionTitleParams are the name, and whether the user gave it; the
+// user's "" gives naming back to the agent.
+type SessionTitleParams struct {
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	ByUser bool   `json:"byUser,omitempty"`
 }
 
 // MethodSessionNote sets a session's note: SessionNoteParams.
@@ -238,6 +271,10 @@ type SessionCreateParams struct {
 	// the canvas is attached to (SessionInfo.CanvasFor). Older daemons
 	// ignore it.
 	CanvasFor string `json:"canvasFor,omitempty"`
+	// StartAt holds an agent session queued until then (when one of its
+	// account's limits resets). Only sent to daemons whose DaemonInfo
+	// says StartLater.
+	StartAt time.Time `json:"startAt,omitzero"`
 	// Features are the session's own feature switches, over the user's
 	// (FeatureSetParams' session scope). Older daemons ignore them.
 	Features map[string]bool `json:"features,omitempty"`

@@ -98,6 +98,12 @@ type Meta struct {
 	HibernatedAt     time.Time
 	// NoAutoHibernate keeps the daemon from hibernating it on its own.
 	NoAutoHibernate bool
+	// StartAt is when a queued session's agent starts (SessionInfo).
+	StartAt time.Time
+	// Named, Earlier and Moved are as SessionInfo says.
+	Named   bool
+	Earlier []string
+	Moved   *proto.AccountMove
 }
 
 // EnvSession names the environment variable holding a session's ID in
@@ -173,6 +179,10 @@ func (s *Session) Info() proto.SessionInfo {
 		Hibernated:      s.meta.Hibernated && s.exited,
 		HibernatedHow:   hibernatedHow(s.meta, s.exited),
 		NoAutoHibernate: s.meta.NoAutoHibernate,
+		StartAt:         s.meta.StartAt,
+		Named:           s.meta.Named,
+		Earlier:         slices.Clone(s.meta.Earlier),
+		Moved:           s.meta.Moved,
 		Project:         s.meta.Project,
 		Agent:           s.meta.Agent,
 		Branch:          s.meta.Branch,
@@ -355,6 +365,9 @@ type Spec struct {
 	// and runs nothing.
 	Exited   bool
 	ExitCode int
+	// Notice is the line shown under History when the program starts
+	// again, in place of saying hustleX restarted it.
+	Notice string
 }
 
 // Create starts a session.
@@ -415,7 +428,10 @@ func (m *Manager) create(spec Spec, old *Session) (*Session, error) {
 	s.term = term
 	if len(spec.History) > 0 {
 		term.Feed(spec.History)
-		if !idle {
+		switch {
+		case spec.Notice != "":
+			term.Feed([]byte("\r\n\x1b[2m" + spec.Notice + "\x1b[0m\r\n"))
+		case !idle:
 			term.Feed([]byte("\r\n\x1b[2m── hustleX restarted this session ──\x1b[0m\r\n"))
 		}
 	}

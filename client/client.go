@@ -348,6 +348,12 @@ func (c *Client) SetNote(id, note string) error {
 	return c.Call(proto.MethodSessionNote, proto.SessionNoteParams{ID: id, Note: note}, nil)
 }
 
+// SetTitle names session id: byUser, the user's name, which agents then
+// leave ("" gives naming back to them); else an agent's.
+func (c *Client) SetTitle(id, title string, byUser bool) error {
+	return c.Call(proto.MethodSessionTitle, proto.SessionTitleParams{ID: id, Title: title, ByUser: byUser}, nil)
+}
+
 // Screen returns the text session id's terminal shows.
 func (c *Client) Screen(id string) (string, error) {
 	var out proto.SessionScreen

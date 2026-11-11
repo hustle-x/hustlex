@@ -29,7 +29,7 @@ const EnvSession = "HUSTLEX_SESSION"
 
 // Commands are the command line's commands, for the programs that also
 // do other things with their arguments to tell them apart.
-var Commands = []string{"ls", "list", "status", "spawn", "send", "read", "wait", "kill", "hibernate", "wake", "agents", "projects", "project", "shells", "notes", "features", "creds", "canvas", "sync", "icons", "attach", "pipeline", "pipelines", "note", "automation", "automations", "browser", "traffic", "android", "mcp", "guide", "ports", "run", "api", "notify", "help"}
+var Commands = []string{"ls", "list", "status", "spawn", "send", "read", "wait", "kill", "hibernate", "wake", "agents", "projects", "project", "shells", "notes", "features", "creds", "canvas", "sync", "icons", "attach", "pipeline", "pipelines", "note", "title", "automation", "automations", "browser", "traffic", "android", "mcp", "guide", "ports", "run", "api", "notify", "help"}
 
 // Is reports whether args start with one of Commands.
 func Is(args []string) bool { return len(args) > 0 && slices.Contains(Commands, args[0]) }
@@ -55,6 +55,7 @@ const usage = `usage: hustlex-app <command> [arguments]
   read SESSION                     print what a session's screen shows
   wait SESSION [--timeout 30m]     wait until its agent is done or asks
   note SESSION [TEXT...]           what the session is at, shown in the app ("" clears)
+  title SESSION TEXT...            the session's name, for what it does (the user's own name stays)
   kill SESSION                     end a session
   hibernate SESSION... [--idle] [--when-done] [--force] [--dry-run]
                                    stop sessions' agents to free the host, to wake later on
@@ -172,6 +173,8 @@ func (r runner) command(args []string) error {
 		return r.wake(rest)
 	case "note":
 		return r.note(rest)
+	case "title":
+		return r.title(rest)
 	case "browser":
 		return r.browser(rest)
 	case "traffic":
@@ -536,6 +539,17 @@ func (r runner) note(args []string) error {
 		return err
 	}
 	return r.c.SetNote(s.ID, strings.Join(args[1:], " "))
+}
+
+func (r runner) title(args []string) error {
+	if len(args) < 2 {
+		return errors.New("usage: hustlex-app title SESSION TEXT")
+	}
+	s, err := r.session(args[0])
+	if err != nil {
+		return err
+	}
+	return r.c.SetTitle(s.ID, strings.Join(args[1:], " "), false)
 }
 
 func (r runner) kill(args []string) error {

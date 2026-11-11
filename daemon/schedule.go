@@ -147,9 +147,16 @@ func (s *Server) busyAgents() int {
 func (s *Server) mustQueue() bool {
 	sc := &s.sched
 	sc.mu.Lock()
-	limit, waiting := sc.settings.MaxAgents, len(sc.queue)
+	limit, waiting := sc.settings.MaxAgents, sc.dueLocked(time.Now())
 	sc.mu.Unlock()
-	return limit > 0 && (waiting > 0 || s.busyAgents() >= limit)
+	return limit > 0 && (waiting >= 0 || s.busyAgents() >= limit)
+}
+
+// dueLocked is the index of the first queued session due to start now,
+// -1 when none is: those queued until a time wait for it. The caller
+// holds sc.mu.
+func (sc *scheduler) dueLocked(now time.Time) int {
+	return slices.IndexFunc(sc.queue, func(q queued) bool { return !now.Before(q.spec.Meta.StartAt) })
 }
 
 // enqueue shows spec as a queued session until its turn.
@@ -160,12 +167,19 @@ func (s *Server) enqueue(spec session.Spec, command []string, typed string) (*se
 	held := spec
 	held.Command, held.Env = nil, nil
 	held.Meta.Queued = true
-	limit := s.sched.get().MaxAgents
-	held.History = fmt.Appendf(nil, "\x1b[2mQueued: %d %s already working on this host. This one starts when one finishes its turn.\x1b[0m\r\n",
-		limit, map[bool]string{true: "agent is", false: "agents are"}[limit == 1])
+	if at := spec.Meta.StartAt; !at.IsZero() {
+		held.History = fmt.Appendf(nil, "\x1b[2mQueued: starts %s, when a limit resets.\x1b[0m\r\n", startsWhen(at, time.Now()))
+	} else {
+		limit := s.sched.get().MaxAgents
+		held.History = fmt.Appendf(nil, "\x1b[2mQueued: %d %s already working on this host. This one starts when one finishes its turn.\x1b[0m\r\n",
+			limit, map[bool]string{true: "agent is", false: "agents are"}[limit == 1])
+	}
 	sess, err := s.sessions.Create(held)
 	if err != nil {
 		return nil, err
+	}
+	if !spec.Meta.StartAt.IsZero() {
+		s.persist.hold(sess, spec.Meta.Prompt)
 	}
 	s.sched.mu.Lock()
 	s.sched.queue = append(s.sched.queue, queued{spec: spec, command: command, typed: typed})
@@ -197,6 +211,7 @@ func (s *Server) runScheduler(done <-chan struct{}) {
 		s.startQueued()
 		s.enforceBudgets()
 		s.hibernate()
+		s.moveAtLimit()
 	}
 }
 
@@ -205,18 +220,23 @@ func (s *Server) startQueued() {
 	sc := &s.sched
 	for {
 		sc.mu.Lock()
-		limit, waiting := sc.settings.MaxAgents, len(sc.queue)
+		limit, due := sc.settings.MaxAgents, sc.dueLocked(time.Now())
 		sc.mu.Unlock()
-		if waiting == 0 || limit > 0 && s.busyAgents() >= limit {
+		if due < 0 || limit > 0 && s.busyAgents() >= limit {
 			return
 		}
 		sc.mu.Lock()
-		q := sc.queue[0]
-		sc.queue = sc.queue[1:]
+		if due = sc.dueLocked(time.Now()); due < 0 {
+			sc.mu.Unlock()
+			return // taken meanwhile
+		}
+		q := sc.queue[due]
+		sc.queue = slices.Delete(sc.queue, due, due+1)
 		sc.mu.Unlock()
 		if _, err := s.sessions.Get(q.spec.ID); err != nil {
 			continue // deleted while it waited
 		}
+		q.spec.Meta.StartAt = time.Time{}
 		sess, err := s.sessions.Replace(q.spec)
 		if err != nil {
 			s.logger().Warn("could not start a queued session", "id", q.spec.ID, "err", err)
@@ -404,8 +424,8 @@ func (s *Server) stopAgents() int {
 	n := 0
 	for _, sess := range s.sessions.List() {
 		meta := sess.Meta()
-		if _, ok := agent.Find(meta.Agent); !ok || sess.Info().Exited {
-			continue
+		if _, ok := agent.Find(meta.Agent); !ok || sess.Info().Exited || meta.Queued {
+			continue // a queued agent hasn't started
 		}
 		if err := s.hibernateSession(sess, false); err != nil {
 			s.logger().Warn("could not stop an agent", "id", sess.ID(), "err", err)

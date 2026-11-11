@@ -192,6 +192,12 @@ Done with sessions you spawned? "$HUSTLEX_BIN" hibernate ID... frees the host's 
 		Guide: `Keeping the user in the loop: at milestones (a hypothesis confirmed, a fix in, tests running, blocked on something), say where you are in a line, which hustleX shows under this session:
     "$HUSTLEX_BIN" note self "fix in for the login redirect; running the integration tests"`,
 		Tools: []string{"session_note"}},
+	{ID: "titles", Name: "Session titles", Group: GroupCore, Default: true,
+		About:   "Agents name their session for what it does.",
+		Summary: "Name your session for what it does: \"$HUSTLEX_BIN\" title self \"…\".",
+		Guide: `Session titles: once you know what this session is for, name it in a few words, and again when its work changes; a name the user gave it stays theirs:
+    "$HUSTLEX_BIN" title self "Fix the login redirect"`,
+		Tools: []string{"session_title"}},
 }
 
 // FindFeature is feature id.

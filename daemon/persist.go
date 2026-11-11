@@ -14,6 +14,7 @@ import (
 	"github.com/hustlex/hustlex/core/agent"
 	"github.com/hustlex/hustlex/core/session"
 	"github.com/hustlex/hustlex/core/transcript"
+	"github.com/hustlex/hustlex/proto"
 )
 
 // Sessions outlive the daemon: their records live in sessions.json and the
@@ -60,6 +61,13 @@ type record struct {
 	// one it resumes, where several sessions share a folder and the last
 	// one there may be another's.
 	Conversation string `json:"conversation,omitempty"`
+	// StartAt is when a session queued for a time starts; its Prompt is
+	// then whole, as it is given once it starts.
+	StartAt time.Time `json:"startAt,omitzero"`
+	// Named, Earlier and Moved are as proto.SessionInfo says.
+	Named   bool               `json:"named,omitempty"`
+	Earlier []string           `json:"earlier,omitempty"`
+	Moved   *proto.AccountMove `json:"moved,omitempty"`
 }
 
 // persistence saves the daemon's sessions. Its methods are safe from any
@@ -114,7 +122,7 @@ func (p *persistence) saved() []record {
 // that matters after a restart.
 func (p *persistence) update(s *session.Session, command []string) {
 	info, meta := s.Info(), s.Meta()
-	if meta.Queued {
+	if meta.Queued && meta.StartAt.IsZero() {
 		return // nothing runs yet: a restart forgets it
 	}
 	p.mu.Lock()
@@ -131,6 +139,13 @@ func (p *persistence) update(s *session.Session, command []string) {
 		Group: meta.Group, Account: meta.Account, NotesFor: meta.NotesFor, Canvas: meta.CanvasFor, Features: meta.Features, Creds: meta.Creds,
 		Hibernated: meta.Hibernated && info.Exited, HibernatedByHand: meta.HibernatedByHand, HibernatedAt: meta.HibernatedAt,
 		NoAutoHibernate: meta.NoAutoHibernate,
+		Named:           meta.Named, Earlier: meta.Earlier, Moved: meta.Moved,
+	}
+	if meta.Queued {
+		r.StartAt = meta.StartAt
+		if known {
+			r.Prompt = old.Prompt // whole, as hold saved it
+		}
 	}
 	if command != nil {
 		r.Command = command
@@ -148,6 +163,18 @@ func (p *persistence) update(s *session.Session, command []string) {
 		p.order = append(p.order, r.ID)
 	}
 	p.saveLocked()
+}
+
+// hold records session s, queued until a time, with its whole prompt.
+func (p *persistence) hold(s *session.Session, prompt string) {
+	p.update(s, nil)
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if r, ok := p.records[s.ID()]; ok && !p.closing && r.Prompt != prompt {
+		r.Prompt = prompt
+		p.records[r.ID] = r
+		p.saveLocked()
+	}
 }
 
 // setConversation records the conversation session id's agent is on.
@@ -249,6 +276,10 @@ func equalRecords(a, b record) bool {
 // continue their last conversation), the others as they ended.
 func (s *Server) restore() {
 	for _, r := range s.persist.saved() {
+		if !r.StartAt.IsZero() && !r.Exited {
+			s.restoreHeld(r)
+			continue
+		}
 		spec := session.Spec{
 			ID: r.ID, Dir: r.Dir, Created: r.Created, History: s.persist.loadHistory(r.ID), Env: s.sessionEnv(),
 			Meta: session.Meta{
@@ -256,6 +287,7 @@ func (s *Server) restore() {
 				Worktree: r.Worktree, SkipPermissions: r.Skip, Relaunch: r.Relaunch, Restart: r.Restart, Restored: true,
 				Budget: time.Duration(r.Budget) * time.Second, Parent: r.Parent, Note: r.Note, Group: r.Group, Account: r.Account, NotesFor: r.NotesFor, CanvasFor: r.Canvas, Features: r.Features, Creds: r.Creds,
 				Hibernated: r.Hibernated, HibernatedByHand: r.HibernatedByHand, HibernatedAt: r.HibernatedAt, NoAutoHibernate: r.NoAutoHibernate,
+				Named: r.Named, Earlier: r.Earlier, Moved: r.Moved,
 			},
 		}
 		_, dirErr := os.Stat(r.Dir)
