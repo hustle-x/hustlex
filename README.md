@@ -13,7 +13,7 @@
   <a href="https://github.com/hustle-x/hustlex/releases/latest"><img src="https://img.shields.io/github/v/release/hustle-x/hustlex?style=for-the-badge&color=555&label=release" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS_·_Windows-555?style=for-the-badge" alt="macOS, Windows">
   <img src="https://img.shields.io/badge/written_in-Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Written in Go">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-use--only-c0392b?style=for-the-badge" alt="License: use only, all rights reserved"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-555?style=for-the-badge" alt="License: MIT"></a>
 </p>
 
 <p align="center">
@@ -153,6 +153,4 @@ Everything is in [docs/](docs): [getting started](docs/install.md), [agents](doc
 
 ## License
 
-**All rights reserved.** hustleX is free to download and use, for personal or commercial work. You may **not** copy, modify, remake, redistribute or sell it, or use its code, design or images to build a competing product, without written permission from hustle-x. The source is public so you can see what runs on your machine, not so it can be copied.
-
-Full terms: [LICENSE](LICENSE) (hustle-x Use-Only License 1.0). Third-party parts keep their own licenses, next to them in the source. To ask for permission, [open an issue](https://github.com/hustle-x/hustlex/issues). Security issues: [SECURITY.md](SECURITY.md).
+[MIT](LICENSE). Third-party parts keep their own licenses, next to them in the source. Security issues: [SECURITY.md](SECURITY.md).

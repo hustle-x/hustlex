@@ -1,50 +1,22 @@
-hustle-x Use-Only License 1.0
+MIT License
 
-Copyright (c) 2026 hustle-x (https://github.com/hustle-x). All rights reserved.
+Copyright (c) 2026 enowX contributors
+Copyright (c) 2026 Hustle Studios (https://github.com/hustle-x)
 
-This license covers hustleX (the "Software"): its source code, text,
-documentation, images, designs and installers, except the third-party parts
-listed in section 4.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1. WHAT YOU MAY DO
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-   You may download, install and run the Software, free of charge, for
-   personal or commercial work, as long as this notice stays with it.
-
-2. WHAT YOU MAY NOT DO WITHOUT WRITTEN PERMISSION FROM hustle-x
-
-   a. Copy, republish or redistribute the Software or any part of it,
-      in source or compiled form, except as allowed in section 1.
-   b. Modify, translate or adapt it, or make derivative works from it.
-   c. Remake, clone or re-implement it, or present a copy of its code, text,
-      design or images as your own work.
-   d. Sell, rent, sublicense or host it as a service for others.
-   e. Use it, or any part of its code, text, design or images, to build or
-      train a product that competes with it.
-   f. Remove or change this notice or the copyright lines.
-
-   Forking this repository on GitHub, as GitHub's Terms of Service allow, is
-   only for viewing and sending changes back. It gives no other rights.
-
-3. CONTRIBUTIONS
-
-   If you send a change (pull request, patch or issue), you agree that
-   hustle-x may use, change and publish it under any license.
-
-4. THIRD-PARTY PARTS
-
-   Parts written by others keep their own licenses, found next to them.
-   This license does not change those.
-
-5. ENDING
-
-   These permissions end at once if you break this license. You must then
-   stop using the Software and delete your copies.
-
-6. NO WARRANTY
-
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED. IN NO EVENT SHALL hustle-x BE LIABLE FOR ANY CLAIM, DAMAGES OR
-   OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
-
-To ask for permission, open an issue at https://github.com/hustle-x.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
