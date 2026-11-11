@@ -2,6 +2,11 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.6
+
+- **Your phone, like the desktop:** sessions grouped by folder, a terminal-style chat, and the full Credits page with what your agents spent.
+- **No gap at the bottom on iPhone:** the Home Screen app fills the screen, so the message box and the tab bar aren't cut off.
+
 ## 1.3.5
 
 - **Your phone over Wi-Fi, nothing to install:** on the same Wi-Fi as your computer, scan the QR code and hustleX opens in the phone's browser. Tailscale is used when a phone is on your tailnet, to reach hustleX from anywhere.

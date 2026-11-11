@@ -14,9 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hustlex/hustlex/core/agent"
 	"github.com/hustlex/hustlex/core/phonepair"
-	"github.com/hustlex/hustlex/core/screenmenu"
 	"github.com/hustlex/hustlex/core/tailnet"
 	"github.com/hustlex/hustlex/proto"
 )
@@ -248,6 +246,22 @@ func (s *Server) phoneHandler() http.Handler {
 		}
 		writeJSON(w, maskLentIn(s, v))
 	}))
+	mux.HandleFunc("GET /api/history", auth(func(w http.ResponseWriter, r *http.Request) {
+		days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+		h, err := s.usageHistoryReport(days)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		for i, c := range h.Conversations {
+			if c.Session != "" {
+				if sess, err := s.sessions.Get(c.Session); err == nil {
+					h.Conversations[i].Title = phoneName(sess.Info())
+				}
+			}
+		}
+		writeJSON(w, maskLentIn(s, h))
+	}))
 	mux.HandleFunc("POST /api/answer", auth(func(w http.ResponseWriter, r *http.Request) {
 		var p struct{ Session, Key string }
 		if !readJSON(w, r, &p) {
@@ -360,167 +374,4 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 		return false
 	}
 	return true
-}
-
-// phoneAsk is what a session waits on, as the phone shows it.
-type phoneAsk struct {
-	Session  string        `json:"session"`
-	Name     string        `json:"name"`
-	Agent    string        `json:"agent"`
-	Question string        `json:"question"`
-	Detail   []string      `json:"detail,omitempty"`
-	Choices  []phoneChoice `json:"choices,omitempty"`
-	Project  string        `json:"project,omitempty"`
-}
-
-type phoneChoice struct {
-	Label string `json:"label"`
-	Key   string `json:"key"`
-}
-
-type phoneSessionRow struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Agent   string `json:"agent"`
-	Project string `json:"project"`
-	Status  string `json:"status"`
-	Note    string `json:"note,omitempty"`
-	Account string `json:"account,omitempty"`
-}
-
-type phoneStateView struct {
-	Host     string                `json:"host"`
-	Inbox    []phoneAsk            `json:"inbox"`
-	Sessions []phoneSessionRow     `json:"sessions"`
-	Accounts []proto.CreditAccount `json:"accounts"`
-}
-
-// phoneSessions are the sessions the user started agents in.
-func (s *Server) phoneSessions() []proto.SessionInfo {
-	var out []proto.SessionInfo
-	for _, sess := range s.sessions.List() {
-		info := sess.Info()
-		if _, ok := agent.Find(info.Agent); !ok || info.Parent != "" || info.NotesFor != "" || info.CanvasFor != "" {
-			continue
-		}
-		out = append(out, info)
-	}
-	return out
-}
-
-func (s *Server) phoneState() phoneStateView {
-	host, _ := os.Hostname()
-	host = strings.TrimSuffix(host, ".local")
-	v := phoneStateView{Host: host, Inbox: []phoneAsk{}, Sessions: []phoneSessionRow{}, Accounts: s.credits.Report(false).Accounts}
-	emails := map[string]string{}
-	for _, a := range v.Accounts {
-		emails[a.Agent+" "+a.Ref] = a.Account
-	}
-	for _, info := range s.phoneSessions() {
-		name := phoneName(info)
-		ref := info.Account
-		if ref == "" {
-			ref = proto.RefDefault
-		}
-		v.Sessions = append(v.Sessions, phoneSessionRow{ID: info.ID, Name: name, Agent: agent.Base(info.Agent), Project: projectName(info.Project),
-			Status: phoneStatusOf(info), Note: info.Note, Account: emails[agent.Base(info.Agent)+" "+ref]})
-		if info.State != proto.StateWaiting || info.Exited {
-			continue
-		}
-		ask := phoneAsk{Session: info.ID, Name: name, Agent: agent.Base(info.Agent), Question: "Needs your answer", Project: projectName(info.Project)}
-		if sess, err := s.sessions.Get(info.ID); err == nil {
-			if m, ok := screenmenu.Parse(sess.Terminal().Text()); ok {
-				ask.Question, ask.Detail = m.Question, m.Detail
-				for _, c := range m.Choices {
-					ask.Choices = append(ask.Choices, phoneChoice{c.Label, c.Key})
-				}
-			}
-		}
-		v.Inbox = append(v.Inbox, ask)
-	}
-	return v
-}
-
-// projectName is a project folder's name, "" for none.
-func projectName(path string) string {
-	if path == "" {
-		return ""
-	}
-	return filepath.Base(path)
-}
-
-// phoneName is what the phone calls a session.
-func phoneName(info proto.SessionInfo) string {
-	switch {
-	case info.Name != "":
-		return info.Name
-	case strings.TrimSpace(info.Prompt) != "":
-		line, _, _ := strings.Cut(strings.TrimSpace(info.Prompt), "\n")
-		if r := []rune(line); len(r) > 60 {
-			line = string(r[:60]) + "…"
-		}
-		return line
-	case info.Branch != "" && info.Worktree:
-		return info.Branch
-	}
-	if p, ok := agent.Find(info.Agent); ok {
-		return p.Name
-	}
-	return info.Agent
-}
-
-func phoneStatusOf(info proto.SessionInfo) string {
-	switch {
-	case info.Hibernated:
-		return "hibernated"
-	case info.Exited:
-		return "ended"
-	case info.Queued:
-		return "queued"
-	case info.State == proto.StateWaiting:
-		return "needs you"
-	case working(info):
-		return "working"
-	case info.State == proto.StateDone:
-		return "done"
-	}
-	return "idle"
-}
-
-// phoneSessionView is a session as the phone opens it: its last messages.
-type phoneSessionView struct {
-	phoneSessionRow
-	Messages []phoneMessage `json:"messages"`
-}
-
-type phoneMessage struct {
-	Kind   string `json:"kind"` // user, assistant, tool
-	Text   string `json:"text"`
-	Detail string `json:"detail,omitempty"`
-}
-
-func (s *Server) phoneSession(id string) (phoneSessionView, error) {
-	var v phoneSessionView
-	state := s.phoneState()
-	found := false
-	for _, row := range state.Sessions {
-		if row.ID == id {
-			v.phoneSessionRow, found = row, true
-		}
-	}
-	if !found {
-		return v, errors.New("no such session")
-	}
-	v.Messages = []phoneMessage{}
-	if t, err := s.transcript(proto.TranscriptParams{ID: id, Tail: 40}); err == nil {
-		for _, e := range t.Entries {
-			switch e.Kind {
-			case proto.TranscriptUser, proto.TranscriptAssistant:
-				v.Messages = append(v.Messages, phoneMessage{Kind: e.Kind, Text: e.Text})
-			case proto.TranscriptTool:
-				v.Messages = append(v.Messages, phoneMessage{Kind: e.Kind, Text: e.Text, Detail: e.Detail})
-			}
-		}
-	}
-	return v, nil
 }

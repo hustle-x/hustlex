@@ -12,65 +12,176 @@
 <link rel="apple-touch-icon" href="/icon-180.png">
 <title>hustleX</title>
 <style>
-:root{--ground:#000;--raised:#141414;--sunken:#0a0a0a;--border:#1c1c1c;--bstrong:#2a2a2a;--text:#f0f0f0;--soft:#c4c4c4;--muted:#8a8a8a;
---accent:#f2f2f2;--onaccent:#0a0a0a;--done:#86d0a8;--warn:#e6c47e;--err:#ee8c8c;--working:#9db6f5;
+/* The desktop app's dark palette (ui/theme/palette.go). */
+:root{--ground:#000;--bg:#080808;--panel:#0b0b0b;--raised:#141414;--sunken:#050505;--sel:#171717;--border:#171717;--bstrong:#242424;
+--text:#f0f0f0;--strong:#fff;--soft:#c4c4c4;--muted:#8a8a8a;--accent:#f2f2f2;--onaccent:#0a0a0a;
+--done:#86d0a8;--warn:#e6c47e;--err:#ee8c8c;--working:#9db6f5;--claude:#d97757;--link:#b4a4f2;
 --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--ground);color:var(--text);font:15px/1.4 var(--font);-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-.app{display:flex;flex-direction:column;height:100%;padding-top:env(safe-area-inset-top)}
-.ah{display:flex;align-items:center;gap:10px;padding:12px 18px 10px}
+html,body{height:100vh;overflow:hidden;overscroll-behavior:none;background:var(--ground);color:var(--text);font:15px/1.4 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+input,textarea{font-size:16px}
+/* In a Home Screen app, with the status bar see-through, iOS leaves a dead
+   band the status bar's height at the bottom when html and body are 100%
+   tall (WebKit bug 301108): they are 100vh. fitApp sizes the page to the
+   screen there, and to what the keyboard leaves (--app-h). */
+.app{position:fixed;top:0;left:0;right:0;height:var(--app-h,100vh);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.ah{display:flex;align-items:center;gap:10px;padding:12px 16px 10px;flex:none}
 .lg{width:30px;height:30px;border-radius:8px;background:url(/icon-180.png) center/cover;flex:none}
-.ah b{font-size:22px;font-weight:600;flex:1}
-.ah small{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px;max-width:45%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ah b{font-size:22px;font-weight:600}
+.ah .cnt{color:var(--muted);font-size:14px;flex:1;white-space:nowrap}
+.ah small{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px;max-width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ah small i{width:7px;height:7px;border-radius:4px;background:var(--done);flex:none}
-.ab{flex:1;overflow-y:auto;padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.ab{flex:1;overflow-y:auto;padding:4px 12px 16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.ab>*{flex:none}
+.empty{text-align:center;color:var(--muted);padding:60px 0}
+/* agent tiles, as the session list's */
+.av{width:34px;height:34px;border-radius:10px;background:var(--sel);border:1px solid var(--border);display:grid;place-items:center;flex:none;color:var(--soft)}
+.av svg{width:58%;height:58%}
+.av.claude{color:var(--claude)}
+.av.s{width:26px;height:26px;border-radius:8px}
+/* inbox */
 .card{background:var(--raised);border:1px solid var(--border);border-radius:16px;padding:14px}
-.top{display:flex;align-items:center;gap:10px}
-.top b{font-weight:500;display:block}
+.top{display:flex;align-items:center;gap:10px;min-width:0}
+.top>div{min-width:0;flex:1}
+.top b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top small,.sub{color:var(--muted);font-size:12.5px}
-.av{width:30px;height:30px;border-radius:9px;background:#1b1b1b;display:grid;place-items:center;flex:none;font-size:13px;font-weight:600}
-.av.claude{color:#d97757}.av.codex{color:#ddd}.av.gemini{color:#8ab4f8}
 .q{margin-top:10px;color:var(--soft)}
-code{display:block;font:12.5px var(--mono);background:var(--sunken);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-top:9px;color:var(--soft);white-space:pre-wrap;word-break:break-word}
+code.blk{display:block;font:12.5px var(--mono);background:var(--sunken);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-top:9px;color:var(--soft);white-space:pre-wrap;word-break:break-word}
 .row2{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .row2 button{flex:1 1 auto;min-height:40px;padding:8px 12px;border-radius:11px;border:1px solid var(--bstrong);color:var(--soft)}
 .row2 button.y{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:500}
-.lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:6px 4px 0}
-.srow{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;background:var(--raised);border:1px solid var(--border);text-align:left;width:100%}
+/* sessions */
+.filter{display:flex;align-items:center;gap:8px;margin:0 12px 6px;padding:0 12px;height:42px;border-radius:12px;border:1px solid var(--bstrong);background:var(--panel);flex:none}
+.filter svg{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:2;flex:none}
+.filter input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text)}
+.filter input::placeholder{color:var(--muted)}
+.grp{display:flex;align-items:center;gap:8px;padding:12px 6px 4px;width:100%;text-align:left}
+.grp svg{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2.2;flex:none;transition:transform .2s}
+.grp.shut svg{transform:rotate(-90deg)}
+.grp span{font-size:12.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grp em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.grp.need span,.grp.need em{color:var(--warn)}
+.list{display:flex;flex-direction:column;gap:2px}
+.srow{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:14px;text-align:left;width:100%}
+.srow:active{background:var(--sel)}
 .srow>div{min-width:0;flex:1}
 .srow b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.srow small{color:var(--muted);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dot{display:inline-block;width:7px;height:7px;border-radius:4px;margin-right:5px;vertical-align:1px}
-.kv{display:flex;justify-content:space-between;margin-top:10px;font-size:13.5px;color:var(--soft)}
-.bar{height:6px;background:#1d1d1d;border-radius:3px;margin-top:5px;overflow:hidden}.bar i{display:block;height:100%;border-radius:3px}
-.tabs{display:flex;border-top:1px solid var(--border);background:rgba(10,10,10,.92);padding-bottom:env(safe-area-inset-bottom)}
+.srow small{color:var(--muted);font-size:13px;display:flex;align-items:center;gap:6px;min-width:0}
+.srow small span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .mem{color:var(--muted);font-size:13px;flex:none}
+.dot{width:7px;height:7px;border-radius:4px;flex:none}
+.dot.ring{background:none!important;border:1.5px solid currentColor}
+/* tabs */
+.tabs{display:flex;border-top:1px solid var(--border);background:rgba(10,10,10,.92);padding-bottom:env(safe-area-inset-bottom);flex:none}
 .tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;font-size:11px;color:var(--muted);position:relative}
 .tabs button.on{color:var(--text)}
 .tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bd{position:absolute;top:4px;left:calc(50% + 6px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--warn);color:#1a1300;font-size:10.5px;font-weight:600;display:grid;place-items:center}
-.empty{text-align:center;color:var(--muted);padding:60px 0}
-.sh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
-.back{color:var(--working);font-size:16px;padding:6px 4px;flex:none}
-.tt{min-width:0;flex:1}.tt b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt small{color:var(--muted);font-size:12px}
-.chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.me{align-self:flex-end;max-width:85%;background:#1f1f1f;border-radius:16px 16px 4px 16px;padding:9px 12px;white-space:pre-wrap;word-break:break-word}
-.ai{max-width:92%;white-space:pre-wrap;word-break:break-word;color:var(--soft)}
-.tool{font-size:12.5px;color:var(--muted);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.who{font-size:12px;color:var(--muted);padding:6px 14px}
-.quick{display:flex;gap:8px;padding:0 12px 8px;overflow-x:auto}
-.quick button{flex:none;padding:7px 12px;border-radius:16px;border:1px solid var(--bstrong);font-size:13px;color:var(--soft)}
-.comp{display:flex;gap:8px;align-items:flex-end;padding:8px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border)}
-.comp textarea{flex:1;resize:none;min-height:40px;max-height:120px;background:var(--raised);border:1px solid var(--bstrong);border-radius:20px;color:var(--text);font:15px var(--font);padding:9px 14px;outline:none}
-.send{width:40px;height:40px;border-radius:20px;background:var(--accent);color:var(--onaccent);display:grid;place-items:center;flex:none}
-.send svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+/* a session, drawn as the agent's terminal */
+.sh{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);flex:none}
+.back{color:var(--soft);font-size:16px;padding:6px 4px;flex:none}
+.tt{min-width:0;flex:1}.tt b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term{flex:1;overflow-y:auto;background:#0a0a0a;padding:12px 0 8px;font:12.5px/1.55 var(--mono);color:var(--text);-webkit-overflow-scrolling:touch}
+.term .u{background:#2c2c2c;padding:3px 12px 3px 28px;text-indent:-16px;white-space:pre-wrap;word-break:break-word;margin:14px 0 2px}
+.term .u:first-child{margin-top:0}
+.term .u::before{content:"❯ ";color:var(--muted)}
+.term .a{padding:0 12px 0 28px;margin-top:12px;position:relative;white-space:pre-wrap;word-break:break-word}
+.term .a::before{content:"●";position:absolute;left:12px;color:var(--strong)}
+.term .a code{color:var(--link);font:inherit}
+.term .a a{color:var(--link);text-decoration:none}
+.term .a b{font-weight:700;color:var(--strong)}
+.term .t{display:block;width:100%;text-align:left;padding:0 12px 0 28px;margin-top:12px;color:var(--muted);font:inherit}
+.term .t .f{color:var(--err)}
+.term .t i{font-style:normal;color:#5a5a5a}
+.term .ti{padding:0 12px 0 44px;color:var(--muted);text-indent:-16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.term .ti::before{content:"⎿  ";color:#5a5a5a}
+.term .ti b{color:var(--soft);font-weight:600}
+.term .ti.f b{color:var(--err)}
+.term .busy{padding:0 12px;margin-top:14px;color:var(--claude)}
+.term .busy::before{content:"✻ "}
+.term .none{color:var(--muted);padding:40px 12px;text-align:center;font-family:var(--font)}
+.cmp{flex:none;background:#0a0a0a;padding:6px 12px 8px}
+.cmp .box{display:flex;align-items:flex-end;gap:8px;border-top:1px solid #3a3a3a;border-bottom:1px solid #3a3a3a;padding:8px 0}
+.cmp .box::before{content:"❯";font:14px/24px var(--mono);color:var(--muted)}
+.cmp textarea{flex:1;resize:none;min-height:24px;max-height:120px;background:none;border:0;color:var(--text);font:16px/24px var(--mono);outline:none}
+.cmp textarea::placeholder{color:#555}
+.send{width:30px;height:30px;border-radius:15px;background:var(--accent);color:var(--onaccent);display:grid;place-items:center;flex:none}
+.send svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.acct{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.acct b{color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.pl{border:1px solid var(--bstrong);border-radius:6px;padding:1px 6px;color:var(--soft);flex:none}
+.acct .lim{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:430px){.acct .uses{display:none}}
+/* credits */
+.box2{background:var(--raised);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.arow{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.arow+.arow{border-top:1px solid var(--border)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who>div{flex:1;min-width:0}
+.who b{display:block;font-weight:500;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{color:var(--muted);font-size:12.5px}
+.pace{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;flex:none;font-size:12px;font-weight:700}
+.pace.ok{background:rgba(134,208,168,.12);color:var(--done)}.pace.no{background:rgba(230,196,126,.13);color:var(--warn)}
+.lims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.lim1 .k{display:flex;font-size:11.5px;color:var(--muted);gap:4px}.lim1 .k span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lim1 .k b{color:var(--text);font-weight:500}
+.lim1 small{display:block;color:var(--muted);font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt{height:5px;background:var(--sel);border-radius:3px;margin-top:5px;overflow:hidden}.mt i{display:block;height:100%;border-radius:3px}
+.anote{font-size:12px;color:var(--muted)}.aerr{font-size:12.5px;color:var(--warn)}
+.sec{display:flex;align-items:center;gap:8px;margin:12px 4px 0;font-size:12px}
+.sec span{color:var(--muted);letter-spacing:.06em}
+.sec em{font-style:normal;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--sunken);border:1px solid var(--border);overflow-x:auto;flex:none;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:1 0 auto;padding:6px 11px;border-radius:8px;font-size:13px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:6px;justify-content:center}
+.seg button.on{background:var(--raised);color:var(--text);box-shadow:0 0 0 1px var(--bstrong)}
+.seg svg{width:13px;height:13px}
+.stats{display:grid;grid-template-columns:1fr 1fr}
+.stat{display:flex;gap:10px;align-items:center;padding:12px;min-width:0}
+.stat:nth-child(even){border-left:1px solid var(--border)}
+.stat:nth-child(n+3){border-top:1px solid var(--border)}
+.stat:last-child:nth-child(odd){grid-column:span 2}
+.stat .ic{width:32px;height:32px;border-radius:9px;background:var(--sel);border:1px solid var(--bstrong);display:grid;place-items:center;flex:none}
+.stat .ic svg{width:15px;height:15px;stroke:var(--soft);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stat b{display:block;font-size:18px;font-weight:500}
+.stat small{color:var(--muted);font-size:11.5px;white-space:nowrap}
+.up{color:var(--done)}.dn{color:var(--err)}
+.ch{padding:14px}
+.chh{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-width:0}
+.chh svg.hi{width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.chh b{font-weight:500;font-size:14px;flex:1;white-space:nowrap}
+.pill{font-size:11.5px;color:var(--soft);border:1px solid var(--bstrong);border-radius:8px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{display:flex;align-items:flex-end;gap:3px;height:92px}
+.bars>div{flex:1 1 0;min-width:0;border-radius:3px;overflow:hidden;display:flex;flex-direction:column}
+.axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+.mix{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--sel);margin-bottom:10px}
+.mixk{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.mixk div{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--soft);min-width:0}
+.mixk i{width:7px;height:7px;border-radius:2px;flex:none}.mixk span{flex:1;white-space:nowrap}.mixk b{font-weight:500;color:var(--text)}
+.saved{margin-top:10px;font-size:12px;color:var(--muted)}.saved b{color:var(--done);font-weight:500}
+.tabs2{display:flex;gap:2px}
+.tabs2 button{padding:3px 8px;border-radius:6px;font-size:12px;color:var(--muted)}.tabs2 button.on{background:var(--sel);color:var(--text)}
+.wr{display:flex;align-items:center;gap:8px;padding:7px 2px;font-size:12.5px}
+.wr+.wr{border-top:1px solid var(--border)}
+.wr .nm{flex:1;min-width:0;display:flex;align-items:center;gap:7px}
+.wr .nm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr .ti2{width:18px;height:18px;border-radius:5px;background:var(--sel);display:grid;place-items:center;flex:none;color:var(--muted)}
+.wr .ti2 svg{width:11px;height:11px}.wr .ti2.claude{color:var(--claude)}
+.wr .mt{width:40px;margin:0;flex:none}
+.wr .n{color:var(--soft);text-align:right;flex:none}
+.heat{display:flex;gap:3px;justify-content:space-between}
+.heat>div{display:flex;flex-direction:column;gap:3px;flex:1}
+.heat i{display:block;aspect-ratio:1;border-radius:2px;max-width:16px}
+.lgd{display:flex;align-items:center;gap:3px;margin-top:8px;font-size:11px;color:var(--muted)}
+.lgd i{width:9px;height:9px;border-radius:2px}
+.foot{font-size:11.5px;color:var(--muted);margin:2px 4px 0}
+/* pairing */
 .pair{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 26px;gap:12px}
 .pair .lg{width:64px;height:64px;border-radius:16px}
 .pair h2{font-size:22px;font-weight:600}
 .pair p{color:var(--muted);line-height:1.5}
 .pair .code{font:600 30px var(--mono);letter-spacing:.12em;margin:6px 0}
 .big{width:100%;max-width:320px;min-height:48px;border-radius:14px;background:var(--accent);color:var(--onaccent);font-weight:600}
-.big2{width:100%;max-width:320px;min-height:44px;border-radius:14px;border:1px solid var(--bstrong);color:var(--soft)}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);background:#222;border:1px solid var(--bstrong);border-radius:12px;padding:9px 14px;font-size:13.5px;opacity:0;transition:.25s;pointer-events:none;max-width:90%}
 .toast.on{opacity:1;transform:translateX(-50%)}
 </style>
@@ -82,16 +193,40 @@ code{display:block;font:12.5px var(--mono);background:var(--sunken);border:1px s
 "use strict";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const COLORS={working:"var(--working)","needs you":"var(--warn)",done:"var(--done)",idle:"var(--muted)",queued:"var(--muted)",ended:"var(--muted)",hibernated:"var(--muted)"};
-const LETTER={claude:"✻",codex:"⬡",gemini:"✦"};
-let state=null,tab="inbox",open=null,timer=null,busy=false;
+const COLORS={working:"var(--working)","needs you":"var(--warn)",done:"var(--done)"};
+// The agents' logos, as the desktop app draws them (ui/icon/svg).
+const LOGO={
+ claude:'<svg viewBox="0 0 40 40"><path fill="currentColor" d="M22.70 17.50L21.90 3.00Q20.00 0.91 18.10 3.00L17.30 17.50ZM23.63 19.37L29.55 8.79Q29.09 6.00 26.36 6.72L19.10 16.43ZM23.41 21.39L35.85 14.71Q36.94 12.10 34.24 11.26L21.12 16.50ZM22.10 23.02L33.60 23.83Q35.93 22.24 34.13 20.07L22.85 17.67ZM20.12 23.68L31.13 32.19Q33.95 32.13 33.62 29.33L23.66 19.60ZM18.09 23.15L22.25 34.75Q24.66 36.24 25.91 33.70L23.28 21.66ZM16.72 21.66L13.49 35.82Q14.74 38.35 17.14 36.87L21.91 23.15ZM16.34 19.60L8.04 27.88Q7.71 30.69 10.53 30.75L19.88 23.68ZM17.15 17.67L3.50 20.40Q1.69 22.57 4.02 24.16L17.90 23.02ZM18.88 16.50L7.57 12.11Q4.87 12.95 5.96 15.55L16.59 21.39ZM20.96 16.45L13.13 5.42Q10.41 4.66 9.91 7.44L16.39 19.31ZM15.80 20.00a4.2 4.2 0 1 0 8.4 0a4.2 4.2 0 1 0 -8.4 0Z"/></svg>',
+ codex:'<svg viewBox="0 0 40 40"><path fill="currentColor" d="M32.8377 17.282C33.2127 16.25 33.3072 15.218 33.2127 14.1875C33.1197 13.1571 32.7447 12.1251 32.2752 11.1876C31.4322 9.78209 30.2127 8.6571 28.8072 8.0001C27.3072 7.34461 25.7127 7.15711 24.1197 7.53211C23.3698 6.78212 22.5253 6.12512 21.5878 5.65713C20.6503 5.18913 19.5253 5.00013 18.4948 5.00013C16.8851 4.99074 15.3125 5.48246 13.9948 6.40712C12.6824 7.34311 11.7449 8.6571 11.2754 10.1571C10.1504 10.4376 9.21289 10.9071 8.27539 11.4696C7.4324 12.1251 6.77541 12.9696 6.21291 13.8126C5.36992 15.2195 5.08792 16.8125 5.27542 18.407C5.46399 19.9968 6.11605 21.496 7.1504 22.718C6.79608 23.7086 6.66795 24.7659 6.77541 25.8124C6.86991 26.8444 7.2449 27.8749 7.7129 28.8124C8.55739 30.2194 9.77538 31.3444 11.1824 31.9999C12.6824 32.6569 14.2753 32.8444 15.8698 32.4694C16.6198 33.2194 17.4628 33.8749 18.4003 34.3444C19.3378 34.8139 20.4628 34.9999 21.4948 34.9999C23.1043 35.0097 24.6769 34.5185 25.9947 33.5944C27.3072 32.6569 28.2447 31.3444 28.7127 29.8444C29.7719 29.6432 30.7682 29.1934 31.6197 28.5319C32.4627 27.8749 33.2127 27.1249 33.6822 26.1874C34.5251 24.7819 34.8071 23.1875 34.6196 21.5945C34.4322 20 33.8697 18.5015 32.8377 17.282ZM21.5878 33.0304C20.0878 33.0304 18.9628 32.5609 17.9323 31.7179C17.9323 31.7179 18.0253 31.6234 18.1198 31.6234L24.1197 28.1554C24.2862 28.0803 24.4196 27.9469 24.4947 27.7804C24.5698 27.636 24.6021 27.4731 24.5877 27.3109V18.875L27.1197 20.375V27.3124C27.1455 28.0547 27.0215 28.7945 26.755 29.4878C26.4885 30.181 26.085 30.8134 25.5687 31.3473C25.0523 31.8811 24.4337 32.3054 23.7497 32.5949C23.0658 32.8843 22.3305 33.0314 21.5878 33.0304ZM9.49488 27.8749C8.83789 26.7499 8.55739 25.4374 8.83789 24.125C8.83789 24.125 8.93239 24.2195 9.02539 24.2195L15.0253 27.6874C15.1693 27.7638 15.3325 27.7966 15.4948 27.7819C15.6823 27.7819 15.8698 27.7819 15.9628 27.6874L23.2753 23.4695V26.3749L17.1823 29.9374C16.5506 30.3042 15.8527 30.5427 15.1287 30.6393C14.4046 30.7358 13.6686 30.6884 12.9629 30.4999C11.4629 30.1249 10.2449 29.1874 9.49488 27.8749ZM7.9004 14.8445C8.56239 13.7234 9.58826 12.8627 10.8074 12.4056V19.532C10.8074 19.718 10.8074 19.907 10.9004 20C10.9755 20.1665 11.1089 20.2998 11.2754 20.375L18.5878 24.5944L16.0573 26.0944L10.0574 22.625C9.41842 22.2639 8.85742 21.7797 8.40684 21.2004C7.95627 20.6211 7.62506 19.9582 7.4324 19.25C7.05741 17.8445 7.1504 16.157 7.9004 14.8445ZM28.6197 19.625L21.3073 15.407L23.8377 13.9071L29.8377 17.375C30.7752 17.9375 31.5252 18.6875 31.9947 19.625C32.4642 20.5625 32.7447 21.5945 32.6502 22.7195C32.5603 23.7755 32.1699 24.7837 31.5252 25.6249C30.8697 26.4694 30.0252 27.1249 28.9947 27.4999V20.375C28.9947 20.1875 28.9947 20 28.9002 19.907C28.9002 19.907 28.8072 19.718 28.6197 19.625ZM31.1502 15.875C31.1502 15.875 31.0572 15.782 30.9627 15.782L24.9627 12.3126C24.7752 12.2196 24.6822 12.2196 24.4947 12.2196C24.3072 12.2196 24.1197 12.2196 24.0252 12.3126L16.7128 16.532V13.6251L22.8073 10.0626C23.7448 9.50009 24.7752 9.31259 25.9002 9.31259C26.9322 9.31259 27.9627 9.68759 28.9002 10.3446C29.7447 11.0001 30.4947 11.8446 30.8697 12.7821C31.2447 13.7196 31.3377 14.8445 31.1502 15.875ZM15.4003 21.125L12.8699 19.625V12.5946C12.8699 11.5626 13.1503 10.4376 13.7128 9.59459C14.2753 8.6571 15.1198 8.0001 16.0573 7.53211C17.0127 7.05249 18.0956 6.88812 19.1503 7.06261C20.1823 7.15711 21.2128 7.62511 22.0573 8.2821C22.0573 8.2821 21.9628 8.3751 21.8698 8.3751L15.8698 11.8446C15.7033 11.9197 15.57 12.0531 15.4948 12.2196C15.4003 12.4071 15.4003 12.5001 15.4003 12.6876V21.125ZM16.7128 18.125L19.9948 16.25L23.2753 18.125V21.875L19.9948 23.75L16.7128 21.875V18.125Z"/></svg>',
+ gemini:'<svg viewBox="0 0 40 40"><path fill="currentColor" d="M37 20.034C27.8809 20.5837 20.5808 27.8809 20.0326 37H19.966C19.4163 27.8809 12.1177 20.5837 3 20.034V19.9674C12.1191 19.4163 19.4163 12.1191 19.966 3H20.0326C20.5822 12.1191 27.8809 19.4163 37 19.9674V20.034Z"/></svg>'};
+const ICON={search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+ chev:'<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+ tokens:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>',
+ dollar:'<svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+ term:'<svg viewBox="0 0 24 24"><path d="M4 17l6-5-6-5M12 19h8"/></svg>',
+ cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>',
+ db:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+ chart:'<svg class="hi" viewBox="0 0 24 24"><path d="M3 3v18h18M7 16v-5M12 16V8M17 16v-8"/></svg>',
+ pie:'<svg class="hi" viewBox="0 0 24 24"><path d="M21 12A9 9 0 1 1 12 3v9z"/></svg>',
+ route:'<svg class="hi" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/></svg>',
+ calh:'<svg class="hi" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'};
+let state=null,tab="inbox",open=null,timer=null,busy=false,filter="";
+let hist=null,histAt=0,histBusy=false,range=7,acctFilter="",by=0;
+const expanded=new Set();
+let shut={};try{shut=JSON.parse(localStorage.getItem("hx.shut")||"{}")}catch{}
+function saveShut(){try{localStorage.setItem("hx.shut",JSON.stringify(shut))}catch{}}
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove("on"),2200)}
 async function api(path,body){
   const r=await fetch(path,body?{method:"POST",headers:{"Content-Type":"application/json","X-Hustlex":"1"},body:JSON.stringify(body),credentials:"same-origin"}:{credentials:"same-origin"});
   if(!r.ok){const e=new Error((await r.text()).trim()||r.statusText);e.status=r.status;throw e}
   return r.json()
 }
-function av(agent){return `<span class="av ${esc(agent)}">${LETTER[agent]||esc((agent||"?")[0].toUpperCase())}</span>`}
+function av(agent,small){return `<span class="av ${small?"s ":""}${esc(agent)}">${LOGO[agent]||esc((agent||"?")[0].toUpperCase())}</span>`}
+function bytes(n){return n>=1<<30?(n/(1<<30)).toFixed(1)+" GB":n>=1<<20?Math.round(n/(1<<20))+" MB":n<1024?n+" B":(n>>10)+" KB"}
+function until(t){const m=Math.floor((new Date(t)-Date.now())/60000);if(m<1)return"now";if(m<60)return m+"m";if(m<1440){const h=Math.floor(m/60);return m%60?h+"h "+(m%60)+"m":h+"h"}return Math.floor(m/1440)+"d"}
+function resets(t){const d=new Date(t);if(d-Date.now()<864e5)return"in "+until(t);return d.toLocaleDateString("en",{weekday:"short"})+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function level(u){return u>90?"var(--err)":u>75?"var(--warn)":"var(--accent)"}
 
 // Pairing: /pair?t=TOKEN, from the QR code the computer shows.
 async function pairPage(){
@@ -113,7 +248,6 @@ async function pairPage(){
   }catch(e){root.innerHTML=`<div class="pair"><div class="lg"></div><h2>Pair this phone</h2><p>${esc(e.message)}</p></div>`}
 }
 function phoneName(){const u=navigator.userAgent;return /iPhone/.test(u)?"iPhone":/iPad/.test(u)?"iPad":/Android/.test(u)?"Android phone":"Phone"}
-
 function notPaired(){
   $("#root").innerHTML=`<div class="pair"><div class="lg"></div><h2>hustleX on your phone</h2>
     <p>This phone isn't paired. On your computer, click the phone button in hustleX's nav bar and scan the code with this phone's camera.</p></div>`
@@ -121,72 +255,306 @@ function notPaired(){
 
 async function refresh(){
   if(busy)return;
-  try{state=await api("/api/state");render()}
+  try{state=await api("/api/state");if(!open){$("#body")?renderBody():render()}}
   catch(e){if(e.status===401){clearInterval(timer);notPaired()}}
+  if(tab==="credits"&&!open)loadHistory();
 }
+// render draws the page around the tab's body: its header, the filter, the tab bar.
 function render(){
-  if(open){return}
+  if(open||!state)return;
   const n=state.inbox.length;
-  $("#root").innerHTML=`<div class="ah"><div class="lg"></div><b>${{inbox:"Inbox",sessions:"Sessions",credits:"Credits"}[tab]}</b><small><i></i>${esc(state.host)}</small></div>
+  const title={inbox:"Inbox",sessions:"Sessions",credits:"Credits"}[tab];
+  const cnt=tab==="sessions"?`${state.sessions.length} session${state.sessions.length===1?"":"s"}`:"";
+  $("#root").innerHTML=`<div class="ah"><div class="lg"></div><b>${title}</b><span class="cnt">${cnt}</span><small><i></i>${esc(state.host)}</small></div>
+   ${tab==="sessions"?`<label class="filter">${ICON.search}<input id="flt" type="search" placeholder="Filter sessions" value="${esc(filter)}" autocomplete="off"></label>`:""}
    <div class="ab" id="body"></div>
    <div class="tabs">
     <button data-t="inbox" class="${tab==="inbox"?"on":""}"><svg viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg>Inbox${n?`<span class="bd">${n}</span>`:""}</button>
     <button data-t="sessions" class="${tab==="sessions"?"on":""}"><svg viewBox="0 0 24 24"><path d="M4 17l6-5-6-5M12 19h8"/></svg>Sessions</button>
     <button data-t="credits" class="${tab==="credits"?"on":""}"><svg viewBox="0 0 24 24"><path d="M12 14l4-4"/><path d="M3.3 17a9 9 0 1 1 17.4 0"/></svg>Credits</button></div>`;
-  document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
-  const body=$("#body");
-  if(tab==="inbox"){
-    body.innerHTML=n?state.inbox.map((a,i)=>`<div class="card"><div class="top">${av(a.agent)}<div><b>${esc(a.name)}</b><small>${esc(a.project||"")}</small></div></div>
-      <div class="q">${esc(a.question)}</div>${(a.detail||[]).length?`<code>${esc(a.detail.join("\n"))}</code>`:""}
-      <div class="row2">${(a.choices||[]).map((c,j)=>`<button class="${j?"":"y"}" data-a="${i}" data-c="${j}">${esc(c.label)}</button>`).join("")}<button data-o="${esc(a.session)}">Open</button></div></div>`).join("")
-      :`<div class="empty">✓ Nothing waiting on you.</div>`;
-    body.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{
-      const a=state.inbox[+b.dataset.a],c=a.choices[+b.dataset.c];
-      try{await api("/api/answer",{session:a.session,key:c.key});toast(a.name+": "+c.label);state.inbox.splice(+b.dataset.a,1);render()}catch(e){toast(e.message)}
-    });
-  }else if(tab==="sessions"){
-    body.innerHTML=state.sessions.length?`<div class="lbl">On ${esc(state.host)}</div>`+state.sessions.map(s=>`<button class="srow" data-o="${esc(s.id)}">${av(s.agent)}<div><b>${esc(s.name)}</b>
-      <small><span class="dot" style="background:${COLORS[s.status]||"var(--muted)"}"></span>${esc(s.status)}${s.project?" · "+esc(s.project):""}</small></div></button>`).join("")
-      :`<div class="empty">No sessions yet.</div>`;
-  }else{
-    const accs=state.accounts.filter(a=>(a.windows||[]).length||a.error);
-    body.innerHTML=accs.length?accs.map(a=>`<div class="card"><div class="top">${av(a.agent)}<div><b>${esc(a.account||a.agent)}</b><small>${esc(a.plan||"")}</small></div></div>
-      ${a.error?`<div class="q" style="color:var(--muted)">${esc(a.error)}</div>`:(a.windows||[]).slice(0,3).map(w=>{const u=Math.round(w.used),c=u>=85?"var(--err)":u>=60?"var(--warn)":"var(--done)";
-        return `<div class="kv">${esc(w.label)}<b style="color:${u>=60?"var(--warn)":"var(--text)"}">${u}%</b></div><div class="bar"><i style="width:${Math.min(u,100)}%;background:${c}"></i></div>${w.resetsAt?`<div class="sub" style="margin-top:4px">resets ${resets(w.resetsAt)}</div>`:""}`}).join("")}</div>`).join("")
-      :`<div class="empty">No accounts with a reading yet.</div>`;
-  }
+  document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render();if(tab==="credits")loadHistory()});
+  const f=$("#flt");if(f)f.oninput=()=>{filter=f.value;renderBody()};
+  renderBody();
+}
+function renderBody(){
+  const body=$("#body");if(!body)return;
+  const b=document.querySelector('[data-t="inbox"]'),n=state.inbox.length;
+  if(b){const bd=b.querySelector(".bd");if(n&&!bd)b.insertAdjacentHTML("beforeend",`<span class="bd">${n}</span>`);else if(bd){if(n)bd.textContent=n;else bd.remove()}}
+  const c=document.querySelector(".ah .cnt");if(c&&tab==="sessions")c.textContent=`${state.sessions.length} session${state.sessions.length===1?"":"s"}`;
+  if(tab==="inbox")inboxBody(body);else if(tab==="sessions")sessionsBody(body);else creditsBody(body);
   body.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>openSession(b.dataset.o));
 }
-function resets(t){const d=new Date(t),m=Math.round((d-Date.now())/60000);if(m<=0)return"now";if(m<60*24){const h=Math.floor(m/60);return"in "+(h?h+"h ":"")+(m%60)+"m"}
-  return d.toLocaleString([], {weekday:"short",hour:"2-digit",minute:"2-digit"})}
 
+function inboxBody(body){
+  const n=state.inbox.length;
+  body.innerHTML=n?state.inbox.map((a,i)=>`<div class="card"><div class="top">${av(a.agent)}<div><b>${esc(a.name)}</b><small>${esc(a.project||"")}</small></div></div>
+    <div class="q">${esc(a.question)}</div>${(a.detail||[]).length?`<code class="blk">${esc(a.detail.join("\n"))}</code>`:""}
+    <div class="row2">${(a.choices||[]).map((c,j)=>`<button class="${j?"":"y"}" data-a="${i}" data-c="${j}">${esc(c.label)}</button>`).join("")}<button data-o="${esc(a.session)}">Open</button></div></div>`).join("")
+    :`<div class="empty">✓ Nothing waiting on you.</div>`;
+  body.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{
+    const a=state.inbox[+b.dataset.a],c=a.choices[+b.dataset.c];
+    try{await api("/api/answer",{session:a.session,key:c.key});toast(a.name+": "+c.label);state.inbox.splice(+b.dataset.a,1);renderBody()}catch(e){toast(e.message)}
+  });
+}
+
+// Sessions, grouped by project as the desktop app's list.
+function sessionRow(s){
+  const col=COLORS[s.status]||"var(--muted)";
+  return `<button class="srow" data-o="${esc(s.id)}">${av(s.agent)}<div><b>${esc(s.name)}</b>
+    <small style="color:${col}"><i class="dot${s.hollow?" ring":""}" style="background:${col}"></i><span style="color:var(--muted)">${esc(s.label||s.status)}</span></small></div>${s.rss?`<span class="mem">${bytes(s.rss)}</span>`:""}</button>`
+}
+function summary(list){
+  const wait=list.filter(s=>s.status==="needs you").length,work=list.filter(s=>s.status==="working").length;
+  return wait?wait+" need input":work?work+" working":String(list.length)
+}
+function sessionsBody(body){
+  const q=filter.trim().toLowerCase();
+  const all=state.sessions.filter(s=>!q||[s.name,s.project,s.agent].some(f=>(f||"").toLowerCase().includes(q)));
+  if(!all.length){body.innerHTML=`<div class="empty">${q?"No session matches.":"No sessions yet."}</div>`;return}
+  const groups=[],byPath={};
+  for(const p of state.projects||[]){const g={key:p.path,name:p.name,list:[]};byPath[p.path]=g;groups.push(g)}
+  for(const s of all){let g=byPath[s.path];if(!g){g={key:s.path||"",name:s.project||"Other",list:[]};byPath[s.path]=g;groups.push(g)}g.list.push(s)}
+  let html="";
+  const waiting=all.filter(s=>s.status==="needs you");
+  if(waiting.length)html+=`<div class="grp need"><span>Needs you</span><em>${waiting.length}</em></div><div class="list">${waiting.map(sessionRow).join("")}</div>`;
+  for(const g of groups){
+    if(!g.list.length)continue;
+    const closed=shut[g.key]&&!q;
+    html+=`<button class="grp${closed?" shut":""}" data-g="${esc(g.key)}">${ICON.chev}<span>${esc(g.name)}</span><em>${summary(g.list)}</em></button>`;
+    if(!closed)html+=`<div class="list">${g.list.map(sessionRow).join("")}</div>`;
+  }
+  body.innerHTML=html;
+  body.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const k=b.dataset.g;if(shut[k])delete shut[k];else shut[k]=1;saveShut();renderBody()});
+}
+
+// A session, drawn as its agent's terminal: prompts on a band, replies
+// after a dot, tool calls summed up as the agent does, tapped open.
 async function openSession(id){
-  open=id;
+  open=id;expanded.clear();
   $("#root").innerHTML=`<div class="sh"><button class="back" id="back">‹ Back</button><div class="tt"><b id="sName"></b><small id="sMeta"></small></div></div>
-    <div class="chat" id="chat"></div><div class="who" id="who"></div>
-    <div class="quick"><button>Continue</button><button>Run the tests</button><button>Explain the change</button></div>
-    <div class="comp"><textarea id="msg" rows="1" placeholder="Message the agent…"></textarea><button class="send" id="send" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>`;
+    <div class="term" id="chat"></div>
+    <div class="cmp"><div class="box"><textarea id="msg" rows="1" placeholder="Message the agent…"></textarea><button class="send" id="send" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></div>
+    <div class="acct" id="who"></div>`;
   $("#back").onclick=()=>{open=null;render()};
+  const msg=$("#msg");
+  msg.oninput=()=>{msg.style.height="auto";msg.style.height=Math.min(msg.scrollHeight,120)+"px"};
   const send=async text=>{text=text.trim();if(!text)return;busy=true;
-    try{await api("/api/send",{session:id,text});$("#msg").value="";toast("Sent");setTimeout(()=>loadSession(id),1200)}catch(e){toast(e.message)}finally{busy=false}};
-  $("#send").onclick=()=>send($("#msg").value);
-  document.querySelectorAll(".quick button").forEach(b=>b.onclick=()=>send(b.textContent));
+    try{await api("/api/send",{session:id,text});msg.value="";msg.oninput();toast("Sent");setTimeout(()=>loadSession(id),1200)}catch(e){toast(e.message)}finally{busy=false}};
+  $("#send").onclick=()=>send(msg.value);
   await loadSession(id,true);
 }
+const VERBS={Bash:["ran","shell command","shell commands"],Read:["read","file","files"],Edit:["edited","file","files"],MultiEdit:["edited","file","files"],
+  Write:["wrote","file","files"],NotebookEdit:["edited","notebook","notebooks"],Grep:["searched for","pattern","patterns"],Glob:["searched for","pattern","patterns"],
+  LS:["listed","directory","directories"],WebFetch:["fetched","page","pages"],WebSearch:["searched the web","time","times"],Task:["ran","agent","agents"],Agent:["ran","agent","agents"]};
+function toolSummary(run){
+  const counts=new Map();let failed=0;
+  for(const t of run){
+    if(t.failed)failed++;
+    const v=VERBS[t.text],key=v?v[0]+" "+v[2]:t.text==="TodoWrite"?"updated the to-dos":"used "+t.text;
+    const c=counts.get(key)||{n:0,v};c.n++;counts.set(key,c);
+  }
+  const parts=[...counts].map(([k,c])=>c.v?`${c.v[0]} <b>${c.n}</b> ${c.n===1?c.v[1]:c.v[2]}`:k.startsWith("used ")&&c.n>1?`${esc(k)} ×${c.n}`:esc(k));
+  let s=parts.join(", ");s=s.charAt(0).toUpperCase()+s.slice(1);
+  return s+(failed?` <span class="f">· ${failed} failed</span>`:"")
+}
+function inline(t){
+  return esc(t).replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noreferrer">$1</a>').replace(/`([^`\n]+)`/g,"<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>")
+}
+function terminal(s){
+  const out=[],m=s.messages;
+  for(let i=0;i<m.length;){
+    const e=m[i];
+    if(e.kind==="tool"){
+      const run=[];while(i<m.length&&m[i].kind==="tool")run.push(m[i++]);
+      const last=run[run.length-1],key=[run.length,run[0].text,run[0].detail,last.text,last.detail].join("|");
+      const open=expanded.has(key);
+      out.push(`<button class="t" data-k="${esc(key)}">${toolSummary(run)} <i>${open?"▾":"▸"}</i></button>`);
+      if(open)out.push(run.map(t=>`<div class="ti${t.failed?" f":""}"><b>${esc(t.text)}</b> ${esc((t.detail||"").replace(/\s+/g," "))}</div>`).join(""));
+      continue;
+    }
+    out.push(e.kind==="user"?`<div class="u">${esc(e.text)}</div>`:`<div class="a">${inline(e.text)}</div>`);
+    i++;
+  }
+  if(s.status==="working")out.push(`<div class="busy">Working…</div>`);
+  return out.length?out.join(""):`<div class="none">Nothing said yet.</div>`
+}
+function shortLabel(l){return l.replace(/^(\d+) hours$/,"$1h").replace(/^Week$/,"week").replace(/^Month$/,"month")}
 async function loadSession(id,first){
   if(open!==id)return;
   try{
     const s=await api("/api/session?id="+encodeURIComponent(id));
     if(open!==id)return;
-    $("#sName").textContent=s.name;$("#sMeta").textContent=[s.project,s.status].filter(Boolean).join(" · ");
-    $("#who").innerHTML=s.account?`This session uses <b>${esc(s.account)}</b>`:"";
+    $("#sName").textContent=s.name;$("#sMeta").textContent=[s.project,s.label||s.status].filter(Boolean).join(" · ");
+    const w=(s.windows||[])[0];
+    $("#who").innerHTML=s.account?`${av(s.agent,true)}<span class="uses">This session uses</span><b>${esc(s.account)}</b>${s.plan?`<span class="pl">${esc(s.plan)}</span>`:""}${w?`<span class="lim">${esc(shortLabel(w.label))} ${Math.round(w.used)}%${w.resetsAt?" · resets "+resets(w.resetsAt):""}</span>`:""}`:"";
     const chat=$("#chat"),atEnd=first||chat.scrollHeight-chat.scrollTop-chat.clientHeight<40;
-    chat.innerHTML=s.messages.length?s.messages.map(m=>m.kind==="user"?`<div class="me">${esc(m.text)}</div>`:m.kind==="assistant"?`<div class="ai">${esc(m.text)}</div>`
-      :`<div class="tool">● ${esc(m.text)} ${esc(m.detail||"")}</div>`).join(""):`<div class="empty">Nothing said yet.</div>`;
+    chat.innerHTML=terminal(s);
+    wireTools(chat,s);
     if(atEnd)chat.scrollTop=chat.scrollHeight;
   }catch(e){if(e.status===401)notPaired();else toast(e.message)}
 }
+// wireTools opens and folds a run of tool calls when tapped.
+function wireTools(chat,s){chat.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(expanded.has(k))expanded.delete(k);else expanded.add(k);chat.innerHTML=terminal(s);wireTools(chat,s)})}
 
+// Credits, as the desktop app's page: each account's limits, then what
+// the agents spent, read from their conversation files on the computer.
+async function loadHistory(){
+  if(histBusy||Date.now()-histAt<30000&&hist&&!hist.reading)return;
+  histBusy=true;
+  try{hist=await api("/api/history?days=91");histAt=Date.now();if(tab==="credits"&&!open)renderBody()}catch(e){}
+  finally{histBusy=false}
+}
+function windowLength(l){
+  if(l==="Week"||l.startsWith("Week ·"))return 7*864e5;if(l==="Month")return 30*864e5;
+  let m=l.match(/^(\d+) hours$/);if(m)return +m[1]*36e5;m=l.match(/^(\d+) days$/);if(m)return +m[1]*864e5;return 0
+}
+function partOfDay(t){
+  const h=t.getHours(),part=h>=5&&h<12?"morning":h>=12&&h<17?"afternoon":h>=17&&h<22?"evening":"night";
+  if(t.toDateString()===new Date().toDateString())return part==="night"?"tonight":"this "+part;
+  return t.toLocaleDateString("en",{weekday:"long"})+" "+part
+}
+function pace(a){
+  let w=null,len=0;
+  for(const x of a.windows||[]){const l=windowLength(x.label);if(l>len&&x.resetsAt&&!x.label.includes("·")){w=x;len=l}}
+  if(!len)return null;
+  const name=w.label==="Week"?"the week":"the "+w.label.toLowerCase();
+  if(w.used>=100)return{ok:false,text:"Used up until "+name+" resets "+resets(w.resetsAt)};
+  const elapsed=len-(new Date(w.resetsAt)-Date.now());
+  if(elapsed<len/20||elapsed<=0)return{ok:true,text:`Just started: ${Math.round(w.used)}% of ${name} used`};
+  const proj=w.used*len/elapsed;
+  if(proj<=100)return{ok:true,text:`On track: about ${Math.round(proj)}% of ${name} by its reset`};
+  return{ok:false,text:"At this pace "+name+" runs out "+partOfDay(new Date(Date.now()+elapsed*(100-w.used)/w.used))}
+}
+function accountsBox(){
+  const accs=state.accounts||[];
+  if(!accs.length)return`<div class="empty">No agent is signed in on ${esc(state.host)}.</div>`;
+  return `<div class="box2">${accs.map(a=>{
+    const p=pace(a);
+    return `<div class="arow"><div class="who">${av(a.agent)}<div><b>${esc(a.account||a.agent)}</b><small>${esc(a.plan||a.agent)}</small></div>
+      ${p?`<span class="pace ${p.ok?"ok":"no"}">${p.ok?"✓":"!"}</span>`:""}</div>
+      ${p?`<div class="anote">${esc(p.text)}</div>`:""}
+      ${(a.windows||[]).length?`<div class="lims">${a.windows.slice(0,3).map(w=>`<div class="lim1"><div class="k"><span>${esc(w.label)}</span><b>${Math.round(w.used)}%</b></div>
+        <div class="mt"><i style="width:${Math.min(w.used,100)}%;background:${level(w.used)}"></i></div>
+        <small>${w.resetsAt?"resets "+resets(w.resetsAt):esc(w.detail||"")}</small></div>`).join("")}</div>`:""}
+      ${a.error?`<div class="aerr">${esc(a.error)}</div>`:""}${a.note?`<div class="anote">${esc(a.note)}</div>`:""}</div>`}).join("")}</div>`
+}
+// Claude's API prices per million tokens (ui/creditview/prices.go).
+const PRICES=[["claude-fable-5-2",8,40,.2],["claude-mythos-5-2",8,40,.2],["claude-fable-5",10,50,1],["claude-mythos-5",10,50,1],["claude-opus-5-5",4,20,.2],
+  ["claude-opus-",5,25,.5],["claude-sonnet-5-5",2,10,.1],["claude-sonnet-5",2,10,.2],["claude-sonnet-",3,15,.3],["claude-haiku-5-5",.1,.5,.01],["claude-haiku-",1,5,.1]];
+const priceOf=m=>PRICES.find(p=>m.startsWith(p[0]));
+const zero=()=>({input:0,cacheRead:0,cacheCreate:0,output:0,cost:0,unpriced:0,saved:0});
+const total=u=>u.input+u.cacheRead+u.cacheCreate+u.output;
+function addRow(u,r){
+  const t={input:r.input||0,cacheRead:r.cacheRead||0,cacheCreate:r.cacheCreate||0,output:r.output||0};
+  u.input+=t.input;u.cacheRead+=t.cacheRead;u.cacheCreate+=t.cacheCreate;u.output+=t.output;
+  const p=priceOf(r.model||"");
+  if(p){u.cost+=(t.input*p[1]+t.output*p[2]+t.cacheRead*p[3]+t.cacheCreate*p[1]*1.25)/1e6;u.saved+=t.cacheRead*(p[1]-p[3])/1e6}else u.unpriced+=total(t);
+}
+function merge(a,b){for(const k in b)a[k]+=b[k]}
+const dayKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const base=p=>(p||"").split("/").filter(Boolean).pop()||p||"";
+function projectName(path){const p=(state.projects||[]).find(p=>p.path===path);return p?p.name:base(path)}
+function spend(days){
+  const today=new Date(),from=dayKey(addDays(today,-(days-1))),prevFrom=dayKey(addDays(today,-(2*days-1)));
+  const chartDays=Math.max(days,14),chartFrom=addDays(today,-(chartDays-1)),chartKey=dayKey(chartFrom);
+  const s={total:zero(),prev:zero(),convs:0,prevConvs:0,active:0,chart:[]};
+  const byDay={},dayConvs={},convs=new Set(),prevConvs=new Set(),proj={},sess={},mod={};
+  const share=(m,key,name,agent,u)=>{const x=m[key]||(m[key]={key,name,agent,...zero()});merge(x,u)};
+  for(const r of hist.rows){
+    const c=hist.conversations[r.conversation];if(!c)continue;
+    if(acctFilter&&c.agent+" "+c.account!==acctFilter)continue;
+    const u=zero();addRow(u,r);
+    if(r.day>=chartKey){(byDay[r.day]||(byDay[r.day]=zero()));merge(byDay[r.day],u);(dayConvs[r.day]||(dayConvs[r.day]=new Set())).add(r.conversation)}
+    if(r.day>=from){
+      merge(s.total,u);convs.add(r.conversation);
+      share(proj,c.project||"",projectName(c.project),c.agent,u);
+      share(sess,c.session||c.agent+":"+r.conversation,c.title||"Conversation in "+base(c.project),"",u);
+      share(mod,r.model,r.model,c.agent,u);
+    }else if(r.day>=prevFrom){merge(s.prev,u);prevConvs.add(r.conversation)}
+  }
+  s.convs=convs.size;s.prevConvs=prevConvs.size;
+  for(let i=0;i<chartDays;i++){
+    const d=addDays(chartFrom,i),k=dayKey(d),u=byDay[k]||zero();
+    if(i>=chartDays-days&&total(u)>0)s.active++;
+    s.chart.push({day:d,u});
+  }
+  const sorted=m=>Object.values(m).sort((a,b)=>total(b)-total(a)||a.name.localeCompare(b.name));
+  s.by=[sorted(proj),sorted(sess),sorted(mod)];
+  return s
+}
+function tokens(n){return n>=1e9?(n/1e9).toFixed(1)+"B":n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"k":String(n)}
+function dollars(v){return v>=100?"$"+Math.round(v):"$"+v.toFixed(2)}
+function change(now,before){if(!before)return"";const p=Math.round((now-before)/before*100);if(!p)return"";return p<0?`<span class="dn">▼${-p}%</span>`:`<span class="up">▲${p}%</span>`}
+const KINDS=[["Cache read","#232323","cacheRead"],["Cache write","#7f7f7f","cacheCreate"],["Input","var(--working)","input"],["Output","var(--done)","output"]];
+const fmtDay=d=>d.toLocaleDateString("en",{month:"short",day:"numeric"});
+function spendingHtml(){
+  const accs=(state.accounts||[]).filter(a=>a.ref);
+  if(acctFilter&&!accs.some(a=>a.agent+" "+a.ref===acctFilter))acctFilter="";
+  const who=acctFilter?(accs.find(a=>a.agent+" "+a.ref===acctFilter)||{}).account:"all accounts";
+  let h=`<div class="sec"><span>SPENDING</span><em>${range===1?"today":"last "+range+" days"} · ${esc(who)}</em></div>
+    <div class="seg" id="rng">${[[1,"Today"],[7,"7 days"],[30,"30 days"]].map(([d,l])=>`<button data-r="${d}" class="${d===range?"on":""}">${l}</button>`).join("")}</div>`;
+  if(accs.length>1)h+=`<div class="seg" id="acf"><button data-f="" class="${acctFilter?"":"on"}">All accounts</button>${accs.map(a=>{const k=a.agent+" "+a.ref,n=(a.account||a.agent).split("@")[0];
+    return `<button data-f="${esc(k)}" class="${k===acctFilter?"on":""}"><span style="color:${a.agent==="claude"?"var(--claude)":"inherit"};display:flex">${LOGO[a.agent]||""}</span>${esc(n)}</button>`}).join("")}</div>`;
+  if(!hist||hist.reading&&!hist.rows.length)return h+`<div class="empty">Reading the agents' conversations on ${esc(state.host)}…</div>`;
+  const s=spend(range);
+  const stats=[[ICON.tokens,tokens(total(s.total)),"Tokens",change(total(s.total),total(s.prev))],[ICON.dollar,dollars(s.total.cost),"Est. cost",change(s.total.cost,s.prev.cost)],
+    [ICON.term,s.convs,"Sessions",change(s.convs,s.prevConvs)],[ICON.cal,s.active+"/"+range,"Active days",""],
+    [ICON.db,Math.round((s.total.cacheRead/Math.max(1,s.total.cacheRead+s.total.input+s.total.cacheCreate))*100)+"%","Cache hit",""]];
+  h+=`<div class="box2 stats">${stats.map(([ic,v,l,c])=>`<div class="stat"><span class="ic">${ic}</span><div><b>${v}</b><small>${l} ${c}</small></div></div>`).join("")}</div>`;
+  let most=s.chart[0];for(const d of s.chart)if(total(d.u)>total(most.u))most=d;
+  const peak=total(most.u);
+  h+=`<div class="box2 ch"><div class="chh">${ICON.chart}<b>Tokens per day</b>${peak?`<span class="pill">🔥 Busiest ${fmtDay(most.day)} · ${tokens(peak)}</span>`:""}</div>
+    <div class="bars">${s.chart.map(d=>{const t=total(d.u);if(!t)return`<div style="height:2px;background:var(--sel)"></div>`;
+      return `<div style="height:${Math.max(3,t/peak*92)}px">${KINDS.slice().reverse().map(k=>d.u[k[2]]?`<i style="flex:${d.u[k[2]]} 1 0;background:${k[1]}"></i>`:"").join("")}</div>`}).join("")}</div>
+    <div class="axis"><span>${fmtDay(s.chart[0].day)}</span><span>Today</span></div></div>`;
+  const tt=total(s.total);
+  h+=`<div class="box2 ch"><div class="chh">${ICON.pie}<b>Token mix</b></div>
+    <div class="mix">${KINDS.map(k=>s.total[k[2]]?`<i style="flex:${s.total[k[2]]} 1 0;background:${k[1]}"></i>`:"").join("")}</div>
+    <div class="mixk">${KINDS.map(k=>`<div><i style="background:${k[1]}"></i><span>${k[0]}</span><b>${tokens(s.total[k[2]])}</b></div>`).join("")}</div>
+    ${tt&&s.total.saved>=1?`<div class="saved">Cache saved about <b>${dollars(s.total.saved)}</b> vs reading it all as new input.</div>`:""}</div>`;
+  const rows=s.by[by],top=rows.length?total(rows[0]):1;
+  h+=`<div class="box2 ch"><div class="chh">${ICON.route}<b>Where it went</b><div class="tabs2" id="by">${["Projects","Sessions","Models"].map((l,i)=>`<button data-b="${i}" class="${i===by?"on":""}">${l}</button>`).join("")}</div></div>
+    ${rows.length?rows.slice(0,6).map(r=>`<div class="wr"><div class="nm"><span class="ti2 ${esc(r.agent)}">${r.agent?LOGO[r.agent]||"":ICON.chat}</span><span>${esc(r.name)}</span></div>
+      <div class="mt"><i style="width:${total(r)/Math.max(top,1)*100}%;background:var(--accent)"></i></div>
+      <span class="n" style="width:34px;color:var(--muted)">${Math.round(total(r)/Math.max(tt,1)*100)}%</span><span class="n" style="width:46px">${tokens(total(r))}</span><span class="n" style="width:50px">${dollars(r.cost)}</span></div>`).join("")
+      :`<div class="sub">No tokens in this range.</div>`}</div>`;
+  h+=activityHtml();
+  h+=`<div class="foot">Read from each agent's own conversation files on ${esc(state.host)}. Costs are estimates at API prices; a plan bills differently.</div>`;
+  return h
+}
+function activityHtml(){
+  const today=new Date();let start=addDays(today,-(13*7-1));start=addDays(start,-start.getDay());
+  const tot={};for(const r of hist.rows)tot[r.day]=(tot[r.day]||0)+(r.input||0)+(r.cacheRead||0)+(r.cacheCreate||0)+(r.output||0);
+  const days=[];for(let d=start;d<=today;d=addDays(d,1))days.push(tot[dayKey(d)]||0);
+  const most=Math.max(1,...days);
+  const lv=["var(--sel)","rgba(240,240,240,.16)","rgba(240,240,240,.32)","rgba(240,240,240,.58)","rgba(240,240,240,.9)"];
+  const of=n=>{const f=n/most;return n===0?lv[0]:f<.2?lv[1]:f<.45?lv[2]:f<.75?lv[3]:lv[4]};
+  let streak=0;for(let i=days.length-1;i>=0;i--){if(!days[i]){if(i===days.length-1)continue;break}streak++}
+  let cols="";for(let w=0;w*7<days.length;w++)cols+=`<div>${days.slice(w*7,w*7+7).map(n=>`<i style="background:${of(n)}"></i>`).join("")}</div>`;
+  return `<div class="box2 ch"><div class="chh">${ICON.calh}<b>Activity</b>${streak?`<span class="pill">🔥 ${streak}-day streak</span>`:""}</div>
+    <div class="heat">${cols}</div><div class="lgd">Less ${lv.map(c=>`<i style="background:${c}"></i>`).join("")} More</div></div>`
+}
+function creditsBody(body){
+  const y=body.scrollTop;
+  body.innerHTML=accountsBox()+spendingHtml();
+  body.scrollTop=y;
+  body.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{range=+b.dataset.r;renderBody()});
+  body.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{acctFilter=b.dataset.f;renderBody()});
+  body.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{by=+b.dataset.b;renderBody()});
+}
+
+// fitApp sizes the page to the whole screen in a Home Screen app, and to
+// what the keyboard leaves while it is up.
+function fitApp(){
+  if(!(navigator.standalone||matchMedia("(display-mode: standalone)").matches))return;
+  const vv=window.visualViewport,full=innerWidth>innerHeight?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height);
+  const keyboard=vv&&vv.height<innerHeight-120;
+  document.documentElement.style.setProperty("--app-h",(keyboard?Math.round(vv.height+vv.offsetTop):full)+"px");
+}
+fitApp();
+addEventListener("resize",fitApp);
+window.visualViewport?.addEventListener("resize",fitApp);
 if(location.pathname==="/pair")pairPage();
 else{refresh();timer=setInterval(()=>{if(open)loadSession(open);else refresh()},3000)}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!open&&location.pathname!=="/pair")refresh()});
