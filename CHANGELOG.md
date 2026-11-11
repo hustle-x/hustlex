@@ -2,6 +2,10 @@
 
 Each version's section is also what the app's update dialog shows.
 
+## 1.3.4
+
+- **Pair a phone says what's missing:** without Tailscale on this computer, Pair a phone opens with the steps to set it up, Get Tailscale and Try again, rather than an error.
+
 ## 1.3.3
 
 - **Git tab for folders that hold a repository:** a session in a folder that isn't a repository but has one inside (of several, the one you worked in last) shows that repository's changes, commits and branches.

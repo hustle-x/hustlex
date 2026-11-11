@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"time"
 
+	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 	"rsc.io/qr"
 
@@ -184,10 +186,16 @@ func (a *App) pairPhone() {
 		a.onMain(func() {
 			ps := &a.phone
 			ps.busy, ps.status = false, st
+			if err != nil && st.Problem != "" {
+				// Tailscale missing or signed out: the dialog says what to do.
+				ps.qr, ps.err, ps.open = nil, st.Problem, true
+				return
+			}
 			if err != nil {
 				a.status = "Couldn't pair a phone: " + client.Explain(err)
 				return
 			}
+			ps.err = ""
 			ps.pairing, ps.qr, ps.open, ps.devices = p, bmp, true, len(st.Devices)
 			a.followPairing(cl)
 		})
@@ -261,12 +269,20 @@ func (a *App) pairPhoneDialog(c *ui.Context) {
 		ui.Row(c).FillWidth().Children(func() {
 			ui.Column(c).Grow(1).Gap(3).Children(func() {
 				ui.Text(c, "Pair a phone").FontSize(16)
-				ui.Text(c, "Scan with your phone's camera. It opens hustleX on "+a.host.Name+" over Tailscale.").FontSize(12).TextColor(theme.Muted)
+				about := "Scan with your phone's camera. It opens hustleX on " + a.host.Name + " over Tailscale."
+				if ps.qr == nil && ps.err != "" {
+					about = "hustleX reaches your phone over Tailscale, which this needs first."
+				}
+				ui.Text(c, about).FontSize(12).TextColor(theme.Muted)
 			})
 			if widget.IconButton(c, icon.Close, "Close", false).Clicked() {
 				ps.open = false
 			}
 		})
+		if ps.qr == nil && ps.err != "" {
+			a.phoneSetup(c, ps.err)
+			return
+		}
 		ui.Row(c).FillWidth().Justify(ui.Center).Children(func() {
 			if ps.qr != nil {
 				ui.Box(c).Padding(10).Radius(12).Background(ui.Color{R: 255, G: 255, B: 255, A: 255}).Children(func() {
@@ -287,6 +303,31 @@ func (a *App) pairPhoneDialog(c *ui.Context) {
 				ui.Text(c, "•").FontSize(12).TextColor(theme.Muted)
 				ui.Text(c, step).FontSize(12).TextColor(theme.TextSoft).Grow(1)
 			})
+		}
+	})
+}
+
+// phoneSetup is the Pair a phone dialog while the host can't serve phones,
+// most often for want of Tailscale: what is wrong, and how to fix it.
+func (a *App) phoneSetup(c *ui.Context, problem string) {
+	ps := &a.phone
+	ui.Text(c, problem+".").FontSize(12).TextColor(theme.Warning)
+	for i, step := range []string{
+		"Install Tailscale on this computer and sign in.",
+		"Install Tailscale on your phone and sign in to the same account.",
+		"Then try again here: the QR code shows.",
+	} {
+		ui.Row(c.Key(i)).FillWidth().Gap(8).Children(func() {
+			ui.Text(c, fmt.Sprintf("%d.", i+1)).FontSize(12).TextColor(theme.Muted)
+			ui.Text(c, step).FontSize(12).TextColor(theme.TextSoft).Grow(1)
+		})
+	}
+	ui.Row(c).FillWidth().Gap(8).Justify(ui.End).Children(func() {
+		if widget.Button(c, widget.Secondary, icon.Globe, "Get Tailscale", "").Clicked() {
+			go func() { _ = mygo.Shell.OpenExternal("https://tailscale.com/download") }()
+		}
+		if widget.Button(c, widget.Primary, nil, "Try again", "").Disabled(ps.busy).Clicked() {
+			a.pairPhone()
 		}
 	})
 }
